@@ -1,0 +1,952 @@
+﻿
+@{
+    ViewBag.Title = "Scrap Notice";
+    ViewBag.pTitle = "Headcount Report";
+    ViewBag.xData = "dashboard";
+    ViewBag.ActiveItem = "HeadcountReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Start All Card -->
+<div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Total </p>
+                <h4 id="totalValueAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+
+                </h4>
+                <p class="text-muted">Overall Total</p>
+            </div>
+           
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Quantity</p>
+                <h4 id="totalQtyAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+
+                </h4>
+                <p class="text-muted">Pcs</p>
+            </div>
+
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Pending</p>
+                <h4 id="totalValuePending" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+
+                </h4>
+                <p class="text-muted">Value</p>
+            </div>
+
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Completed</p>
+                <h4 id="totalValueApprove" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+
+                </h4>
+                <p class="text-muted">Value</p>
+            </div>
+
+        </div>
+    </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div class="gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder md:col-span-2 xl:col-span-2 border-black/10">
+            <div class="flex items-center justify-between gap-4 mb-4">
+                <h2 class="text-base font-semibold text-black dark:text-white/80">Overview</h2>
+                <div>
+                    <div x-data="{ dropdown: false}" class="ml-auto dropdown text-dark">
+                        <a href="javaScript:;" class="text-black dark:text-white inline-flex items-center justify-center
+                             p-2 rounded-lg hover:bg-info hover:bg-opacity-85 transition" @@click="dropdown = !dropdown" @@keydown.escape="dropdown = false">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-7 h-7">
+                                <path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0
+                                        1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zm0-13H5V6h14v1z" />
+                            </svg>
+
+                        </a>
+                        <ul x-show="dropdown" @@click.away="dropdown = false" x-transition="" x-transition.duration.300ms="" class="ltr:right-0 rtl:left-0 whitespace-nowrap">
+                            <li><a class="periodBtn hover:bg-info/[0.85]" data-period="weekly" href="javascript:;">Weekly</a></li>
+                            <li><a class="periodBtn hover:bg-info/[0.85]" data-period="monthly" href="javascript:;">Monthly</a></li>
+                            <li><a class="periodBtn hover:bg-info/[0.85]" data-period="yearly" href="javascript:;">Yearly</a></li>
+
+                        </ul>
+
+                    </div>
+                    <div x-data="{ dropdown: false}" class="dropdown relative">
+                        <a href="javaScript:;" class="text-black dark:text-white inline-flex items-center justify-center
+                            p-2 rounded-lg hover:bg-info hover:bg-opacity-85 transition"
+                           @@click="dropdown = !dropdown"
+                           @@keydown.escape="dropdown = false">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 fill="none" viewBox="0 0 24 24"
+                                 stroke="currentColor" class="w-7 h-7">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M5.121 17.804A9 9 0 0112 15a9 9 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </a>
+
+
+                        <ul id="subordinateList"
+                            x-show="dropdown"
+                            @@click.away="dropdown = false"
+                            x-transition.duration.300ms
+                            class="absolute shadow rounded p-2 mt-2 whitespace-nowrap z-50 w-48">
+                            <!-- isi list akan dimasukkan via AJAX -->
+                            <li class="text-gray-500 px-3 py-1">Loading...</li>
+                        </ul>
+
+
+                    </div>
+                    <div x-data="{ dropdown: false}" class="dropdown relative">
+                        <a href="javascript:;"
+                           class="text-black dark:text-white inline-flex items-center justify-center
+                             p-2 rounded-lg hover:bg-info hover:bg-opacity-85 transition"
+                           @@click="dropdown = !dropdown"
+                           @@keydown.escape="dropdown = false">
+
+                            <!-- Icon Grid/Section -->
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                 stroke="currentColor" class="w-7 h-7">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M4 6h4v4H4V6zm6 0h4v4h-4V6zm6 0h4v4h-4V6zM4 12h4v4H4v-4zm6
+                                        0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 18h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z" />
+                            </svg>
+                        </a>
+
+                        <ul id="scrapCodeSectionReportingList"
+                            x-show="dropdown"
+                            @@click.away="dropdown = false"
+                            x-transition.duration.300ms
+                            class="absolute bg-white shadow rounded p-2 mt-2 whitespace-nowrap z-50 w-48">
+                            <li class="text-gray-500 px-3 py-1">Loading...</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+            <div>
+                <div id="chart5" class="-ml-4" dir="ltr">
+                    <div class="flex flex-col items-center justify-center mt-20 space-y-4">
+                        <!-- Spinner -->
+                        <div class="flex flex-wrap items-center justify-center gap-4">
+
+                            <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                        </div>
+
+                        <!-- Text -->
+                        <p class="text-muted font-medium text-lg">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Top 5 Remarks By Total</h2>
+            <div id="chart6" dir="ltr">
+                <div class="flex flex-col items-center justify-center mt-20 space-y-4">
+                    <!-- Spinner -->
+                    <div class="flex flex-wrap items-center justify-center gap-4">
+
+                        <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                    </div>
+
+                    <!-- Text -->
+                    <p class="text-muted font-medium text-lg">Loading...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+        <div class="col-span-12 gap-6 p-5 bg-white border rounded 2xl:col-span-9 dark:bg-darklight dark:border-darkborder border-black/10">
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 grow">Details</h2>
+                <a href="#" id="filtersScrapNotice" class="px-3 py-1.5 rounded-md text-xs border border-black/20 dark:border-darkborder text-muted"><i class="align-bottom ltr:mr-1 rtl:ml-1 ri-filter-line"></i> Filters</a>
+            </div>
+            <div id="filterList" class="flex flex-wrap gap-4 justify-between hidden">
+
+                <!-- Card 2 -->
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Document ID</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapDocumentIDFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Document ID">
+                        </div>
+                    </form>
+                </div>
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Part Number</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapPartNumberFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Part Number">
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Supervisor</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapSupervisorFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Supervisor Name">
+                        </div>
+                    </form>
+                </div>
+
+
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Total From</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapStartFromFilter" type="number" class="form-input w-full text-sm p-2" placeholder="Minimum Total">
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Total To</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapEndTotalFilter" type="number" class="form-input w-full text-sm p-2" placeholder="Maximum Total">
+                        </div>
+                    </form>
+                </div>
+
+
+                <div class="flex w-full justify-end gap-2 mt-2">
+                    <!-- Apply Filters icon -->
+                    <button id="applyFiltersScrapHeadCountButtonScrapDetail"
+                            class="px-2 py-1 bg-success text-white rounded shadow hover:bg-success/[0.85] transition flex items-center justify-center text-sm mb-2">
+                        <i class="ri-check-line text-sm mr-1"></i>
+                        Apply
+                    </button>
+
+                    <!-- Reset Filters icon -->
+                    <button id="resetFiltersScrapHeadCountButtonScrapDetail"
+                            class="px-2 py-1 bg-danger text-white rounded shadow hover:bg-danger/[0.85] transition flex items-center justify-center text-sm mb-2">
+                        <i class="ri-refresh-line text-sm mr-1"></i>
+                        Reset
+                    </button>
+                </div>
+            </div>
+                <div class="overflow-auto">
+                    <table class="min-w-[640px] w-full">
+                        <thead>
+                            <tr class="ltr:text-left rtl:text-right">
+                                <th>Document ID</th>
+                                <th>Part Number</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                                <th>Supervisor</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subordinateScrapPartList">
+                            <tr class="text-muted">
+                                <td colspan="4" class="py-6 text-center">
+                                    <div class="flex justify-center items-center gap-2">
+                                        <!-- Spinner -->
+                                        <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                        <span>Loading...</span>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <ul id="buttonPagination" class="inline-flex items-center gap-1 m-auto mb-4">
+                    </ul>
+                </div>
+            </div>
+            <div class="col-span-12 gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 2xl:col-span-3">
+                <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Most Scrap Part Numbers</h2>
+                <div id="mostScrapPartNumber" class="flex flex-col gap-3">
+                    <div class="flex gap-2 p-3 bg-gray-100 rounded-md dark:bg-darkborder/50 animate-pulse">
+                        <!-- Icon skeleton -->
+                        <span class="flex items-center justify-center rounded size-10 bg-muted"></span>
+
+                        <!-- Text skeleton -->
+                        <div class="overflow-hidden grow">
+                            <div class="bg-muted/50 h-4 w-40 mb-2 rounded"></div>
+                            <ul class="flex items-center gap-3 text-xs">
+                                <li class="bg-muted/50 h-3 w-20 rounded"></li>
+                                <li class="bg-muted/50 h-3 w-16 rounded"></li>
+                            </ul>
+                        </div>
+
+                        <!-- Price skeleton -->
+                        <div class="bg-muted/50 h-4 w-16 rounded"></div>
+                    </div>
+
+                    <div class="flex gap-2 p-3 bg-gray-100 rounded-md dark:bg-darkborder/50 animate-pulse">
+                        <!-- Icon skeleton -->
+                        <span class="flex items-center justify-center rounded size-10 bg-muted"></span>
+
+                        <!-- Text skeleton -->
+                        <div class="overflow-hidden grow">
+                            <div class="bg-muted/50 h-4 w-40 mb-2 rounded"></div>
+                            <ul class="flex items-center gap-3 text-xs">
+                                <li class="bg-muted/50 h-3 w-20 rounded"></li>
+                                <li class="bg-muted/50 h-3 w-16 rounded"></li>
+                            </ul>
+                        </div>
+
+                        <!-- Price skeleton -->
+                        <div class="bg-muted/50 h-4 w-16 rounded"></div>
+                    </div>
+                    <div class="flex gap-2 p-3 bg-gray-100 rounded-md dark:bg-darkborder/50 animate-pulse">
+                        <!-- Icon skeleton -->
+                        <span class="flex items-center justify-center rounded size-10 bg-muted"></span>
+
+                        <!-- Text skeleton -->
+                        <div class="overflow-hidden grow">
+                            <div class="bg-muted/50 h-4 w-40 mb-2 rounded"></div>
+                            <ul class="flex items-center gap-3 text-xs">
+                                <li class="bg-muted/50 h-3 w-20 rounded"></li>
+                                <li class="bg-muted/50 h-3 w-16 rounded"></li>
+                            </ul>
+                        </div>
+
+                        <!-- Price skeleton -->
+                        <div class="bg-muted/50 h-4 w-16 rounded"></div>
+                    </div>
+                    <div class="flex gap-2 p-3 bg-gray-100 rounded-md dark:bg-darkborder/50 animate-pulse">
+                        <!-- Icon skeleton -->
+                        <span class="flex items-center justify-center rounded size-10 bg-muted"></span>
+
+                        <!-- Text skeleton -->
+                        <div class="overflow-hidden grow">
+                            <div class="bg-muted/50 h-4 w-40 mb-2 rounded"></div>
+                            <ul class="flex items-center gap-3 text-xs">
+                                <li class="bg-muted/50 h-3 w-20 rounded"></li>
+                                <li class="bg-muted/50 h-3 w-16 rounded"></li>
+                            </ul>
+                        </div>
+
+                        <!-- Price skeleton -->
+                        <div class="bg-muted/50 h-4 w-16 rounded"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+</div>
+<!-- End All Card -->
+
+@section scripts{
+
+    <script src="~/assets/libs/apexcharts/apexcharts.min.js"></script>
+  
+    <script src="~/assets/js/main.js"></script>
+
+
+    <script>
+
+        const urlScrapChartSubordinate = '@Url.Action("GetJoinedSourceDataScrapTotalPerSubordinate", "DataReporting")';
+        const urlScrapSubordinateList = '@Url.Action("GetSubordinateChainJson", "DataReporting")';
+        const urlScrapSubordinateListPartDetail = '@Url.Action("GetScrapDocumentsPartsDetail", "DataReporting")';
+        const urlMostScrapPartNumber = '@Url.Action("GetScrapPartsSummary", "DataReporting")';
+        const urlMostScrapRemarks = '@Url.Action("GetScrapPartsSummaryByRemarks", "DataReporting")';
+        const urlScrapResponsibleArea = '@Url.Action("GetScrapResponsibleByKpk", "DataForms")';
+        let currentSubordinateKpk = null;
+        let currentScrapCode = null;
+
+        $(document).ready(async function () {
+            try {
+              
+
+                await Promise.all([
+                    loadScrapTotals(kpk),
+                    loadScrapChart("weekly"),
+                    loadSubordinates(kpk),
+                    loadScrapCodesResponsible(kpk),
+                    loadData(),
+                    loadTopScrapParts(kpk),
+                    loadScrapRemarksChart()
+                ]);
+
+               
+            } catch (err) {
+                console.error("Dashboard load failed:", err);
+            }
+        });
+
+        $(".periodBtn").on("click", function () {
+            $(".periodBtn").removeClass("active");
+            $(this).addClass("active");
+
+            var period = $(this).data("period");
+            loadScrapChart(period, currentSubordinateKpk, currentScrapCode);
+        });
+        filterButton.addEventListener('click', function (e) {
+            e.preventDefault(); // mencegah href="#" reload halaman
+            filterList.classList.toggle('hidden'); // toggle class hidden
+        });
+        // Apply Filters
+        $("#applyFiltersScrapHeadCountButtonScrapDetail").on("click", function () {
+            currentFilters = {
+                documentId: $("#scrapDocumentIDFilter").val().trim(),
+                partNumber: $("#scrapPartNumberFilter").val().trim(),
+                supervisor: $("#scrapSupervisorFilter").val().trim(),
+                totalFrom: $("#scrapStartFromFilter").val().trim(),
+                totalTo: $("#scrapEndTotalFilter").val().trim()
+            };
+
+            loadData(1, 5, currentFilters); // Apply filter mulai dari halaman 1
+        });
+
+        // Reset Filters
+        $("#resetFiltersScrapHeadCountButtonScrapDetail").on("click", function () {
+            $("#scrapDocumentIDFilter").val("");
+            $("#scrapPartNumberFilter").val("");
+            $("#scrapSupervisorFilter").val("");
+            $("#scrapStartFromFilter").val("");
+            $("#scrapEndTotalFilter").val("");
+
+            currentFilters = {}; // Kosongkan filter
+            loadData(1, 5, currentFilters); // Reload data tanpa filter
+        });
+
+
+        async function loadScrapTotals(kpk = null) {
+            try {
+                const response = await $.ajax({
+                    url: urlGetScrapTotals,
+                    type: 'GET',
+                    data: {
+                        "statusList[0]": 1,
+                        "statusList[1]": 4,
+                        "statusList[2]": 9,
+                        approverKpk: kpk || "" // ⬅️ tambahkan filter KPK
+                    },
+                    dataType: 'json'
+                });
+
+                // Update DOM dengan data dari server
+                $("#totalValueAll").empty().text(formatRupiahShort(response.TotalValueAll));
+                $("#totalQtyAll").empty().text(response.TotalQtyAll.toLocaleString("id-ID"));
+                $("#totalValuePending").empty().text(formatRupiahShort(response.TotalValuePending));
+                $("#totalValueApprove").empty().text(formatRupiahShort(response.TotalValueApproved));
+
+            } catch (err) {
+                console.error("Error fetch scrap totals:", err);
+            }
+        }
+        function loadSubordinates(kpk) {
+            $.ajax({
+                url: urlScrapSubordinateList,
+                type: 'GET',
+                data: { kpk: kpk },
+                success: function (response) {
+                    let $list = $("#subordinateList");
+                    $list.empty();
+
+                    if (response.error) {
+                        $list.append(`<li class="px-3 py-1 text-red">${response.message}</li>`);
+                        return;
+                    }
+
+                    if (response.length === 0) {
+                        $list.append(`<li class="px-3 py-1 text-muted">No subordinates</li>`);
+                        return;
+                    }
+
+                    // === 🔑 Tambahkan tombol "Kembali ke Supervisor" di paling atas
+                    $list.append(`
+                <li>
+                    <a href="javascript:;"
+                       class="bg-info block px-3 py-2 rounded font-semibold
+                              hover:bg-success hover:text-black
+                              transition duration-150 cursor-pointer"
+                       data-kpk="${kpk}">
+                       ⬅ Default
+                    </a>
+                </li>
+                <hr class="my-1 border-muted">
+            `);
+
+                    // === Loop subordinate
+                    response.forEach(emp => {
+                        $list.append(`
+                    <li>
+                        <a href="javascript:;"
+                           class="block px-3 py-2 rounded
+                                  hover:bg-info text-black hover:text-info
+                                  transition duration-150 cursor-pointer"
+                           data-kpk="${emp.Kpk}">
+                           ${emp.Name}
+                        </a>
+                    </li>
+                `);
+                    });
+
+                    // === Event click di semua item ===
+                    $list.find("a").on("click", function () {
+                        let selectedKpk = $(this).data("kpk");
+                        currentSubordinateKpk = selectedKpk;
+                        currentScrapCode = null;  // reset kalau pindah ke subordinate
+                        let activePeriod = $(".periodBtn.active").data("period") || "weekly";
+                        loadScrapChart(activePeriod, selectedKpk, null);
+                    });
+
+                },
+                error: function () {
+                    $("#subordinateList").html(`<li class="px-3 py-1 text-red-500">Failed to load</li>`);
+                }
+            });
+        }
+
+        function loadScrapCodesResponsible(kpk) {
+            let $list = $("#scrapCodeSectionReportingList");
+            $list.html(`<li class="px-3 py-1 text-muted">Loading...</li>`);
+
+            $.ajax({
+                url: urlScrapResponsibleArea,
+                type: "GET",
+                data: { kpk: kpk },
+                success: function (response) {
+                    $list.empty();
+
+                    if (!response.success) {
+                        $list.append(`<li class="px-3 py-1 text-red-500">${response.message}</li>`);
+                        return;
+                    }
+
+                    if (!response.scrapCodes || response.scrapCodes.length === 0) {
+                        $list.append(`<li class="px-3 py-1 text-gray-500">No Scrap Codes</li>`);
+                        return;
+                    }
+
+                    // Loop scrap codes
+                    response.scrapCodes.forEach(code => {
+                        $list.append(`
+                    <li>
+                        <a href="javascript:;"
+                           class="block px-3 py-2 rounded text-black hover:bg-info/[0.85]
+                                  transition duration-150 cursor-pointer"
+                           data-code="${code}">
+                           ${code}
+                        </a>
+                    </li>
+                `);
+                    });
+
+                    $list.find("a").on("click", function () {
+                        let selectedCode = $(this).data("code");
+                        currentScrapCode = selectedCode;
+                        currentSubordinateKpk = null; // reset kalau pindah ke scrapCode
+                        let activePeriod = $(".periodBtn.active").data("period") || "weekly";
+                        loadScrapChart(activePeriod, null, selectedCode);
+                    });
+
+                },
+                error: function () {
+                    $list.html(`<li class="px-3 py-1 text-red-500">Failed to load</li>`);
+                }
+            });
+        }
+
+
+        let scrapChart = null;
+        let monthOffsetStart = 0; // untuk simpan offset bulan aslinya
+
+        function loadScrapChart(period, subordinateKpk, scrapCode, monthClicked = null) {
+            $.ajax({
+                url: urlScrapChartSubordinate,
+                type: 'GET',
+                traditional: true,
+                data: {
+                    period: period,
+                    supervisorKpk: scrapCode ? null : (subordinateKpk || kpk),
+                    scrapCode: scrapCode || null,
+                    statusList: [1, 4, 9],
+                    monthClicked: monthClicked
+                },
+                success: function (response) {
+                    var data = response.Data || [];
+
+                    // === 📆 Setup categories ===
+                    var categories = [];
+                    if (period === "weekly") {
+                        categories = monthClicked !== null
+                            ? ["Week 1", "Week 2", "Week 3", "Week 4"]
+                            : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+                    } else if (period === "monthly") {
+                        categories = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    } else if (period === "yearly") {
+                        const currentYear = new Date().getFullYear();
+                        for (let i = currentYear - 4; i <= currentYear; i++) {
+                            categories.push(i.toString());
+                        }
+                    }
+
+                    // === 📊 Build Series ===
+                    var series = [];
+
+                    const processData = (arr, nameKey) => {
+                        arr.forEach(function (item) {
+                            const values = new Array(categories.length).fill(0);
+                            item.ScrapData.forEach(function (scr) {
+                                // ✅ handle dua mode struktur JSON
+                                let createdRaw = scr.CreatedDateParsed || scr.DocumentData?.CreatedDateParsed;
+                                const created = parseDotNetDate(createdRaw);
+                                if (!created) return;
+
+                                const totalValue = scr.TotalValue || scr.DocumentData?.TotalValue || 0;
+
+                                if (period === "weekly") {
+                                    if (monthClicked !== null && created.getMonth() === monthClicked) {
+                                        const week = Math.floor((created.getDate() - 1) / 7);
+                                        if (week >= 0 && week < values.length)
+                                            values[week] += totalValue;
+                                    } else if (monthClicked === null) {
+                                        const day = created.getDay();
+                                        const index = (day === 0) ? 6 : day - 1;
+                                        values[index] += totalValue;
+                                    }
+                                } else if (period === "monthly") {
+                                    values[created.getMonth()] += totalValue;
+                                } else if (period === "yearly") {
+                                    const yearIndex = categories.indexOf(created.getFullYear().toString());
+                                    if (yearIndex !== -1) values[yearIndex] += totalValue;
+                                }
+                            });
+
+                            series.push({ name: item[nameKey], data: values });
+                        });
+                    };
+
+
+                    if (scrapCode)
+                        processData(data, "LeaderName");
+                    else
+                        processData(data, "SubordinateName");
+
+                    // === 🎨 Warna konsisten ===
+                    const colors = series.map(s => getColorByName(s.name));
+                    // ==== ✅ POTONG WEEKLY – tampilkan 3 hari TERAKHIR YANG ADA DATA
+                    // ==== ✅ POTONG WEEKLY – tampilkan 3 hari TERAKHIR
+                    if (period === "weekly" && monthClicked === null) {
+
+                        const nonZeroIndexes = [];
+
+                        categories.forEach((_, idx) => {
+                            if (series.some(s => s.data[idx] > 0)) {
+                                nonZeroIndexes.push(idx);
+                            }
+                        });
+
+                        // ✅ trigger berdasarkan JUMLAH SERIES
+                        if (series.length > 5 && nonZeroIndexes.length > 0) {
+
+                            const lastThreeIndexes = nonZeroIndexes.slice(-3);
+
+                            categories = lastThreeIndexes.map(i => categories[i]);
+
+                            series = series.map(s => ({
+                                name: s.name,
+                                data: lastThreeIndexes.map(i => s.data[i])
+                            }));
+                        }
+                    }
+
+
+                    // === 📉 Tampilkan hanya 3 bulan terakhir (dengan offset disimpan) ===
+                    monthOffsetStart = 0;
+                    if (period === "monthly" && categories.length > 3) {
+                        const nowMonth = new Date().getMonth(); // 0–11
+                        monthOffsetStart = Math.max(nowMonth - 2, 0);
+                        const end = nowMonth + 1;
+                        categories = categories.slice(monthOffsetStart, end);
+                        series = series.map(s => ({
+                            name: s.name,
+                            data: s.data.slice(monthOffsetStart, end)
+                        }));
+                    }
+
+                    // === 🚫 Tangani jika data kosong ===
+                    const allZero = series.length === 0 || series.every(s => s.data.every(v => v === 0));
+                    if (allZero) {
+                        $("#chart5").html("<div style='text-align:center;color:gray;padding:50px;'>No data available</div>");
+                        return;
+                    }
+
+                    // === 🧹 Bersihkan chart lama ===
+                    if (scrapChart) {
+                        scrapChart.destroy();
+                        scrapChart = null;
+                    }
+                    $("#chart5").html("");
+
+                    // === 📈 Render Chart ===
+                    const options = {
+                        series: series,
+                        chart: {
+                            type: 'bar',
+                            height: 270,
+                            animations: { enabled: true },
+                            events: {
+                                dataPointSelection: function (event, chartContext, config) {
+                                    if (period === "monthly") {
+                                        // ⚠️ Gunakan offset agar bulan klik sesuai bulan asli
+                                        const realMonth = monthOffsetStart + config.dataPointIndex;
+                                        loadScrapChart("weekly", subordinateKpk, scrapCode, realMonth);
+                                    }
+                                }
+                            }
+                        },
+                        plotOptions: {
+                            bar: { horizontal: false, columnWidth: '55%', endingShape: 'rounded' }
+                        },
+                        dataLabels: { enabled: false },
+                        stroke: { show: true, width: 2, colors: ['transparent'] },
+                        colors: colors,
+                        xaxis: { categories: categories },
+                        yaxis: {
+                            tickAmount: 6,
+                            labels: { formatter: val => formatRupiah(val) }
+                        },
+                        tooltip: {
+                            y: { formatter: val => formatRupiah(val) },
+                            x: {
+                                formatter: function (val) {
+                                    if (period === "monthly") return val + " (click to view weeks)";
+                                    return val;
+                                }
+                            }
+                        },
+                        fill: { opacity: 1 }
+                    };
+
+                    scrapChart = new ApexCharts(document.querySelector("#chart5"), options);
+                    scrapChart.render();
+                },
+                error: function (err) {
+                    console.error("Error load chart:", err);
+                    $("#chart5").html("<div style='text-align:center;color:red;padding:50px;'>Error loading chart</div>");
+                }
+            });
+        }
+       
+
+
+
+
+
+        function loadData(pageNumber = 1, pageSize = 5, filters = currentFilters) {
+            const statusList = [1, 4, 5, 9];
+
+            $.ajax({
+                url: urlScrapSubordinateListPartDetail,
+                type: "GET",
+                traditional: true,
+                data: {
+                    supervisorKpk: kpk,
+                    statusList: statusList,
+                    pageNumber: pageNumber,
+                    pageSize: pageSize,
+                    documentId: filters.documentId || "",
+                    partNumber: filters.partNumber || "",
+                    supervisorName: filters.supervisor || "",
+                    totalFrom: filters.totalFrom || "",
+                    totalTo: filters.totalTo || ""
+                },
+                success: function (response) {
+                    const tbody = $("#subordinateScrapPartList");
+                    tbody.empty();
+
+                    const data = response.Data;
+                    if (!data || data.length === 0) {
+                        tbody.append(`
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-3">No data found</td>
+                    </tr>
+                `);
+                        renderPagination(0, pageNumber, pageSize);
+                        return;
+                    }
+
+                    // Flatten document + part list
+                    let flatParts = [];
+                    data.forEach(doc => {
+                        doc.Parts.forEach(part => {
+                            flatParts.push({
+                                ScrapId: doc.ScrapId,
+                                PartNum: part.PartNum,
+                                Description: part.Description,
+                                Qty: part.Qty,
+                                Value: part.Value,
+                                Status: part.Status,
+                                Supervisor: doc.Approvals.map(a => a.ApproverName).join(", ")
+                            });
+                        });
+                    });
+
+                    // Render each row
+                    flatParts.forEach(part => {
+                        const statusBadge = statusTextPartList(part.Status); // return HTML badge
+                        tbody.append(`
+                    <tr>
+                        <td>${part.ScrapId}</td>
+                        <td>${part.PartNum}</td>
+                        <td>${part.Description}</td>
+                        <td>${part.Qty.toLocaleString("id-ID")}</td>
+                        <td>${formatRupiah(part.Value)}</td>
+                        <td>${part.Supervisor}</td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `);
+                    });
+
+                    renderPagination(response.TotalParts, pageNumber, pageSize);
+                },
+                error: function (err) {
+                    console.error(err);
+                    $("#subordinateScrapPartList").html(`
+                <tr>
+                    <td colspan="7" class="text-center text-danger py-3">
+                        Error loading data
+                    </td>
+                </tr>
+            `);
+                }
+            });
+        }
+
+
+
+        function loadTopScrapParts(kpk) {
+            const statusList = [1, 4, 9]; // filter status
+
+            $.ajax({
+                url: urlMostScrapPartNumber,
+                type: 'GET',
+                traditional: true, // supaya statusList array terbaca di query string
+                data: {
+                    supervisorKpk: kpk,
+                    statusList: statusList
+                },
+                success: function (response) {
+                    const container = $("#mostScrapPartNumber");
+                    container.empty();
+
+                    if (!response.Data || response.Data.length === 0) {
+                        container.append(`<div class="text-center text-muted">No data found</div>`);
+                        return;
+                    }
+
+                    // Urutkan data berdasarkan TotalValue descending
+                    const sortedData = response.Data.sort((a, b) => b.TotalValue - a.TotalValue);
+
+                    // Ambil top 4
+                    sortedData.slice(0, 4).forEach(part => {
+                        container.append(`
+                <div class="flex gap-2 p-3 bg-gray-100 rounded-md dark:bg-darkborder/50">
+                    <span class="flex items-center justify-center rounded size-10 text-purple bg-purple/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-8-4.62a2 2 0 0 0-2 0l-8 4.62A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l8 4.62a2 2 0 0 0 2 0l8-4.62A2 2 0 0 0 21 16zm-9 4.18L5 16V8l7 4.18V20.18zm2 0V12.18L19 8v8l-6 4.18z"/>
+                        </svg>
+                    </span>
+                    <div class="overflow-hidden grow">
+                        <h6 class="mb-1 text-black capitalize truncate dark:text-white/80">
+                            <a href="#!">${part.Description}</a>
+                        </h6>
+                        <ul class="flex items-center gap-3 text-xs text-muted">
+                            <li>Quantity: ${part.TotalQty}</li>
+                            <li>Part Number: ${part.PartNum}</li>
+                        </ul>
+                    </div>
+                    <h6 class="font-bold text-black rtl:float-left ltr:float-right dark:text-white/80">
+                        ${formatRupiah(part.TotalValue)}
+                    </h6>
+                </div>
+            `);
+                    });
+                },
+                error: function (err) {
+                    console.error(err);
+                    $("#mostScrapPartNumber").html(`<div class="text-center text-danger">Error loading data</div>`);
+                }
+            });
+        }
+
+        function loadScrapRemarksChart() {
+            $.ajax({
+                url: urlMostScrapRemarks,
+                type: 'GET',
+                traditional: true,
+                data: {
+                    statusList: [1, 4, 9],
+                    supervisorKpk: kpk
+                },
+                success: function (response) {
+                    if (!response.Data || response.Data.length === 0) {
+                        $("#chart6").html(`
+                    <div class="flex justify-center items-center h-[350px] text-gray-500 text-sm">
+                        No scrap remarks found.
+                    </div>
+                `);
+                        return;
+                    }
+
+                    // Urutkan berdasarkan TotalValue descending
+                    const top5 = response.Data
+                        .sort((a, b) => b.TotalValue - a.TotalValue)
+                        .slice(0, 5);
+
+                    if (top5.length === 0) {
+                        $("#chart6").html(`
+                    <div class="flex justify-center items-center h-[350px] text-gray-500 text-sm">
+                        No scrap remarks found.
+                    </div>
+                `);
+                        return;
+                    }
+
+                    const options = {
+                        chart: {
+                            type: 'donut',
+                            height: 350
+                        },
+                        labels: top5.map(x => x.Remarks),
+                        series: top5.map(x => x.TotalValue),
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            y: {
+                                formatter: function (val) {
+                                    return formatRupiah(val); // 🔹 tampil Rupiah
+                                }
+                            }
+                        }
+                    };
+
+                    $("#chart6").html("");
+                    const chart = new ApexCharts(document.querySelector("#chart6"), options);
+                    chart.render();
+                },
+                error: function (err) {
+                    console.error(err);
+                    $("#chart6").html(`
+                <div class="flex justify-center items-center h-[350px] text-red-500 text-sm">
+                    Failed to load chart data.
+                </div>
+            `);
+                }
+            });
+        }
+
+
+
+
+
+    </script>
+}

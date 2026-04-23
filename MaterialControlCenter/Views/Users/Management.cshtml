@@ -1,0 +1,815 @@
+﻿
+@{
+    ViewBag.Title = "Users";
+    ViewBag.pTitle = "Management";
+    ViewBag.xData = "users";
+    ViewBag.ActiveItem = "settings";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Start All Card -->
+<div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-1">
+        <div class="card">
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 grow">List</h2>
+                <a href="#" id="filtersScrapNotice" class="px-3 py-1.5 rounded-md text-xs border border-black/20 dark:border-darkborder text-muted"><i class="align-bottom ltr:mr-1 rtl:ml-1 ri-filter-line"></i> Filters</a>
+            </div>
+            <div id="filterList" class="flex flex-wrap gap-4 justify-between hidden">
+                <!-- Card 1 -->
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">KPK</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="managementUserKpkFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Kpk">
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Name</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="managementUserNameFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Name">
+                        </div>
+                    </form>
+                </div>
+                <div class="flex w-full justify-end gap-2 mt-2">
+                    <!-- Apply Filters icon -->
+                    <button id="applyFiltersButton"
+                            class="px-2 py-1 bg-success text-white rounded shadow hover:bg-success/[0.85] transition flex items-center justify-center text-sm">
+                        <i class="ri-check-line text-sm mr-1"></i>
+                        Apply
+                    </button>
+
+                    <!-- Reset Filters icon -->
+                    <button id="resetFiltersButton"
+                            class="px-2 py-1 bg-danger text-white rounded shadow hover:bg-danger/[0.85] transition flex items-center justify-center text-sm">
+                        <i class="ri-refresh-line text-sm mr-1"></i>
+                        Reset
+                    </button>
+                </div>
+
+
+
+            </div>
+            <button id="addUserButton" type="button" class="btn bg-success border-success text-white hover:bg-success/[0.85] hover:border-success/[0.85]">Add User</button>
+            <div class="overflow-auto">
+                <table class="min-w-[640px] w-full">
+                    <thead>
+                        <tr class="ltr:text-left rtl:text-right">
+                            <th>Kpk</th>
+                            <th>Name</th>
+                            <th>Facility</th>
+                            <th>TC</th>
+                            <th>Code Responsible</th>
+
+                            <th>Role</th>
+                            <th>Action</th>
+                            <th>Availability</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userManagementTable">
+                        <tr class="text-muted">
+                            <td colspan="3" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                            <td colspan="3" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                            <td colspan="3" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <ul id="buttonPagination" class="inline-flex items-center gap-1 m-auto mb-4">
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalsUpdateApproval"
+     class="fixed inset-0 bg-black/80 z-[99999] hidden overflow-y-auto dark:bg-dark/90">
+    <div class="flex items-start justify-center min-h-screen px-4" onclick="closeModal(event)">
+        <div class="relative w-full max-w-lg p-0 my-8 overflow-hidden bg-white border rounded-xl shadow-lg border-black/10 dark:bg-darklight dark:border-darkborder"
+             onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-3 bg-white border-b border-black/10 dark:bg-darklight dark:border-darkborder">
+                <h5 id="modalUserName" class="text-lg font-semibold dark:text-white">Update User</h5>
+                <button type="button" class="text-muted hover:bg-danger/[0.85] text-black dark:hover:text-white"
+                        onclick="closeModal()">
+                    ✕
+                </button>
+            </div>
+
+            <div class="p-5 space-y-5">
+                <!-- Facilities & TC (Side by Side) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Facility -->
+                    <div>
+                        <p class="mb-2 text-sm font-semibold dark:text-white">Facility</p>
+                        <div id="facilityCheckboxes" class="grid grid-cols-2 gap-2">
+                            <!-- Checkbox facility akan diinject dari JS -->
+                        </div>
+                    </div>
+
+                    <!-- TC -->
+                    <div>
+                        <p class="mb-2 text-sm font-semibold dark:text-white">TC</p>
+                        <div id="tcCheckboxes" class="grid grid-cols-2 gap-2">
+                            <!-- Checkbox TC akan diinject dari JS -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Scrap Code Responsible (Full Width) -->
+                <div class="w-full">
+                    <p class="mb-3 text-sm font-semibold">Scrap Code Responsible</p>
+                    <div id="addScrapCodeResponsible"
+                         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-3 border border-black/10 rounded-lg bg-gray-50 dark:bg-dark/40 max-h-60 overflow-y-auto">
+                        <!-- Checkbox Scrap Code diinject dari JS -->
+                    </div>
+                </div>
+
+
+                <!-- Role -->
+                <div>
+                    <p class="mb-2 text-sm font-semibold dark:text-white">Role</p>
+                    <select id="roleSelect"
+                            class="form-select w-full rounded border border-black/10 dark:border-darkborder">
+                        <!-- Role akan diinject dari JS -->
+                    </select>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="flex items-center justify-end gap-3">
+                    <button type="button"
+                            class="btn bg-danger border-danger text-white hover:bg-danger/[0.85]"
+                            onclick="closeModal()">
+                        Discard
+                    </button>
+
+                    <button id="saveUpdateApproval" type="button"
+                            class="btn bg-purple border-purple text-white hover:bg-purple/[0.85]"
+                            onclick="saveUserUpdate()">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="addUserModal" class="fixed inset-0 bg-black/80 z-[99999] hidden overflow-y-auto">
+    <div class="flex items-start justify-center min-h-screen px-4" onclick="closeAddUserModal(event)">
+        <div class="relative w-full max-w-lg p-0 my-8 overflow-hidden bg-white border rounded-xl shadow-lg border-black/10"
+             onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-3 bg-white border-b border-black/10">
+                <h5 class="text-lg font-semibold">Add New User</h5>
+                <button type="button" class="text-black hover:bg-danger/[0.85]" onclick="closeAddUserModal()">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-5 space-y-5">
+                <!-- KPK -->
+                <!-- Supervisor / KPK Autocomplete -->
+                <div>
+                    <label class="mb-2 text-sm font-semibold">KPK</label>
+
+                    <!-- hidden untuk menyimpan KPK -->
+                    <input type="hidden" id="addUserKpk" name="addUserKpk" />
+
+                    <!-- input untuk autocomplete nama/KPK -->
+                    <input type="text" id="addUserName" name="addUserName" placeholder="Search Employee..."
+                           class="form-input w-full rounded border border-black/10" />
+
+                    <!-- dropdown hasil search -->
+                    <div id="addUserResults" class="dropdown-results absolute w-100 bg-white border border-muted rounded mt-1 z-50 hidden"
+                         style="max-height: 200px; overflow-y: auto;"></div>
+                </div>
+
+
+                <!-- Facilities & TC (Side by Side) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Facility -->
+                    <div>
+                        <p class="mb-2 text-sm font-semibold">Facility</p>
+                        <div id="addFacilityCheckboxes" class="grid grid-cols-2 gap-2">
+                            <!-- Checkbox facility diinject dari JS -->
+                        </div>
+                    </div>
+
+                    <!-- TC -->
+                    <div>
+                        <p class="mb-2 text-sm font-semibold">TC</p>
+                        <div id="addTcCheckboxes" class="grid grid-cols-2 gap-2">
+                            <!-- Checkbox TC diinject dari JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full">
+                    <p class="mb-3 text-sm font-semibold">Scrap Code Responsible</p>
+                    <div id="addUserScrapCodeResponsible"
+                         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-3 border border-black/10 rounded-lg bg-gray-50 dark:bg-dark/40 max-h-60 overflow-y-auto">
+                        <!-- Checkbox Scrap Code diinject dari JS -->
+                    </div>
+                </div>
+
+                <!-- Role -->
+                <div>
+                    <p class="mb-2 text-sm font-semibold">Role</p>
+                    <select id="addRoleSelect" class="form-select w-full rounded border border-black/10">
+                        <!-- Role diinject dari JS -->
+                    </select>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="flex items-center justify-end gap-3">
+                    <button type="button" class="btn bg-danger border-danger text-white hover:bg-danger/[0.85]"
+                            onclick="closeAddUserModal()">
+                        Discard
+                    </button>
+                    <button type="button"
+                            id="saveAddUser"
+                            class="btn bg-purple border-purple text-white hover:bg-purple/[0.85]"
+                            onclick="saveAddUser()">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- End All Card -->
+@section scripts{
+    <script src="~/assets/js/main.js"></script>
+    <script>
+        const urlGetAllUsers = '@Url.Action("GetAllUsersWithRoleName", "ListOfData")';
+      
+        const tcs = ["20", "23", "26", "22"];
+        let roles = []; // akan diambil dari API
+        let selectedUser = null;
+        let currentUsers = [];
+
+
+        $(document).ready(function () {
+            loadData(1);
+          
+
+            filterButton.addEventListener("click", function (e) {
+                e.preventDefault();
+                filterList.classList.toggle("hidden");
+            });
+
+        });
+        $("#applyFiltersButton").on("click", function () {
+            const kpk = $("#managementUserKpkFilter").val();
+            const name = $("#managementUserNameFilter").val();
+            loadData(1, 10, kpk, name);
+        });
+
+        // Reset filter
+        $("#resetFiltersButton").on("click", function () {
+            $("#managementUserKpkFilter").val("");
+            $("#managementUserNameFilter").val("");
+            loadData(1, 10, "", "");
+        });
+        function loadData(pageNumber = 1, pageSize = 10, kpk = "", name = "") {
+            $.ajax({
+                url: urlGetAllUsers,
+                type: 'GET',
+                data: { pageNumber, pageSize, kpk, name },
+                success: function (response) {
+                    if (response.success) {
+                        renderTable(response.data);
+                        renderPagination(response.totalCount, response.currentPage, pageSize);
+                    }
+                },
+                error: function () {
+                    alert("Gagal mengambil data.");
+                }
+            });
+        }
+
+
+
+        function renderTable(users) {
+            currentUsers = users;
+            const tableBody = document.getElementById("userManagementTable");
+
+            tableBody.innerHTML = ""; // clear table body dulu
+
+            let rows = "";
+            users.forEach((user, index) => {
+                // Facility & TC → jika kosong, tampilkan badge danger
+                let facilities = "";
+                if (Array.isArray(user.Facility) && user.Facility.length > 0) {
+                    facilities = user.Facility.join(', ');
+                } else {
+                    facilities = `<span class="inline-flex items-center rounded shadow-md shadow-danger/50 bg-danger text-white text-xs px-2 py-0.5">
+                No Facility Assigned
+            </span>`;
+                }
+
+                let tcs = "";
+                if (Array.isArray(user.TC) && user.TC.length > 0) {
+                    tcs = user.TC.join(', ');
+                } else {
+                    tcs = `<span class="inline-flex items-center rounded shadow-md shadow-danger/50 bg-danger text-white text-xs px-2 py-0.5">
+                No TC Assigned
+            </span>`;
+                }
+
+                let scrapCodeResponsible = "";
+                if (Array.isArray(user.ScrapCodeResponsible) && user.ScrapCodeResponsible.length > 0) {
+                    ScrapCodeResponsible = user.ScrapCodeResponsible.join(', ');
+                } else {
+                    ScrapCodeResponsible = `<span class="inline-flex items-center rounded shadow-md shadow-danger/50 bg-danger text-white text-xs px-2 py-0.5">
+                                No Specific Scrap Code Assigned
+                            </span>`;
+                }
+
+                const checked = user.IsActive ? 'checked' : ''; // toggle aktif jika IsActive = true
+                const roleBadge = getRoleBadge(user.RoleId);
+                rows += `
+                <tr class="border-b">
+                    <td class="px-2 py-1">${user.Kpk ?? ""}</td>
+                    <td class="px-2 py-1">${user.Name ?? ""}</td>
+                    <td class="px-2 py-1">${facilities}</td>
+                    <td class="px-2 py-1">${tcs}</td>
+                      <td class="px-2 py-1">${ScrapCodeResponsible}</td>
+
+                    <td class="px-2 py-1">
+                        <span class="${roleBadge.badgeClass} ${roleBadge.textColor} px-2 py-1 rounded">
+                            ${user.RoleName ?? "N/A"}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="flex items-center px-3 py-1 text-sm font-medium text-black bg-info rounded-lg shadow hover:bg-info/[0.85] dark:text-white/80 dark:bg-info dark:hover:bg-info/[0.85]"
+                        onclick="editUser('${user.Kpk}')">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4 mr-1">
+                                <path fill="currentColor" d="M5 18.89H6.41421L15.7279 9.57629L14.3137 8.16207L5 17.4758V18.89ZM21 20.89H3V16.6474L16.435 3.21233C16.8256 2.8218 17.4587 2.8218 17.8492 3.21233L20.6777 6.04075C21.0682 6.43128 21.0682 7.06444 20.6777 7.45497L9.24264 18.89H21V20.89ZM15.7279 6.74786L17.1421 8.16207L18.5563 6.74786L17.1421 5.33365L15.7279 6.74786Z"></path>
+                            </svg>
+                            Edit
+                        </button>
+
+                    </td>
+                    <td class="px-2 py-1">
+                          <div class="inline-block togglebutton">
+                              <label for="toggle${index}" class="flex items-center cursor-pointer">
+                                  <div class="relative">
+                                      <input type="checkbox" id="toggle${index}" class="sr-only peer" ${checked}>
+                                      <!-- Background toggle -->
+                                      <div class="block band w-[54px] h-[29px] rounded-full bg-danger peer-checked:bg-success transition"></div>
+                                      <!-- Dot -->
+                                      <div class="dot absolute left-[3px] top-[2px] bg-white w-6 h-6 rounded-full transition peer-checked:translate-x-[25px]"></div>
+                                  </div>
+                              </label>
+                          </div>
+                    </td>
+                </tr>`;
+            });
+
+            tableBody.innerHTML = rows;
+        }
+
+
+        async function editUser(kpk) {
+            try {
+                const user = currentUsers.find(u => u.Kpk === kpk);
+                if (!user) {
+                    alert("User tidak ditemukan di halaman ini.");
+                    return;
+                }
+
+                selectedUser = user;
+                document.getElementById("modalUserName").textContent = `Update User - ${user.Name}`;
+
+                // ✅ Generate facility checkboxes
+                const facilityContainer = document.getElementById("facilityCheckboxes");
+                facilityContainer.classList.add("grid", "grid-cols-4", "gap-2");
+                facilityContainer.innerHTML = facilities.map(fac => `
+                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" value="${fac}" class="form-checkbox text-purple"
+                               ${user.Facility?.includes(fac) ? "checked" : ""}/>
+                        <span>${fac}</span>
+                    </label>
+                `).join("");
+
+                // ✅ Generate TC checkboxes
+                const tcContainer = document.getElementById("tcCheckboxes");
+                tcContainer.classList.add("grid", "grid-cols-4", "gap-2");
+                tcContainer.innerHTML = tcs.map(tc => `
+                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" value="${tc}" class="form-checkbox text-purple"
+                               ${user.TC?.includes(tc) ? "checked" : ""}/>
+                        <span>${tc}</span>
+                    </label>
+                `).join("");
+
+                // ✅ Generate Scrap Code Responsible (AJAX berdasarkan facility)
+                const scrapContainer = document.getElementById("addScrapCodeResponsible");
+
+                // Tambah grid class di JS untuk memastikan styling tidak hilang
+                scrapContainer.classList.add("grid", "grid-cols-4", "gap-2");
+                scrapContainer.innerHTML = `<p class="col-span-4 text-sm text-gray-500">Loading scrap codes...</p>`;
+
+                if (user.Facility) {
+                    try {
+                        const response = await fetch(`@Url.Action("getScrapCodeByLocation", "DataForms")?location=${encodeURIComponent(user.Facility)}`);
+                        const result = await response.json();
+
+                        if (result.success && result.data.length > 0) {
+                            scrapContainer.innerHTML = result.data.map(sc => `
+                                <label class="inline-flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" value="${sc.Code}" class="form-checkbox text-purple"
+                                           ${user.ScrapCodeResponsible?.includes(sc.Code) ? "checked" : ""}/>
+                                    <span>${sc.Code}</span>
+                                </label>
+                            `).join("");
+                        } else {
+                            scrapContainer.innerHTML = `<p class="text-sm text-danger col-span-4">No scrap codes found for this facility</p>`;
+                        }
+                    } catch (scrapErr) {
+                        console.error("Error fetching scrap codes:", scrapErr);
+                        scrapContainer.innerHTML = `<p class="text-sm text-danger col-span-4">Failed to load scrap codes</p>`;
+                    }
+                } else {
+                    scrapContainer.innerHTML = `<p class="text-sm text-muted col-span-4">No facility selected</p>`;
+                }
+
+
+                // ✅ Ambil roles jika belum ada
+                if (roles.length === 0) {
+                    const roleRes = await fetch('@Url.Action("GetAllRoles", "ListOfData")');
+                    roles = await roleRes.json();
+                }
+
+                const roleSelect = document.getElementById("roleSelect");
+                roleSelect.innerHTML = roles.map(role => `
+                    <option value="${role.RoleId}" ${role.RoleId === user.RoleId ? "selected" : ""}>
+                        ${role.Name}
+                    </option>
+                `).join("");
+
+                document.getElementById("modalsUpdateApproval").classList.remove("hidden");
+            } catch (err) {
+                console.error("Error:", err);
+                alert("Terjadi kesalahan saat memuat data user.");
+            }
+        }
+
+
+        function closeModal(event) {
+            const modal = document.getElementById("modalsUpdateApproval");
+
+            // Close only if:
+            // 1. No event provided (explicit close button)
+            // 2. Clicked outside the modal (backdrop)
+            if (!event || event.target.id === "modalsUpdateApproval") {
+                // ✅ Sembunyikan modal pakai class hidden agar konsisten dengan open
+                modal.classList.add("hidden");
+
+                // Reset content supaya bersih
+                document.getElementById("facilityCheckboxes").innerHTML = "";
+                document.getElementById("tcCheckboxes").innerHTML = "";
+                document.getElementById("roleSelect").innerHTML = "";
+                document.getElementById("modalUserName").textContent = "Update User";
+            }
+        }
+         // 🔄 Fungsi untuk update scrap codes setiap kali facility dipilih
+            // 🔄 Fungsi untuk update scrap codes setiap kali facility dipilih
+
+
+
+        // 🔘 Event: klik Add User
+        document.getElementById("addUserButton").addEventListener("click", async () => {
+            initAddUserAutocomplete();
+
+            // ✅ Inject Facilities
+            const facilityContainer = document.getElementById("addFacilityCheckboxes");
+            facilityContainer.innerHTML = facilities.map(fac => `
+                <label class="inline-flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" value="${fac}" class="form-checkbox text-purple addFacilityCb"/>
+                    <span>${fac}</span>
+                </label>
+            `).join("");
+
+            // Pasang listener untuk setiap facility checkbox
+            facilityContainer.querySelectorAll(".addFacilityCb").forEach(cb => {
+                cb.addEventListener("change", updateScrapCodesBasedOnFacilities);
+            });
+
+            // ✅ Inject TC
+            document.getElementById("addTcCheckboxes").innerHTML = tcs.map(tc => `
+                <label class="inline-flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" value="${tc}" class="form-checkbox text-purple"/>
+                    <span>${tc}</span>
+                </label>
+            `).join("");
+
+            // ✅ Inject Roles
+            if (roles.length === 0) {
+                const roleRes = await fetch('@Url.Action("GetAllRoles", "ListOfData")');
+                roles = await roleRes.json();
+            }
+            document.getElementById("addRoleSelect").innerHTML = roles.map(role => `
+                <option value="${role.RoleId}">${role.Name}</option>
+            `).join("");
+
+            // ✅ Kosongkan scrap codes dulu
+            document.getElementById("addScrapCodeResponsible").innerHTML = `
+                <p class="text-gray-500 text-sm col-span-4">
+                    Select facility to load scrap codes...
+                </p>`;
+
+            // ✅ Show modal
+            document.getElementById("addUserModal").classList.remove("hidden");
+        });
+
+
+
+        // Close modal
+        function closeAddUserModal(event) {
+            const modal = document.getElementById("addUserModal");
+
+            // Close only if:
+            // 1. explicit close button (event undefined) OR
+            // 2. clicked on backdrop (id modal)
+            if (!event || event.target.id === "addUserModal") {
+                // sembunyikan modal
+                modal.classList.add("hidden");
+
+                // reset semua input & select
+                document.getElementById("addFacilityCheckboxes").innerHTML = "";
+                document.getElementById("addTcCheckboxes").innerHTML = "";
+                document.getElementById("addRoleSelect").innerHTML = "";
+                document.getElementById("addUserKpk").value = "";       // hidden KPK
+                document.getElementById("addUserName").value = "";      // display name input
+                document.getElementById("addUserResults").innerHTML = ""; // kosongkan dropdown hasil autocomplete
+                document.getElementById("addUserResults").style.display = "none"; // sembunyikan dropdown
+            }
+        }
+
+        function initAddUserAutocomplete() {
+            const $input = $("#addUserName");
+            const $results = $("#addUserResults");
+            const $kpkHidden = $("#addUserKpk");
+
+            $input.on("input", function () {
+                const query = $(this).val().trim();
+
+                if (query.length < 3) {
+                    $results.empty().hide();
+                    $kpkHidden.val(""); // reset KPK
+                    return;
+                }
+
+                fetchData(urlGetEmployee, { keyword: query }, function (res) {
+                    $results.empty();
+
+                    if (res.success && Array.isArray(res.data)) {
+                        res.data.forEach(item => {
+                            const option = $("<div>")
+                                .addClass("dropdown-item hover:bg-success/[0.85] cursor-pointer p-2 rounded")
+                                .text(capitalizeWords(item.name) + " (" + item.kpk + ")")
+                                .on("click", function () {
+                                    $kpkHidden.val(item.kpk);                     // ✅ simpan KPK ke hidden input
+                                    $input.val(capitalizeWords(item.name));       // tampilkan nama di textbox
+                                    $results.empty().hide();
+                                });
+                            $results.append(option);
+                        });
+                        $results.show();
+                    } else {
+                        $results.hide();
+                    }
+                });
+            });
+        }
+
+
+
+        async function sendPostRequest(url, payload, options = {}) {
+            // options can have { loadingTitle, loadingText, successCallback, errorCallback }
+
+            Swal.fire({
+                title: options.loadingTitle || "Processing...",
+                text: options.loadingText || "Please wait...",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+
+                if (res.ok && result.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success",
+                        text: result.message || "Action completed successfully!",
+                        confirmButtonColor: "#6B46C1"
+                    }).then(() => {
+                        if (typeof options.successCallback === "function") {
+                            options.successCallback(result);
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Failed",
+                        text: result.message || "Failed to process request.",
+                        confirmButtonColor: "#DC2626"
+                    }).then(() => {
+                        if (typeof options.errorCallback === "function") {
+                            options.errorCallback(result);
+                        }
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Something went wrong: " + error.message,
+                    confirmButtonColor: "#DC2626"
+                });
+
+                if (typeof options.errorCallback === "function") {
+                    options.errorCallback({ success: false, message: error.message });
+                }
+            }
+        }
+
+        async function saveUserUpdate() {
+            const selectedFacilities = Array.from(document.querySelectorAll("#facilityCheckboxes input:checked")).map(cb => cb.value);
+            const selectedTCs = Array.from(document.querySelectorAll("#tcCheckboxes input:checked")).map(cb => cb.value);
+            const ScrapCodeResponsible = Array.from(document.querySelectorAll("#addScrapCodeResponsible input:checked")).map(cb => cb.value);
+            const selectedRole = document.getElementById("roleSelect").value;
+
+            const payload = {
+                Kpk: selectedUser.Kpk,
+                Facility: selectedFacilities,
+                TC: selectedTCs,
+                RoleId: selectedRole,
+                ScrapCodeResponsible: ScrapCodeResponsible
+            };
+            closeModal(); // modal langsung hilang
+            await sendPostRequest('@Url.Action("UpdateUser", "UpdateData")', payload, {
+                loadingTitle: "Updating User...",
+                loadingText: "Please wait while we save the changes.",
+                successCallback: () => {
+
+                    setTimeout(() => location.reload(), 300); // reload setelah jeda kecil
+                }
+            });
+
+        }
+       
+        async function saveAddUser() {
+            console.log("✅ Save button clicked");
+
+            // Setup Toast
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+            });
+
+            try {
+                // ✅ Ambil dari hidden input
+                const kpk = document.getElementById("addUserKpk").value.trim();
+                const roleId = document.getElementById("addRoleSelect").value;
+
+                const facilitiesChecked = Array.from(document.querySelectorAll("#addFacilityCheckboxes input[type=checkbox]:checked"))
+                    .map(f => f.value)
+                    .join(",");
+
+                const tcsChecked = Array.from(document.querySelectorAll("#addTcCheckboxes input[type=checkbox]:checked"))
+                    .map(tc => tc.value)
+                    .join(",");
+                const ScrapCodeResponsibleChecked = Array.from(document.querySelectorAll("#addUserScrapCodeResponsible input[type=checkbox]:checked"))
+                    .map(ScrapCodeResponsible => ScrapCodeResponsible.value)
+                    .join(",");
+
+                // ✅ Validasi KPK
+                if (!kpk) {
+                    await Toast.fire({
+                        icon: "warning",
+                        title: "Please select a KPK from the search results."
+                    });
+                    return;
+                }
+
+                // ✅ Validasi Facility
+                if (!facilitiesChecked) {
+                    await Toast.fire({
+                        icon: "warning",
+                        title: "Please select at least one Facility."
+                    });
+                    return;
+                }
+
+                // ✅ Validasi TC
+                if (!tcsChecked) {
+                    await Toast.fire({
+                        icon: "warning",
+                        title: "Please select at least one TC."
+                    });
+                    return;
+                }
+
+                const requestData = {
+                    Kpk: kpk,
+                    Name: document.getElementById("addUserName").value.trim(),
+                    RoleId: parseInt(roleId),
+                    Facility: facilitiesChecked,
+                    TC: tcsChecked,
+                    ScrapCodeResponsible: ScrapCodeResponsibleChecked || null
+                };
+
+                console.log("📤 Sending data:", requestData);
+
+                const url = '@Url.Action("AddUser", "UpdateData")';
+                console.log("🌐 Fetch URL:", url);
+
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(requestData)
+                });
+
+                console.log("📥 Response status:", response.status);
+                const result = await response.json();
+                console.log("📥 Response data:", result);
+
+                if (result.success) {
+                    // ✅ Tutup modal dulu sebelum tampilkan Swal
+                    if (typeof closeAddUserModal === "function") {
+                        closeAddUserModal();
+                        loadData(1);
+                    }
+
+                    // ✅ Gunakan Swal biasa untuk notifikasi sukses
+                    await Swal.fire({
+                        icon: "success",
+                        title: "Success",
+                        text: result.message,
+                        confirmButtonText: "OK"
+                    });
+
+                } else {
+                    // ❌ Kalau gagal tetap pakai toast
+                    await Toast.fire({
+                        icon: "error",
+                        title: result.message
+                    });
+                }
+
+
+            } catch (err) {
+                console.error("❌ Error:", err);
+                await Toast.fire({
+                    icon: "error",
+                    title: "An error occurred while saving the user."
+                });
+            }
+        }
+
+
+
+
+
+
+    </script>
+}

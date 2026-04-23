@@ -1,0 +1,531 @@
+﻿
+@{
+    ViewBag.Title = "Users";
+    ViewBag.pTitle = "Profile";
+    ViewBag.xData = "users";
+    ViewBag.ActiveItem = "profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var imageUrl = Url.Content("~/assets/images/images-2.jpg");
+}
+
+
+<!-- Start All Card -->
+<div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
+    <div class="grid grid-cols-1 gap-4">
+        <div class="p-5 bg-white border rounded border-black/10 dark:bg-darklight dark:border-darkborder">
+            <div style="background-image: url('@imageUrl');" class="bg-cover h-72 rounded-lg bg-center"></div>
+            <div class="relative px-10 -mt-16">
+                <div class="flex items-center justify-between gap-5">
+                    <div class="relative w-32 h-32">
+                        <div id="profileInitials" class="flex items-center justify-center w-32 h-32 text-3xl font-bold uppercase rounded-full bg-info/20 text-info border-8 border-light/50">
+                            <!-- JS will fill initials -->
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div class="flex flex-col items-start justify-between md:flex-row gap-7">
+                    <div class="mt-4 shrink-0">
+                        <div>
+                            <h5 id="profileName" class="text-xl font-bold dark:text-white">Loading...</h5>
+                            <p id="profileRole" class="text-muted dark:text-darkmuted">Loading...</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-1 xl:grid-cols-1">
+        <div class="card">
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 grow">List</h2>
+                <a href="#" id="filtersScrapNotice" class="px-3 py-1.5 rounded-md text-xs border border-black/20 dark:border-darkborder text-muted"><i class="align-bottom ltr:mr-1 rtl:ml-1 ri-filter-line"></i> Filters</a>
+            </div>
+            <div id="filterList" class="flex flex-wrap gap-4 justify-between hidden">
+                <!-- Card 1 -->
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Kpk</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="filtersDelegateEmployeeKpk" type="text" class="form-input w-full text-sm p-2" placeholder="Kpk">
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Name</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="filtersDelegateEmployeeName" type="text" class="form-input w-full text-sm p-2" placeholder="Name">
+                        </div>
+                    </form>
+                </div>
+                <div class="flex w-full justify-end gap-2 mt-2">
+                    <!-- Apply Filters icon -->
+                    <button id="applyFiltersButton"
+                            class="px-2 py-1 bg-success text-white rounded shadow hover:bg-success/[0.85] transition flex items-center justify-center text-sm mb-2">
+                        <i class="ri-check-line text-sm mr-1"></i>
+                        Apply
+                    </button>
+
+                    <!-- Reset Filters icon -->
+                    <button id="resetFiltersButton"
+                            class="px-2 py-1 bg-danger text-white rounded shadow hover:bg-danger/[0.85] transition flex items-center justify-center text-sm mb-2">
+                        <i class="ri-refresh-line text-sm mr-1"></i>
+                        Reset
+                    </button>
+                </div>
+
+
+
+            </div>
+            <button type="button" id="addDelegateButton" class="btn bg-purple border-purple text-white hover:bg-purple/[0.85] hover:border-purple/[0.85] mb-2">
+                <i class="fas fa-plus mr-2"></i> Assign Delegate
+            </button>
+            <div class="overflow-auto">
+                <table class="min-w-[640px] w-full">
+                    <thead>
+                        <tr class="text-left text-black">
+                            <th class="px-3 py-2">#</th>
+                            <th class="px-3 py-2">Kpk</th>
+                            <th class="px-3 py-2">Name</th>
+                            <th class="px-3 py-2">Role</th>
+                            <th class="px-3 py-2">Time</th>
+                            <th class="px-3 py-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listOfDelegate">
+                        <tr class="text-muted">
+                            <td colspan="3" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                            <td colspan="3" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                            <td colspan="3" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div>
+        <ul id="buttonPagination" class="inline-flex items-center gap-1 m-auto mb-4">
+        </ul>
+    </div>
+</div>
+<div id="addUserDelegatesModal" class="fixed inset-0 bg-black/80 z-[99998] hidden overflow-y-auto w-300">
+    <div class="flex items-start justify-center min-h-screen px-4" onclick="closeAddUserModal(event)">
+        <div class="relative w-full max-w-sm p-0 my-8 overflow-hidden bg-white border rounded-xl shadow-lg border-black/10"
+             onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-3 bg-white border-b border-black/10">
+                <h5 class="text-lg font-semibold">Add New User</h5>
+                <button type="button" class="text-black hover:bg-danger/[0.85]" onclick="closeAddUserModal()">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-5 space-y-5">
+
+                <div id="toastContainer" class="flex justify-center mb-2"></div>
+
+                <!-- Supervisor / KPK Autocomplete -->
+                <div>
+                    <label class="mb-2 text-sm font-semibold">KPK / Employee Name</label>
+                    <input type="hidden" id="addUserKpk" name="addUserKpk" />
+                    <input type="text" id="addUserName" name="addUserName" placeholder="Search Employee..."
+                           class="form-input w-full rounded border border-black/10" />
+                    <div id="addUserResults"
+                         class="dropdown-results absolute w-full bg-white border border-muted rounded mt-1 z-50 hidden"
+                         style="max-height: 200px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- Delegate Time Dropdown -->
+                <div>
+                    <label class="mb-2 text-sm font-semibold">Delegate Time</label>
+                    <select id="addDelegateTime" class="form-input w-full rounded border border-black/10">
+                        <option value="">Select Time</option>
+                    </select>
+                </div>
+                <button id="addDataDelegateToTableListOfDelegateModals" type="button" class="btn bg-info border-info text-white w-full hover:bg-info/[0.85]">
+                    Add
+                </button>
+
+                <!-- Modal sudah ada -->
+                <!-- Tabel target -->
+                <table class="min-w-[300px] w-full">
+                    <thead>
+                        <tr class="bg-gray-100 text-left">
+                            <th class="px-3 py-2">#</th>
+                            <th class="px-3 py-2">KPK</th>
+
+                            <th class="px-3 py-2">Delegate Time</th>
+
+                        </tr>
+                    </thead>
+                    <tbody id="listOfDelegateModals">
+                    </tbody>
+                </table>
+
+
+                <!-- Action buttons -->
+                <div class="flex items-center justify-end gap-3">
+                    <button type="button" class="btn bg-danger border-danger text-white hover:bg-danger/[0.85]"
+                            onclick="closeAddUserModal()">
+                        Discard
+                    </button>
+                    <button type="button"
+                            id="saveAddUser"
+                            class="btn bg-purple border-purple text-white hover:bg-purple/[0.85]"
+                            onclick="saveAddDelegateUser()">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- End All Card -->
+@section scripts{
+
+    <script src="~/assets/js/main.js"></script>
+    <script>
+
+        const addDelegatesUrl = '@Url.Action("AddUserDelegate", "UpdateData")';
+        let currentPage = 1;
+        const delegateTimeOptions = ["Everyday", "Weekend", "Weekdays"];
+
+        $(document).ready(function () {
+            // Bersihkan dulu isi profileName dan profileRole
+            $("#profileName").empty();
+            $("#profileRole").empty();
+            loadData(currentPage, pageSize);
+            // Set userName ke UI
+            $("#profileName").text(userName);
+
+            // Fetch role name dari backend pakai roleId
+            fetchRoleNameFromAll(roleId).then(function (roleName) {
+                $("#profileRole").text(roleName);
+            });
+        });
+
+      
+
+        $("#applyFiltersButton").on("click", function () {
+            loadData(1, pageSize); // reset ke halaman 1 saat apply filter
+        });
+
+        $("#resetFiltersButton").on("click", function () {
+            $("#filtersDelegateEmployeeKpk").val('');
+            $("#filtersDelegateEmployeeName").val('');
+            loadData(1, pageSize);
+        });
+
+        filterButton.addEventListener('click', function (e) {
+            e.preventDefault(); // mencegah href="#" reload halaman
+            filterList.classList.toggle('hidden'); // toggle class hidden
+        });
+        function initAddUserAutocomplete() {
+            const $input = $("#addUserName");
+            const $results = $("#addUserResults");
+            const $kpkHidden = $("#addUserKpk");
+
+            $input.on("input", function () {
+                const query = $(this).val().trim();
+
+                if (query.length < 3) {
+                    $results.empty().hide();
+                    $kpkHidden.val(""); // reset KPK
+                    return;
+                }
+
+                fetchData(urlGetEmployee, { keyword: query }, function (res) {
+                    $results.empty();
+
+                    if (res.success && Array.isArray(res.data)) {
+                        res.data.forEach(item => {
+                            const option = $("<div>")
+                                .addClass("dropdown-item hover:bg-success/[0.85] cursor-pointer p-2 rounded")
+                                .text(capitalizeWords(item.name) + " (" + item.kpk + ")")
+                                .on("click", function () {
+                                    $kpkHidden.val(item.kpk);                     // ✅ simpan KPK ke hidden input
+                                    $input.val(capitalizeWords(item.name));       // tampilkan nama di textbox
+                                    $results.empty().hide();
+                                });
+                            $results.append(option);
+                        });
+                        $results.show();
+                    } else {
+                        $results.hide();
+                    }
+                });
+            });
+        }
+        $("#addDelegateButton").on("click", function () {
+            initAddUserAutocomplete();
+            // Tampilkan modal
+            $("#addUserDelegatesModal").removeClass("hidden");
+
+            // Kosongkan dulu dropdown sebelum diisi ulang
+            const select = $("#addDelegateTime");
+            select.empty();
+
+            // Tambahkan option default
+            select.append(`<option value="">Select Time</option>`);
+
+            // Tambahkan opsi dari array
+            delegateTimeOptions.forEach(option => {
+                select.append(`<option value="${option}">${option}</option>`);
+            });
+        });
+        $("#addDataDelegateToTableListOfDelegateModals").on("click", function () {
+            const kpk = $("#addUserKpk").val();
+            const name = $("#addUserName").val();
+            const delegateTime = $("#addDelegateTime").val();
+            const currentUserKpk = '@Session["Kpk"]'; // KPK login sekarang
+
+            if (!kpk || !delegateTime) {
+                showToast("Please select an employee and delegate time!");
+                return;
+            }
+
+            // Cek apakah KPK sama dengan KPK login
+            if (kpk === currentUserKpk) {
+                showToast("You cannot add your own KPK!");
+                return;
+            }
+
+            // Cek apakah KPK sudah ada di tabel
+            const exists = $("#listOfDelegateModals tr td:nth-child(2)")
+                .toArray()
+                .some(td => $(td).text().trim() === kpk);
+
+            if (exists) {
+                showToast("This KPK is already added!");
+                return;
+            }
+
+            // Hitung nomor baris baru
+            const rowCount = $("#listOfDelegateModals tr").length + 1;
+
+            // Tambahkan baris baru
+            $("#listOfDelegateModals").append(`
+                <tr>
+                    <td class="px-3 py-2">${rowCount}</td>
+                    <td class="px-3 py-2">${kpk}</td>
+                    <td class="px-3 py-2">${delegateTime}</td>
+                </tr>
+            `);
+
+            // Reset input
+            $("#addDelegateTime").val("");
+            $("#addUserKpk").val("");
+            $("#addUserName").val("");
+        });
+
+
+        function closeAddUserModal(event) {
+            if (!event || event.target === event.currentTarget) {
+                $("#addUserDelegatesModal").addClass("hidden"); // sembunyikan modal
+                // optional: reset input
+                $("#addUserKpk").val('');
+                $("#addUserName").val('');
+                $("#addDelegateTime").val('');
+                $("#addUserResults").empty().hide();
+            }
+        }
+        function loadData(page = 1, pageSize = 10) {
+            currentPage = page;
+
+            // Ambil value filter
+            const searchKpk = $("#filtersDelegateEmployeeKpk").val();
+            const searchName = $("#filtersDelegateEmployeeName").val();
+
+            $.ajax({
+                url: getDelegatesUrl,
+                type: 'GET',
+                data: {
+                    searchUserKpk: kpk, // 🔹 selalu filter sesuai KPK login
+                    searchDelegateKpk: searchKpk, // kalau user mau cari delegate kpk
+                    searchDelegateName: searchName,
+                    page: page,
+                    pageSize: pageSize
+                },
+                success: function (res) {
+                    const tbody = $("#listOfDelegate");
+                    tbody.empty();
+
+                    if (res.success && res.data.length > 0) {
+                        res.data.forEach((item, index) => {
+                            tbody.append(`
+                        <tr>
+                            <td class="px-3 py-2">${(page - 1) * pageSize + index + 1}</td>
+                            <td class="px-3 py-2">${item.DelegateKpk}</td>
+                            <td class="px-3 py-2">${item.DelegateName || 'Unknown'}</td>
+                            <td class="px-3 py-2">${item.DelegateRole || 'Unknown'}</td>
+                            <td class="px-3 py-2">${item.DelegateTime}</td>
+                            <td class="px-3 py-2">
+                                <button class="btn btn-sm bg-danger text-white" onclick="deleteDelegate(${item.Id})">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                        });
+
+                        renderPagination(res.pagination.totalRecords, res.pagination.currentPage, res.pagination.pageSize);
+                    } else {
+                        tbody.append(`
+                    <tr class="text-muted">
+                        <td colspan="6" class="py-6 text-center">No data found</td>
+                    </tr>
+                `);
+                        $("#buttonPagination").empty();
+                    }
+                },
+                error: function (err) {
+                    console.error(err);
+                    $("#listOfDelegate").html('<tr><td colspan="6" class="py-6 text-center">Error loading data</td></tr>');
+                }
+            });
+        }
+
+
+        function saveAddDelegateUser() {
+            // Ambil semua data dari tabel
+            const delegates = [];
+            $("#listOfDelegateModals tr").each(function () {
+                const kpkSelected = $(this).find("td:eq(1)").text().trim();
+                const delegateTime = $(this).find("td:eq(2)").text().trim();
+
+                // Struktur objek sesuai model UserDelegate
+                delegates.push({
+                    UserKpk:kpk, // KPK login
+                    DelegateKpk: kpkSelected,
+                    DelegateTime: delegateTime
+                });
+            });
+
+            if (delegates.length === 0) {
+                showToast("No delegates to save!");
+                return;
+            }
+
+            // Kirim data ke server
+            $.ajax({
+                url: addDelegatesUrl, // ganti ControllerName sesuai controller-mu
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(delegates), // kirim array
+                success: function (response) {
+                    if (response.success) {
+                        showToast("Delegates successfully saved!", "bg-purple text-white shadow-purple/50");
+                        // Reset tabel dan input modal
+                        $("#listOfDelegateModals").empty();
+                        $("#addDelegateTime").val("");
+                        $("#addUserKpk").val("");
+                        $("#addUserName").val("");
+                        // Tutup modal
+                        $("#addUserDelegatesModal").addClass("hidden");
+                        loadData(currentPage, pageSize);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Delegates successfully saved!',
+                            confirmButtonColor: '#6B46C1' // warna ungu
+                        });
+
+                    } else {
+                        showToast(response.message || "Failed to save delegates!", "bg-red-500 text-white");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showToast("An error occurred: " + error, "bg-red-500 text-white");
+                }
+            });
+        }
+        function deleteDelegate(id) {
+            showDynamicSwal({
+                title: "Are you sure?",
+                text: "This delegate record will be permanently deleted.",
+                icon: "warning",
+                confirmText: "Yes, delete it!",
+                cancelText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    // Optional: tampilkan loading swal biar lebih smooth
+                    Swal.fire({
+                        title: "Deleting...",
+                        text: "Please wait a moment.",
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    $.ajax({
+                        url: '@Url.Action("DeleteUserDelegate", "UpdateData")',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (response) {
+                            Swal.close(); // tutup loading swal
+
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Deleted!",
+                                    text: response.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+
+                                // Reload table setelah sukses delete
+                                loadData(currentPage);
+                            } else {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Failed",
+                                    text: response.message
+                                });
+                            }
+                        },
+                        error: function () {
+                            Swal.close();
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: "An error occurred while deleting data."
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+
+
+    </script>
+}

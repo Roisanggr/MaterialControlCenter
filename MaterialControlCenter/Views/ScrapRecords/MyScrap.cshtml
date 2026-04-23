@@ -1,0 +1,349 @@
+﻿
+@{
+    ViewBag.Title = "Scrap Notice";
+    ViewBag.pTitle = "My Scrap";
+    ViewBag.xData = "apps";
+    ViewBag.ActiveItem = "records-My";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<!-- Start All Card -->
+<div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Total </p>
+                <h4 id="totalValueAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Overall Total</p>
+            </div>
+            <div>
+                <div id="chart" dir="ltr"></div>
+            </div>
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Quantity</p>
+                <h4 id="totalQtyAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Pcs</p>
+            </div>
+
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Pending</p>
+                <h4 id="totalValuePending" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Value</p>
+            </div>
+
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Completed</p>
+                <h4 id="totalValueApprove" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Value</p>
+            </div>
+
+        </div>
+    </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-1 xl:grid-cols-1">
+        <div class="card">
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 grow">List</h2>
+                <a href="#" id="filtersScrapNotice" class="px-3 py-1.5 rounded-md text-xs border border-black/20 dark:border-darkborder text-muted"><i class="align-bottom ltr:mr-1 rtl:ml-1 ri-filter-line"></i> Filters</a>
+            </div>
+            <!--<div id="filterList" class="flex flex-wrap gap-4 justify-between hidden">-->
+            <!-- Card 1 -->
+            <!-- Card 2 -->
+            <!--<div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Document ID</h2>
+        <form class="space-y-2">
+            <div class="space-y-1">
+                <input id="scrapDocumentIDFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Document ID">
+            </div>
+        </form>
+    </div>
+
+    <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Created Date</h2>
+        <form class="space-y-2">
+            <div class="space-y-1">
+                <input id="scrapCreatedDateFilter" type="date" class="form-input w-full text-sm p-2" placeholder="Created Date">
+            </div>
+        </form>
+    </div>
+    <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Scrap Code</h2>
+        <form class="space-y-2">
+            <div class="space-y-1">
+                <input id="scrapCodeFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Scrap Code">
+            </div>
+        </form>
+    </div>
+
+    <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Total From</h2>
+        <form class="space-y-2">
+            <div class="space-y-1">
+                <input id="scrapStartFromFilter" type="number" class="form-input w-full text-sm p-2" placeholder="Minimum Total">
+            </div>
+        </form>
+    </div>
+
+    <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Total To</h2>
+        <form class="space-y-2">
+            <div class="space-y-1">
+                <input id="scrapEndTotalFilter" type="number" class="form-input w-full text-sm p-2" placeholder="Maximum Total">
+            </div>
+        </form>
+    </div>
+
+
+    <div class="flex w-full justify-end gap-2 mt-2">-->
+            <!-- Apply Filters icon -->
+            <!--<button id="applyFiltersScrapListButton"
+            class="px-2 py-1 bg-success text-white rounded shadow hover:bg-success/[0.85] transition flex items-center justify-center text-sm mb-2">
+        <i class="ri-check-line text-sm mr-1"></i>
+        Apply
+    </button>-->
+            <!-- Reset Filters icon -->
+            <!--<button id="resetFiltersScrapListButton"
+                    class="px-2 py-1 bg-danger text-white rounded shadow hover:bg-danger/[0.85] transition flex items-center justify-center text-sm mb-2">
+                <i class="ri-refresh-line text-sm mr-1"></i>
+                Reset
+            </button>
+        </div>
+
+
+
+    </div>-->
+
+            <div id="filterList" class="flex flex-wrap gap-4 justify-between hidden">
+
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Document ID</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapDocumentIDFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Document ID">
+                        </div>
+                    </form>
+                </div>
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Facility</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapFacilityFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Facility">
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Created Date (Start)</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapCreatedDateFromFilter" type="date" class="form-input w-full text-sm p-2" placeholder="Created Date">
+                        </div>
+                    </form>
+                </div>
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Created Date (End)</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapCreatedDateToFilter" type="date" class="form-input w-full text-sm p-2" placeholder="Created Date">
+                        </div>
+                    </form>
+                </div>
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Scrap Code</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapCodeFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Scrap Code">
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">TC Code</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapTcCodeFilter" type="text" class="form-input w-full text-sm p-2" placeholder="TC Code">
+                        </div>
+                    </form>
+                </div>
+
+
+
+                <div class="flex w-full justify-end gap-2 mt-2">
+                    <!-- Apply Filters icon -->
+                    <button id="applyFiltersScrapListButton"
+                            class="px-2 py-1 bg-success text-white rounded shadow hover:bg-success/[0.85] transition flex items-center justify-center text-sm">
+                        <i class="ri-check-line text-sm mr-1"></i>
+                        Apply
+                    </button>
+
+                    <!-- Reset Filters icon -->
+                    <button id="resetFiltersScrapListButton"
+                            class="px-2 py-1 bg-danger text-white rounded shadow hover:bg-danger/[0.85] transition flex items-center justify-center text-sm">
+                        <i class="ri-refresh-line text-sm mr-1"></i>
+                        Reset
+                    </button>
+                </div>
+
+
+
+            </div>
+
+            <div class="overflow-auto">
+                <table class="min-w-[640px] w-full">
+                    <thead>
+                        <tr class="ltr:text-left rtl:text-right">
+                            <th>Document ID</th>
+                            <th>Facility</th>
+                            <th>Initiator</th>
+                            <th>Created Date</th>
+                            <th>Scrap Code </th>
+                            <th>TC</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Current Approval</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listOfScrap">
+                        <tr class="text-muted">
+                            <td colspan="4" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <!-- Spinner -->
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                            <td colspan="4" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <!-- Spinner -->
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                            <td colspan="3" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div>
+        <ul id="buttonPagination" class="inline-flex items-center gap-1 m-auto mb-4">
+        </ul>
+    </div>
+</div>
+<!-- End All Card -->
+
+@section scripts{
+
+
+    <script src="~/assets/js/main.js"></script>
+
+    <script>
+
+        //$(document).ready(function () {
+        //    loadData(1, pageSize);
+        //    loadScrapTotals();
+        //});
+
+        //function loadData(pageNumber = 1, pageSize) {
+        //    return $.ajax({
+        //        url: urlGetSourceDataScrap,
+        //        type: "GET",
+        //        data: { pageNumber: pageNumber, pageSize: pageSize, initiatorKpk: kpk },
+        //        dataType: "json"
+        //    }).done(function (res) {
+        //        renderTable(res.Data);
+        //        renderPagination(res.TotalCount, res.PageNumber, res.PageSize);
+        //    }).fail(function (xhr, status, error) {
+        //        console.error("Error loading data:", error);
+        //    });
+        //}
+        $(document).ready(function () {
+            loadData(1, pageSize, {}); // filters default empty object
+            loadScrapTotals();
+        });
+
+        filterButton.addEventListener('click', function (e) {
+            e.preventDefault(); // mencegah href="#" reload halaman
+            filterList.classList.toggle('hidden'); // toggle class hidden
+        });
+        function loadData(pageNumber = 1, pageSize = 10, filters = currentFilters) {
+            return $.ajax({
+                url: urlGetSourceDataScrap,
+                type: "GET",
+                data: {
+                    pageNumber: pageNumber,
+                    pageSize: pageSize,
+                    initiatorKpk: kpk,
+                    documentId: filters.documentId || "",
+                    facility: filters.facility || "",
+                    createdDateFrom: filters.createdDateFrom || "",
+                    createdDateTo: filters.createdDateTo || "",
+                    scrapCode: filters.scrapCode || "",
+                    tc: filters.tc || "",
+                    totalFrom: filters.totalFrom || "",
+                    totalTo: filters.totalTo || ""
+                },
+                dataType: "json"
+            }).done(function (res) {
+                renderTable(res.Data);
+                renderPagination(res.TotalCount, res.PageNumber, res.PageSize);
+            }).fail(function (xhr, status, error) {
+                console.error("Error loading data:", error);
+            });
+        }
+
+
+        async function loadScrapTotals() {
+            try {
+                const statusArray = [1, 4, 9]; // hanya status yang ingin diambil
+                const data = { initiatorKpk: kpk };
+
+                // Tambahkan statusList dengan format indexed agar MVC bisa bind
+                statusArray.forEach((s, i) => data[`statusList[${i}]`] = s);
+
+                const response = await $.ajax({
+                    url: urlGetScrapTotals,
+                    type: 'GET',
+                    data: data,
+                    dataType: 'json'
+                });
+
+                // Update DOM dengan data dari server
+                $("#totalValueAll").empty().text(formatRupiahShort(response.TotalValueAll));
+                $("#totalQtyAll").empty().text(response.TotalQtyAll.toLocaleString("id-ID"));
+                $("#totalValuePending").empty().text(formatRupiahShort(response.TotalValuePending));
+                $("#totalValueApprove").empty().text(formatRupiahShort(response.TotalValueApproved));
+
+            } catch (err) {
+                console.error("Error fetch scrap totals:", err);
+            }
+        }
+
+    </script>
+
+}

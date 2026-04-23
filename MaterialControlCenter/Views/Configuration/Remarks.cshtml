@@ -1,0 +1,469 @@
+﻿
+@{
+    ViewBag.Title = "Material Control Center";
+    ViewBag.pTitle = "MCC Remarks";
+    ViewBag.xData = "change";
+    ViewBag.ActiveItem = "Remarks";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<!-- Start All Card -->
+<div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Remarks </p>
+                <h4 id="totalValueAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Overall Total</p>
+            </div>
+            <div>
+                <p class="text-base dark:text-white/80">Scrap</p>
+                <h4 id="totalCodeP1" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Remarks</p>
+            </div>
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">PIA</p>
+                <h4 id="totalCodeP2" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Remarks</p>
+            </div>
+            <div>
+                <p class="text-base dark:text-white/80">TPR</p>
+                <h4 id="totalCodeP2S3" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Remarks</p>
+            </div>
+
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+
+            <div>
+                <p class="text-base dark:text-white/80">XXX</p>
+                <h4 id="totalCodeP2S4" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Remarks</p>
+            </div>
+            <div>
+                <p class="text-base dark:text-white/80">XXX</p>
+                <h4 id="totalCodeP2S5" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Remarks</p>
+            </div>
+
+        </div>
+
+
+
+    </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-1 xl:grid-cols-1">
+        <div class="card">
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 grow">List</h2>
+                <a href="#" id="filtersScrapNotice" class="px-3 py-1.5 rounded-md text-xs border border-black/20 dark:border-darkborder text-muted"><i class="align-bottom ltr:mr-1 rtl:ml-1 ri-filter-line"></i> Filters</a>
+            </div>
+            <div id="filterList" class="flex flex-wrap gap-4 justify-between hidden">
+                <!-- Card 1 -->
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Scrap Code</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapCodeFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Scrap Code">
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Remarks</h2>
+                    <form class="space-y-2">
+                        <div class="space-y-1">
+                            <input id="scrapRemarksFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Remarks">
+                        </div>
+                    </form>
+                </div>
+                <div class="flex w-full justify-end gap-2 mt-2">
+                    <!-- Apply Filters icon -->
+                    <button id="applyFiltersButton"
+                            class="px-2 py-1 bg-success text-white rounded shadow hover:bg-success/[0.85] transition flex items-center justify-center text-sm mb-2">
+                        <i class="ri-check-line text-sm mr-1"></i>
+                        Apply
+                    </button>
+
+                    <!-- Reset Filters icon -->
+                    <button id="resetFiltersButton"
+                            class="px-2 py-1 bg-danger text-white rounded shadow hover:bg-danger/[0.85] transition flex items-center justify-center text-sm mb-2">
+                        <i class="ri-refresh-line text-sm mr-1"></i>
+                        Reset
+                    </button>
+                </div>
+
+
+
+            </div>
+            <div class="flex justify-end">
+                <button type="button" id="addRemarksButton" class="btn bg-purple border-purple text-white hover:bg-purple/[0.85] hover:border-purple/[0.85] mb-2">
+                    <i class="fas fa-plus mr-2"></i> Remarks
+                </button>
+            </div>
+                <div class="overflow-auto">
+                    <table class="min-w-[640px] w-full">
+                        <thead>
+                            <tr class="text-left text-black">
+                                <th class="px-3 py-2">ID</th>
+                                <th class="px-3 py-2">Location</th>
+                                <th class="px-3 py-2">Scrap Code</th>
+
+                                <th class="px-3 py-2">Remarks</th>
+                                <th class="px-3 py-2">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listOfScrap">
+                            <tr class="text-muted">
+                                <td colspan="3" class="py-6 text-center">
+                                    <div class="flex justify-center items-center gap-2">
+                                        <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                        <span>Loading...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    <div>
+        <ul id="buttonPagination" class="inline-flex items-center gap-1 m-auto mb-4">
+        </ul>
+    </div>
+</div>
+<!-- End All Card -->
+
+<div id="addRemarksModals" class="fixed inset-0 bg-black/80 z-[99999] hidden overflow-y-auto">
+    <div class="flex items-start justify-center min-h-screen px-4" onclick="closeModalsRemarks(event)">
+        <div class="relative w-full max-w-lg p-0 my-8 overflow-hidden bg-white border rounded-xl shadow-lg border-black/10"
+             onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-3 bg-white border-b border-black/10">
+                <h5 class="text-lg font-semibold">Add New Remarks</h5>
+                <button type="button" class="text-black hover:bg-danger/[0.85]" onclick="closeModalsRemarks()">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-5 space-y-5">
+
+
+                <!-- Facilities & TC (Side by Side) -->
+                <div id="addFacilityCheckboxes" class="grid grid-flow-col auto-cols-max gap-4 overflow-x-auto">
+                    <!-- Checkbox facility diinject dari JS -->
+                </div>
+
+
+                <div class="w-full">
+                    <p class="mb-3 text-sm font-semibold">Scrap Code</p>
+                    <div id="addUserScrapCodeResponsible"
+                         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-3 border border-black/10 rounded-lg bg-gray-50 dark:bg-dark/40 max-h-60 overflow-y-auto">
+                        <!-- Checkbox Scrap Code diinject dari JS -->
+                    </div>
+
+                </div>
+
+                <!-- Role -->
+                <div>
+                    <p class="mb-2 text-sm font-semibold">Remarks</p>
+                    <input id="inputRemarks" type="text" class="form-input" placeholder="Remarks" required>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="flex items-center justify-end gap-3">
+                    <button type="button" class="btn bg-danger border-danger text-white hover:bg-danger/[0.85]"
+                            onclick="closeModalsRemarks()">
+                        Discard
+                    </button>
+                    <button type="button"
+                            id="saveAddUser"
+                            class="btn bg-purple border-purple text-white hover:bg-purple/[0.85]">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+
+
+    <script src="~/assets/js/main.js"></script>
+
+    <script>
+        const urlInsertRemarks = '@Url.Action("AddScrapCodeRemark", "DataForms")';
+        const urlDeleteRemarks = '@Url.Action("DeleteScrapCodeRemark", "DataForms")';
+
+        $(document).ready(function () {
+            loadData(1, pageSize);
+            loadScrapCodeSummaryTotal();
+        });
+        async function loadData(pageNumber = 1, pageSize = 10) {
+            const tbody = document.getElementById("listOfScrap");
+            const scrapCodeFilter = document.getElementById("scrapCodeFilter").value.trim();
+            const scrapRemarksFilter = document.getElementById("scrapRemarksFilter").value.trim();
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="py-6 text-center">
+                        <div class="flex justify-center items-center gap-2">
+                            <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-purple rounded-full"></div>
+                            <span>Loading data...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const response = await fetch(
+                    `@Url.Action("GetScrapCodeRemarks", "DataForms")?scrapCode=${encodeURIComponent(scrapCodeFilter)}&remarks=${encodeURIComponent(scrapRemarksFilter)}`
+                );
+                const result = await response.json();
+
+                if (!result.success || !Array.isArray(result.data)) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center text-danger py-4">❌ Failed to load data.</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const allData = result.data;
+                const totalCount = allData.length;
+
+                const startIndex = (pageNumber - 1) * pageSize;
+                const pagedData = allData.slice(startIndex, startIndex + pageSize);
+
+                if (pagedData.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center text-gray-500 py-4">No remarks found.</td>
+                        </tr>
+                    `;
+                    renderPagination(totalCount, pageNumber, pageSize);
+                    return;
+                }
+
+                tbody.innerHTML = pagedData.map(r => `
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td class="px-3 py-2">${r.IdRemarks}</td>
+                        <td class="px-3 py-2">${r.Location ?? '-'}</td>
+                        <td class="px-3 py-2 font-semibold text-purple">${r.ScrapCode}</td>
+                        <td class="px-3 py-2">${r.Remarks}</td>
+                        <td class="px-3 py-2">
+                            <button
+                                type="button"
+                                class="btn bg-danger border-danger text-white hover:bg-danger/[0.85] hover:border-danger/[0.85] flex items-center justify-center gap-2 px-3 py-1 rounded"
+                                onclick="deleteRemark(${r.IdRemarks})">
+                                <i class="fas fa-trash-alt"></i>
+                                <span>Delete</span>
+                            </button>
+                        </td>
+                    </tr>
+                `).join("");
+
+                renderPagination(totalCount, pageNumber, pageSize);
+
+            } catch (error) {
+                console.error("❌ Error loading remarks:", error);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-red-500 py-4">Error loading data.</td>
+                    </tr>
+                `;
+            }
+        }
+
+
+
+
+        const addRemarksButton = document.getElementById("addRemarksButton");
+        if (addRemarksButton) {
+            addRemarksButton.addEventListener("click", () => {
+                const facilityContainer = document.getElementById("addFacilityCheckboxes");
+                if (facilityContainer) {
+                    facilityContainer.innerHTML = facilities.map(fac => `
+                <label class="inline-flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" value="${fac}" class="form-checkbox text-purple addFacilityCb"/>
+                    <span>${fac}</span>
+                </label>
+            `).join("");
+                    facilityContainer.querySelectorAll(".addFacilityCb").forEach(cb => {
+                        cb.addEventListener("change", updateScrapCodesBasedOnFacilities);
+                    });
+                }
+                const scrapContainer = document.getElementById("addUserScrapCodeResponsible");
+                if (scrapContainer) {
+                    scrapContainer.innerHTML = `
+                        <div class="sm:col-span-2 md:col-span-4 text-gray-500 text-sm flex justify-center items-center py-6">
+                            Select facility to codes...
+                        </div>
+                    `;
+
+                }
+                const modal = document.getElementById("addRemarksModals");
+                if (modal) {
+                    modal.classList.remove("hidden");
+                }
+            });
+        }
+        filterButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            filterList.classList.toggle('hidden');
+        });
+
+        function closeModalsRemarks(event) {
+            const modal = document.getElementById("addRemarksModals");
+            if (!modal) return;
+            if (!event || event.target.id === "addRemarksModals") {
+                modal.classList.add("hidden");
+                const resetIds = [
+                    "addFacilityCheckboxes",        
+                    "addTcCheckboxes",               
+                    "addRoleSelect",                 
+                    "addUserKpk",                    
+                    "addUserName",                   
+                    "addUserResults",                
+                    "addUserScrapCodeResponsible"   
+                ];
+
+                resetIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    if (["INPUT", "SELECT", "TEXTAREA"].includes(el.tagName)) {
+                        el.value = "";
+                    } else {
+                        el.innerHTML = "";
+                    }
+                    if (id === "addUserResults") {
+                        el.style.display = "none";
+                    }
+                });
+            }
+        }
+
+        document.getElementById("saveAddUser").addEventListener("click", () => {
+            submitScrapCodeRemark(urlInsertRemarks);
+        });
+
+        function submitScrapCodeRemark() {
+           
+            const selectedScrapCodeEl = document.querySelector(
+                '#addUserScrapCodeResponsible input[type="checkbox"]:checked'
+            );
+            if (!selectedScrapCodeEl) {
+                Swal.fire("Warning!", "Please select 1 Scrap Code.", "warning");
+                return;
+            }
+            const selectedScrapCode = selectedScrapCodeEl.value;
+            const remarkInput = document.querySelector('#inputRemarks');
+            if (!remarkInput) {
+                Swal.fire("Error!", "Remarks input not found!", "error");
+                return;
+            }
+            const remarkText = remarkInput.value.trim();
+            if (!remarkText) {
+                Swal.fire("Warning!", "Please enter a remark.", "warning");
+                return;
+            }
+            closeModalsRemarks();
+            const payload = {
+                ScrapCode: selectedScrapCode,
+                Remarks: remarkText
+            };
+            fetch(urlInsertRemarks, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error("HTTP status " + res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire("Success!", data.message, "success");
+                    } else {
+                        Swal.fire("Error!", data.message, "error");
+                    }
+                    remarkInput.value = "";
+                    selectedScrapCodeEl.checked = false;
+                })
+                .catch(err => {
+                    Swal.fire("Error!", err.message || err, "error");
+                    console.error(err);
+                });
+        }
+        function deleteRemark(id) {
+            console.log("🗑️ Delete clicked for IdRemarks:", id);
+            showDynamicSwal({
+                title: "Are you sure?",
+                text: "Do you really want to delete this remark?",
+                icon: "warning",
+                confirmText: "Yes, delete it",
+                cancelText: "Cancel"
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                fetch(`${urlDeleteRemarks}?id=${id}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error("HTTP status " + res.status);
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire("Deleted!", data.message, "success");
+                            loadData(1, pageSize);
+                            const row = document.querySelector(`#remarkRow_${id}`);
+                            if (row) row.remove();
+                        } else {
+                            Swal.fire("Error!", data.message, "error");
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire("Error!", err.message || err, "error");
+                        console.error(err);
+                    });
+            });
+        }
+        document.getElementById("applyFiltersButton").addEventListener("click", function () {
+            loadData(1);
+        });
+
+        document.getElementById("resetFiltersButton").addEventListener("click", function () {
+            document.getElementById("scrapCodeFilter").value = "";
+            document.getElementById("scrapRemarksFilter").value = "";
+            loadData(1);
+        });
+
+
+    </script>
+
+}

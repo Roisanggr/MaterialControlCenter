@@ -1,0 +1,723 @@
+﻿
+@{
+    ViewBag.Title = "Material Control Center";
+    ViewBag.pTitle = "All Records";
+    ViewBag.xData = "apps";
+    ViewBag.ActiveItem = "records-All";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<!-- Start All Card -->
+<div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">All Request</p>
+                <h4 id="totalValueAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-white/20 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-white/60">Overall Total</p>
+            </div>
+            <div>
+                <div id="chart" dir="ltr"></div>
+            </div>
+        </div>
+        <div class="flex items-start justify-between gap-6 p-5 bg-white border rounded border-black/10">
+            <div>
+                <p class="text-base font-medium text-gray-600">Scrap Request</p>
+                <h4 id="totalQtyAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black">
+                    <span class="skeleton w-16 h-8 bg-gray-200 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-sm text-gray-400 mt-1">Document</p>
+            </div>
+
+            <!-- Icon Info & Tooltip Container -->
+            <div style="position: relative; display: inline-block;" class="tooltip-wrapper">
+                <!-- Icon -->
+                <div style="cursor: pointer; color: #2563eb;" class="tooltip-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </div>
+
+                <!-- Tooltip -->
+                <div class="tooltip-box" 
+                     style="
+                     visibility: hidden;
+                     opacity: 0;
+                     position: absolute;
+                     bottom: calc(100% + 8px);
+                     right: 0;
+                     width: 140px;
+                     padding: 10px 12px;
+                     background-color: #6b7280;
+                     color: white;
+                     font-size: 12px;
+                     border-radius: 10px;
+                     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                     transition: opacity 0.2s ease, visibility 0.2s ease;
+                     z-index: 50;
+                     white-space: nowrap;">
+                    <ul style="list-style: none; margin: 0; padding: 0; line-height: 1.8;">
+                        <li>• Waiting = 3</li>
+                        <li>• Approved = 1</li>
+                        <li>• Finish = 11</li>
+                    </ul>
+                    <!-- Arrow -->
+                    <div style="
+                         position: absolute;
+                         top: 100%;
+                         right: 12px;
+                         width: 0;
+                         height: 0;
+                         border-left: 8px solid transparent;
+                         border-right: 8px solid transparent;
+                         border-top: 8px solid #6b7280;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .tooltip-wrapper:hover .tooltip-box {
+                visibility: visible !important;
+                opacity: 1 !important;}
+        </style>
+        <div class="flex items-start justify-between gap-6 p-5 bg-white border rounded border-black/10">
+            <div>
+                <p class="text-base font-medium text-gray-600">Scrap Request</p>
+                <h4 id="totalQtyAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black">
+                    <span class="skeleton w-16 h-8 bg-gray-200 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-sm text-gray-400 mt-1">Document</p>
+            </div>
+
+            <!-- Icon Info & Tooltip Container -->
+            <div style="position: relative; display: inline-block;" class="tooltip-wrapper">
+                <!-- Icon -->
+                <div style="cursor: pointer; color: #2563eb;" class="tooltip-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </div>
+
+                <!-- Tooltip -->
+                <div class="tooltip-box" 
+                     style="
+                     visibility: hidden;
+                     opacity: 0;
+                     position: absolute;
+                     bottom: calc(100% + 8px);
+                     right: 0;
+                     width: 140px;
+                     padding: 10px 12px;
+                     background-color: #6b7280;
+                     color: white;
+                     font-size: 12px;
+                     border-radius: 10px;
+                     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                     transition: opacity 0.2s ease, visibility 0.2s ease;
+                     z-index: 50;
+                     white-space: nowrap;">
+                    <ul style="list-style: none; margin: 0; padding: 0; line-height: 1.8;">
+                        <li>• Waiting = 3</li>
+                        <li>• Approved = 1</li>
+                        <li>• Finish = 11</li>
+                    </ul>
+                    <!-- Arrow -->
+                    <div style="
+                         position: absolute;
+                         top: 100%;
+                         right: 12px;
+                         width: 0;
+                         height: 0;
+                         border-left: 8px solid transparent;
+                         border-right: 8px solid transparent;
+                         border-top: 8px solid #6b7280;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <style>
+            .tooltip-wrapper:hover .tooltip-box {
+                visibility: visible !important;
+                opacity: 1 !important;}
+        </style>
+        <div class="flex items-start justify-between gap-6 p-5 bg-white border rounded border-black/10">
+            <div>
+                <p class="text-base font-medium text-gray-600">Scrap Request</p>
+                <h4 id="totalQtyAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black">
+                    <span class="skeleton w-16 h-8 bg-gray-200 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-sm text-gray-400 mt-1">Document</p>
+            </div>
+
+            <!-- Icon Info & Tooltip Container -->
+            <div style="position: relative; display: inline-block;" class="tooltip-wrapper">
+                <!-- Icon -->
+                <div style="cursor: pointer; color: #2563eb;" class="tooltip-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </div>
+
+                <!-- Tooltip -->
+                <div class="tooltip-box" 
+                     style="
+                     visibility: hidden;
+                     opacity: 0;
+                     position: absolute;
+                     bottom: calc(100% + 8px);
+                     right: 0;
+                     width: 140px;
+                     padding: 10px 12px;
+                     background-color: #6b7280;
+                     color: white;
+                     font-size: 12px;
+                     border-radius: 10px;
+                     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                     transition: opacity 0.2s ease, visibility 0.2s ease;
+                     z-index: 50;
+                     white-space: nowrap;">
+                    <ul style="list-style: none; margin: 0; padding: 0; line-height: 1.8;">
+                        <li>• Waiting = 3</li>
+                        <li>• Approved = 1</li>
+                        <li>• Finish = 11</li>
+                    </ul>
+                    <!-- Arrow -->
+                    <div style="
+                         position: absolute;
+                         top: 100%;
+                         right: 12px;
+                         width: 0;
+                         height: 0;
+                         border-left: 8px solid transparent;
+                         border-right: 8px solid transparent;
+                         border-top: 8px solid #6b7280;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <style>
+            .tooltip-wrapper:hover .tooltip-box {
+                visibility: visible !important;
+                opacity: 1 !important;}
+        </style>
+        </div>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-1 xl:grid-cols-1">
+            <div class="card">
+                <div class="flex items-center gap-3 mb-4">
+                    <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 grow">List</h2>
+                    <a href="#" id="filtersScrapNotice" class="px-3 py-1.5 rounded-md text-xs border border-black/20 dark:border-darkborder text-muted"><i class="align-bottom ltr:mr-1 rtl:ml-1 ri-filter-line"></i> Filters</a>
+                </div>
+                <div id="filterList" class="flex flex-wrap gap-4 justify-between hidden">
+
+                    <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Initiator</h2>
+                        <div class="relative space-y-1">
+                            <input id="scrapInitiatorNameFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Search Initiator..." autocomplete="off">
+                            <input type="hidden" id="scrapInitiatorKpkFilter" />
+                            <div id="scrapInitiatorResults"
+                                 class="absolute left-0 top-full w-full bg-white border border-gray-300
+                                    rounded-md mt-1 max-h-[160px]
+                                    overflow-y-auto hidden z-50 shadow">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Facility</h2>
+                        <form class="space-y-2">
+                            <div class="space-y-1">
+                                <input id="scrapFacilityFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Enter Facility">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Application's</h2>
+                        <form class="space-y-2">
+                            <div class="space-y-1">
+                                <select id="applicationTypeFilter" class="form-select w-full text-sm p-2 bg-white border rounded dark:bg-darklight dark:text-white">
+                                    <option value="scrap">Scrap</option>
+                                    <option value="pia">PIA</option>
+                                    <option value="tpr">TPR</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- date range test -->
+                    <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Date Range</h2>
+                        <div id="dateRangePicker" style="position:relative;">
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input id="inputStart" readonly placeholder="Start date"
+                                       class="form-input w-full text-sm p-2 cursor-pointer" />
+                                <span class="text-gray-400 text-sm">→</span>
+                                <input id="inputEnd" readonly placeholder="End date"
+                                       class="form-input w-full text-sm p-2 cursor-pointer" />
+                            </div>
+
+                            <!-- Hidden inputs untuk dikirim ke server -->
+                            <input type="hidden" id="scrapDateStart" name="scrapDateStart" />
+                            <input type="hidden" id="scrapDateEnd" name="scrapDateEnd" />
+
+                            <!-- Calendar Popup -->
+                            <div id="calPopup" style="display:none;position:absolute;z-index:999;margin-top:4px;
+            background:#fff;border:1px solid #ddd;border-radius:8px;
+            box-shadow:0 4px 20px rgba(0,0,0,0.12);width:280px;">
+
+                                <div style="display:flex;align-items:center;justify-content:space-between;
+                background:#4a90d9;color:#fff;padding:10px 14px;
+                border-radius:8px 8px 0 0;font-size:14px;font-weight:500;">
+                                    <button type="button" id="prevBtn"
+                                            style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 6px;">
+                                        &lsaquo;
+                                    </button>
+                                    <span id="monthLabel"></span>
+                                    <button type="button" id="nextBtn"
+                                            style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 6px;">
+                                        &rsaquo;
+                                    </button>
+                                </div>
+
+                                <div style="padding:10px;" id="calGrid"></div>
+
+                                <div style="display:flex;justify-content:flex-end;padding:6px 10px 10px;border-top:1px solid #eee;">
+                                    <button type="button" id="clearBtn"
+                                            style="background:none;border:none;color:#4a90d9;font-size:13px;cursor:pointer;">
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <style>
+                        .dr-day {
+                            font-size: 12px;
+                            text-align: center;
+                            padding: 5px 2px;
+                            cursor: pointer;
+                            border-radius: 4px;
+                            color: #333;
+                            user-select: none;
+                        }
+
+                            .dr-day:hover:not(.empty) {
+                                background: #f0f0f0;
+                            }
+
+                            .dr-day.start, .dr-day.end {
+                                background: #4a90d9 !important;
+                                color: #fff !important;
+                                border-radius: 50%;
+                                font-weight: 500;
+                            }
+
+                            .dr-day.in-range {
+                                background: #d0e8f8;
+                                color: #1a5f9a;
+                                border-radius: 0;
+                            }
+
+                            .dr-day.start.has-end {
+                                border-radius: 50% 0 0 50%;
+                            }
+
+                            .dr-day.end.has-start {
+                                border-radius: 0 50% 50% 0;
+                            }
+
+                            .dr-day.today {
+                                color: #4a90d9;
+                                font-weight: 500;
+                            }
+                    </style>
+
+                    <script>
+                        (function () {
+                            var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+                                'July', 'August', 'September', 'October', 'November', 'December'];
+                            var DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+                            var now = new Date();
+                            var viewYear = now.getFullYear(), viewMonth = now.getMonth();
+                            var startDate = null, endDate = null, hoverDate = null, selecting = false;
+
+                            function sameDay(a, b) {
+                                return a && b && a.getFullYear() === b.getFullYear()
+                                    && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+                            }
+                            function fmt(d) {
+                                if (!d) return '';
+                                return ('0' + d.getDate()).slice(-2) + '/'
+                                    + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + d.getFullYear();
+                            }
+                            function fmtISO(d) {
+                                if (!d) return '';
+                                return d.getFullYear() + '-'
+                                    + ('0' + (d.getMonth() + 1)).slice(-2) + '-'
+                                    + ('0' + d.getDate()).slice(-2);
+                            }
+                            function getWeekNum(d) {
+                                var jan1 = new Date(d.getFullYear(), 0, 1);
+                                return Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+                            }
+
+                            function render() {
+                                document.getElementById('monthLabel').textContent = MONTHS[viewMonth] + ' ' + viewYear;
+                                var grid = document.getElementById('calGrid');
+                                grid.innerHTML = '';
+
+                                // DOW header
+                                var headerRow = document.createElement('div');
+                                headerRow.style.cssText = 'display:grid;grid-template-columns:28px repeat(7,1fr);gap:2px;margin-bottom:4px;';
+                                var wkHead = document.createElement('div');
+                                headerRow.appendChild(wkHead);
+                                DAYS.forEach(function (d) {
+                                    var el = document.createElement('div');
+                                    el.style.cssText = 'font-size:11px;color:#888;text-align:center;padding:3px 0;font-weight:500;';
+                                    el.textContent = d;
+                                    headerRow.appendChild(el);
+                                });
+                                grid.appendChild(headerRow);
+
+                                var first = new Date(viewYear, viewMonth, 1);
+                                var startDow = first.getDay();
+                                var daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+                                var effEnd = endDate || (selecting && hoverDate ? hoverDate : null);
+                                var rStart = startDate && effEnd ? (startDate <= effEnd ? startDate : effEnd) : startDate;
+                                var rEnd = startDate && effEnd ? (startDate <= effEnd ? effEnd : startDate) : null;
+
+                                var row = null; var col = 0;
+                                function newRow(date) {
+                                    row = document.createElement('div');
+                                    row.style.cssText = 'display:grid;grid-template-columns:28px repeat(7,1fr);gap:2px;margin-bottom:2px;';
+                                    var wk = document.createElement('div');
+                                    wk.style.cssText = 'font-size:10px;color:#bbb;display:flex;align-items:center;justify-content:center;';
+                                    if (date) wk.textContent = getWeekNum(date);
+                                    row.appendChild(wk); grid.appendChild(row); col = 0;
+                                }
+                                newRow(first);
+
+                                for (var i = 0; i < startDow; i++) {
+                                    var e = document.createElement('div');
+                                    e.className = 'dr-day empty'; row.appendChild(e); col++;
+                                }
+
+                                for (var d = 1; d <= daysInMonth; d++) {
+                                    if (col > 0 && col % 7 === 0) newRow(new Date(viewYear, viewMonth, d));
+                                    var dt = new Date(viewYear, viewMonth, d);
+                                    var el = document.createElement('div');
+                                    el.className = 'dr-day';
+                                    el.textContent = d;
+                                    el.dataset.date = dt.toISOString();
+
+                                    var isStart = rStart && sameDay(dt, rStart);
+                                    var isEnd = rEnd && sameDay(dt, rEnd);
+                                    var inRange = rStart && rEnd && dt > rStart && dt < rEnd;
+
+                                    if (isStart && isEnd) { el.classList.add('start', 'end'); }
+                                    else {
+                                        if (isStart) { el.classList.add('start'); if (rEnd) el.classList.add('has-end'); }
+                                        if (isEnd) { el.classList.add('end'); if (rStart) el.classList.add('has-start'); }
+                                        if (inRange) el.classList.add('in-range');
+                                    }
+                                    if (sameDay(dt, now) && !isStart && !isEnd) el.classList.add('today');
+                                    row.appendChild(el); col++;
+                                }
+
+                                document.getElementById('inputStart').value = startDate ? fmt(startDate) : '';
+                                document.getElementById('inputEnd').value = endDate ? fmt(endDate) : '';
+                                document.getElementById('scrapDateStart').value = startDate ? fmtISO(startDate) : '';
+                                document.getElementById('scrapDateEnd').value = endDate ? fmtISO(endDate) : '';
+                            }
+
+                            var calGrid = document.getElementById('calGrid');
+
+                            calGrid.addEventListener('mouseover', function (e) {
+                                var el = e.target.closest ? e.target.closest('.dr-day:not(.empty)') : null;
+                                if (!el) return;
+                                if (selecting) { hoverDate = new Date(el.dataset.date); render(); }
+                            });
+                            calGrid.addEventListener('mouseleave', function () {
+                                if (selecting) { hoverDate = null; render(); }
+                            });
+                            calGrid.addEventListener('click', function (e) {
+                                var el = e.target.closest ? e.target.closest('.dr-day:not(.empty)') : null;
+                                if (!el || !el.dataset.date) return;
+                                var clicked = new Date(el.dataset.date);
+                                if (!selecting || !startDate) {
+                                    startDate = clicked; endDate = null; selecting = true; hoverDate = null;
+                                } else {
+                                    if (clicked < startDate) { endDate = startDate; startDate = clicked; }
+                                    else { endDate = clicked; }
+                                    selecting = false; hoverDate = null;
+                                    document.getElementById('calPopup').style.display = 'none';
+                                }
+                                render();
+                            });
+
+                            document.getElementById('prevBtn').addEventListener('click', function () {
+                                viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } render();
+                            });
+                            document.getElementById('nextBtn').addEventListener('click', function () {
+                                viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } render();
+                            });
+                            document.getElementById('clearBtn').addEventListener('click', function () {
+                                startDate = null; endDate = null; selecting = false; hoverDate = null; render();
+                                document.getElementById('calPopup').style.display = 'none';
+                            });
+
+                            document.getElementById('inputStart').addEventListener('click', function () {
+                                var p = document.getElementById('calPopup');
+                                p.style.display = p.style.display === 'none' ? 'block' : 'none';
+                            });
+                            document.getElementById('inputEnd').addEventListener('click', function () {
+                                if (startDate && !endDate) { selecting = true; }
+                                document.getElementById('calPopup').style.display = 'block';
+                            });
+
+                            document.addEventListener('click', function (e) {
+                                if (!document.getElementById('dateRangePicker').contains(e.target)) {
+                                    document.getElementById('calPopup').style.display = 'none';
+                                }
+                            });
+
+                            render();
+                        })();
+                    </script>
+                    <!-- date range test -->
+                    <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">MCC Code</h2>
+                        <form class="space-y-2">
+                            <div class="space-y-1">
+                                <input id="scrapCodeFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Input MCC Code">
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">TC Code</h2>
+                        <form class="space-y-2">
+                            <div class="space-y-1">
+                                <input id="scrapTcCodeFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Input TC Code">
+                            </div>
+                        </form>
+                    </div>
+
+
+
+                    <div class="flex w-full justify-end gap-2 mt-2">
+                        <!-- Apply Filters icon -->
+                        <button id="applyFiltersScrapListButton"
+                                class="px-2 py-1 bg-success text-white rounded shadow hover:bg-success/[0.85] transition flex items-center justify-center text-sm mb-2">
+                            <i class="ri-check-line text-sm mr-1"></i>
+                            Apply
+                        </button>
+
+                        <!-- Reset Filters icon -->
+                        <button id="resetFiltersScrapListButton"
+                                class="px-2 py-1 bg-danger text-white rounded shadow hover:bg-danger/[0.85] transition flex items-center justify-center text-sm mb-2">
+                            <i class="ri-refresh-line text-sm mr-1"></i>
+                            Reset
+                        </button>
+                    </div>
+
+
+
+                </div>
+                <div class="overflow-auto">
+                    <table class="min-w-[640px] w-full">
+                        <thead>
+                            <tr class="ltr:text-left rtl:text-right">
+                                <th>Document ID</th>
+                                <th>Facility</th>
+                                <th>Initiator</th>
+                                <th>Created Date</th>
+                                <th>MCC Code </th>
+                                <th>TC</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                                <th>Current Approval</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listOfScrap">
+                            <tr class="text-muted">
+                                <td colspan="4" class="py-6 text-center">
+                                    <div class="flex justify-center items-center gap-2">
+                                        <!-- Spinner -->
+                                        <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                        <span>Loading...</span>
+                                    </div>
+                                </td>
+                                <td colspan="4" class="py-6 text-center">
+                                    <div class="flex justify-center items-center gap-2">
+                                        <!-- Spinner -->
+                                        <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                        <span>Loading...</span>
+                                    </div>
+                                </td>
+                                <td colspan="3" class="py-6 text-center">
+                                    <div class="flex justify-center items-center gap-2">
+                                        <!-- Spinner -->
+                                        <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                        <span>Loading...</span>
+                                    </div>
+                                </td>
+                            </tr>
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <div>
+            <ul id="buttonPagination" class="inline-flex items-center gap-1 m-auto mb-4">
+            </ul>
+        </div>
+    </div>
+<!-- End All Card -->
+
+@section scripts{
+
+
+    <script src="~/assets/js/main.js"></script>
+
+    <script>
+
+        $(document).ready(function () {
+            loadData(1, pageSize, {}); // filters default empty object
+            loadScrapTotals();
+            initInitiatorAutocompleteForAllScrap();
+        });
+
+        filterButton.addEventListener('click', function (e) {
+            e.preventDefault(); // mencegah href="#" reload halaman
+            filterList.classList.toggle('hidden'); // toggle class hidden
+        });
+
+
+        function loadData(pageNumber = 1, pageSize, filters = currentFilters) {
+            return $.ajax({
+                url: urlGetSourceDataScrap,
+                type: "GET",
+                data: {
+                    pageNumber: pageNumber,
+                    pageSize: pageSize,
+                    "statusList[0]": 1,
+                    "statusList[1]": 4,
+                    "statusList[2]": 5,
+                    "statusList[3]": 9,
+                    "statusList[4]": 16,
+
+                    initiatorKpk: filters.initiatorKpk || "",
+                    facility: filters.facility || "",
+                    createdDateFrom: filters.createdDateFrom || "",
+                    createdDateTo: filters.createdDateTo || "",
+                    scrapCode: filters.scrapCode || "",
+                    tc: filters.tc || "",
+                    totalFrom: filters.totalFrom || "",
+                    totalTo: filters.totalTo || ""
+                },
+                dataType: "json"
+            }).done(function (res) {
+                renderTable(res.Data);
+                renderPagination(res.TotalCount, res.PageNumber, res.PageSize);
+            }).fail(function (xhr, status, error) {
+                console.error("Error loading data:", error);
+            });
+        }
+
+        function initInitiatorAutocompleteForAllScrap() {
+            const $input = $("#scrapInitiatorNameFilter");
+            const $results = $("#scrapInitiatorResults");
+            const $kpkHidden = $("#scrapInitiatorKpkFilter");
+
+            $input.on("input", function () {
+                const query = $(this).val().trim();
+
+                if (query.length < 3) {
+                    $results.empty().addClass("hidden");
+                    $kpkHidden.val("");
+                    return;
+                }
+
+                fetchData(urlGetEmployee, { keyword: query }, function (res) {
+                    $results.empty();
+
+                    if (res.success && Array.isArray(res.data)) {
+                        const limited = res.data.slice(0, 5);
+                        limited.forEach(item => {
+                            const option = $("<div>")
+                                .addClass("dropdown-item hover:bg-success/[0.85] cursor-pointer p-2 rounded text-sm")
+                                .text(capitalizeWords(item.name) + " (" + item.kpk + ")")
+                                .on("click", function () {
+                                    $kpkHidden.val(item.kpk);
+                                    $input.val(capitalizeWords(item.name));
+                                    $results.empty().addClass("hidden");
+                                });
+
+                            $results.append(option);
+                        });
+
+                        $results.removeClass("hidden");
+                    } else {
+                        $results.addClass("hidden");
+                    }
+                });
+            });
+
+            $(document).on("click", function (e) {
+                if (!$(e.target).closest("#scrapInitiatorNameFilter, #scrapInitiatorResults").length) {
+                    $results.empty().addClass("hidden");
+                }
+            });
+        }
+
+        async function loadScrapTotals() {
+            try {
+                const statusArray = [1, 4, 9]; // hanya status yang ingin diambil
+                const data = {};
+
+                // Tambahkan statusList dengan format indexed agar MVC bisa bind
+                statusArray.forEach((s, i) => data[`statusList[${i}]`] = s);
+
+                const response = await $.ajax({
+                    url: urlGetScrapTotals,
+                    type: 'GET',
+                    data: data, // hanya statusList dikirim
+                    dataType: 'json'
+                });
+
+                // Update DOM dengan data dari server
+                $("#totalValueAll").empty().text(formatRupiahShort(response.TotalValueAll));
+                $("#totalQtyAll").empty().text(response.TotalQtyAll.toLocaleString("id-ID"));
+                $("#totalValuePending").empty().text(formatRupiahShort(response.TotalValuePending));
+                $("#totalValueApprove").empty().text(formatRupiahShort(response.TotalValueApproved));
+
+            } catch (err) {
+                console.error("Error fetch scrap totals:", err);
+            }
+        }
+
+    </script>
+
+}

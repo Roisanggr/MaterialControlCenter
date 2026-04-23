@@ -1,0 +1,154 @@
+﻿<!-- Start Sidebar -->
+<nav class="sidebar lg:z-[9] z-[10]">
+    <div class="h-full bg-white dark:bg-darklight group-data-[sidebar=dark]/item:bg-darklight group-data-[sidebar=brand]/item:bg-sky-950 ">
+        <div class="p-4">
+            <a href="@Url.Action("Index", "Dashboard")" class="w-full main-logo">
+                <img src="~/assets/images/WhiteMcc.png" class="mx-auto dark-logo h-32 logo dark:hidden group-data-[sidebar=dark]/item:hidden group-data-[sidebar=brand]/item:hidden" alt="logo" />
+                <img src="~/assets/images/BlackScrap.png" class="hidden mx-auto light-logo h-32 logo dark:block group-data-[sidebar=dark]/item:block group-data-[sidebar=brand]/item:block" alt="logo" />
+                <img src="~/assets/images/MattelLogo.png" class="hidden mx-auto logo-icon h-32" alt="">
+            </a>
+        </div>
+        <div class="h-[calc(100vh-60px)]  overflow-y-auto overflow-x-hidden px-5 pb-4 space-y-16 detached-menu">
+            <ul class="relative flex flex-col gap-1 " x-data="sidebarMenu">
+                <h2 class="my-2 text-sm text-black/50 dark:text-white/30 group-data-[sidebar=dark]/item:text-white/30 group-data-[sidebar=brand]/item:text-sky-200/50"><span>Menu</span></h2>
+                <li class="menu nav-item">
+                    <a href="@Url.Action("Index", "Dashboard")" class="items-center text-black nav-link group @if(ViewBag.ActiveItem == "default") {<text>active</text>}">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
+                                <path d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2ZM12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4ZM15.8329 7.33748C16.0697 7.17128 16.3916 7.19926 16.5962 7.40381C16.8002 7.60784 16.8267 7.92955 16.6587 8.16418C14.479 11.2095 13.2796 12.8417 13.0607 13.0607C12.4749 13.6464 11.5251 13.6464 10.9393 13.0607C10.3536 12.4749 10.3536 11.5251 10.9393 10.9393C11.3126 10.5661 12.9438 9.36549 15.8329 7.33748ZM17.5 11C18.0523 11 18.5 11.4477 18.5 12C18.5 12.5523 18.0523 13 17.5 13C16.9477 13 16.5 12.5523 16.5 12C16.5 11.4477 16.9477 11 17.5 11ZM6.5 11C7.05228 11 7.5 11.4477 7.5 12C7.5 12.5523 7.05228 13 6.5 13C5.94772 13 5.5 12.5523 5.5 12C5.5 11.4477 5.94772 11 6.5 11ZM8.81802 7.40381C9.20854 7.79433 9.20854 8.4275 8.81802 8.81802C8.4275 9.20854 7.79433 9.20854 7.40381 8.81802C7.01328 8.4275 7.01328 7.79433 7.40381 7.40381C7.79433 7.01328 8.4275 7.01328 8.81802 7.40381ZM12 5.5C12.5523 5.5 13 5.94772 13 6.5C13 7.05228 12.5523 7.5 12 7.5C11.4477 7.5 11 7.05228 11 6.5C11 5.94772 11.4477 5.5 12 5.5Z" fill="currentColor"></path>
+                            </svg>
+                            <span class="ltr:pl-1.5 rtl:pr-1.5">Dashboard</span>
+                        </div>
+                    </a>
+                </li>
+                <li class="menu nav-item">
+                    <a href="@Url.Action("AllScrap", "ScrapRecords")" class="items-center justify-between text-black nav-link group @(ViewBag.ActiveItem == "records-All" ? "active" : "")">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 6L12 2L20 6L12 10L4 6ZM4 10L12 14L20 10L12 6L4 10ZM4 14L12 18L20 14L12 10L4 14ZM4 18L12 22L20 18L12 14L4 18Z" />
+                            </svg>
+                            <span class="ltr:pl-1.5 rtl:pr-1.5">All Records</span>
+                        </div>
+                    </a>
+                </li>
+                <h2 class="my-2 text-sm text-black/50 dark:text-white/30 group-data-[sidebar=dark]/item:text-white/30 group-data-[sidebar=brand]/item:text-sky-200/50"><span>MCC Handling</span></h2>
+                <li class="menu nav-item">
+                    <a href="javascript:void(0);" class="items-center justify-between text-black nav-link group" :class="{'active' : isActive('create')}" @@click="toggle('create')">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 3H14.82C14.4 1.84 13.3 1 12 1C10.7 1 9.6 1.84 9.18 3H5C3.9 3 3 3.9 3 5V21C3 22.1 3.9 23 5 23H19C20.1 23 21 22.1 21 21V5C21 3.9 20.1 3 19 3ZM12 3C12.55 3 13 3.45 13 4C13 4.55 12.55 5 12 5C11.45 5 11 4.55 11 4C11 3.45 11.45 3 12 3ZM19 21H5V5H7V7H17V5H19V21Z" />
+                            </svg>
+
+                            <span class="ltr:pl-1.5 rtl:pr-1.5">Create</span>
+                        </div>
+                        <div class="flex items-center justify-center w-4 h-4 dropdown-icon" :class="{'!rotate-180' : isActive('create')}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6">
+                                <path d="M11.9997 13.1714L16.9495 8.22168L18.3637 9.63589L11.9997 15.9999L5.63574 9.63589L7.04996 8.22168L11.9997 13.1714Z" fill="currentColor"></path>
+                            </svg>
+                        </div>
+                    </a>
+                    <ul x-cloak x-show="isActive('create')" x-collapse class="flex flex-col gap-1 text-black sub-menu dark:text-white/60 group-data-[sidebar=dark]/item:text-white/60 group-data-[sidebar=brand]/item:text-sky-200/50">
+                        <li><a href="@Url.Action("CreateScrap", "Forms")" class="@if (ViewBag.ActiveItem == "forms-createScrap") {<text>active</text>}">Create Scrap</a></li>
+                        <li><a href="@Url.Action("CreatePia", "Forms")" class="@if (ViewBag.ActiveItem == "forms-createPia") {<text>active</text>}">Create PIA</a></li>
+                        <li><a href="@Url.Action("CreateTpr", "Forms")" class="@if (ViewBag.ActiveItem == "forms-createTpr") {<text>active</text>}">Create TPR</a></li>
+                    </ul>
+                </li>
+                <li class="menu nav-item">
+                    <a href="javascript:void(0);" class="items-center justify-between text-black nav-link group" :class="{'active' : isActive('approval')}" @@click="toggle('approval')">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M13 3H6C4.9 3 4 3.9 4 5V19C4 20.1 4.9 21 6 21H18C19.1 21 20 20.1 20 19V9H14C13.45 9 13 8.55 13 8V3ZM14 3.5L19.5 9H15C14.45 9 14 8.55 14 8V3.5ZM11 11H13V17H11V11ZM11 18H13V20H11V18Z" />
+                            </svg>
+
+                            <span class="ltr:pl-1.5 rtl:pr-1.5 flex items-center gap-1">
+                                Approval Center
+                                <span id="approvalCountTotal"
+                                      class="px-1 text-xs text-white rounded bg-purple hidden">
+                                    0
+                                </span>
+                            </span>
+
+                        </div>
+                        <div class="flex items-center justify-center w-4 h-4 dropdown-icon" :class="{'!rotate-180' : isActive('approval')}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6">
+                                <path d="M11.9997 13.1714L16.9495 8.22168L18.3637 9.63589L11.9997 15.9999L5.63574 9.63589L7.04996 8.22168L11.9997 13.1714Z" fill="currentColor"></path>
+                            </svg>
+                        </div>
+                    </a>
+                    <ul x-cloak x-show="isActive('approval')" x-collapse class="flex flex-col gap-1 text-black sub-menu dark:text-white/60 group-data-[sidebar=dark]/item:text-white/60 group-data-[sidebar=brand]/item:text-sky-200/50">
+                        <li><a href="@Url.Action("Index", "Approval")" class="@if (ViewBag.ActiveItem == "approval-assign") {<text>active</text>}">Direct</a></li>
+                        <li><a href="@Url.Action("Delegates", "Approval")" class="@if (ViewBag.ActiveItem == "approval-Delegates") {<text>active</text>}">Delegation</a></li>
+
+                    </ul>
+                </li>
+                <h2 class="my-2 text-sm text-black/50 dark:text-white/30 group-data-[sidebar=dark]/item:text-white/30 group-data-[sidebar=brand]/item:text-sky-200/50"><span>Users Management</span></h2>
+                <li class="menu nav-item">
+                    <a href="javascript:void(0);" class="items-center justify-between text-black nav-link group" :class="{'active' : isActive('users')}" @@click="toggle('users')">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
+                                <path d="M4 22C4 17.5817 7.58172 14 12 14C16.4183 14 20 17.5817 20 22H18C18 18.6863 15.3137 16 12 16C8.68629 16 6 18.6863 6 22H4ZM12 13C8.685 13 6 10.315 6 7C6 3.685 8.685 1 12 1C15.315 1 18 3.685 18 7C18 10.315 15.315 13 12 13ZM12 11C14.21 11 16 9.21 16 7C16 4.79 14.21 3 12 3C9.79 3 8 4.79 8 7C8 9.21 9.79 11 12 11Z" fill="currentColor"></path>
+                            </svg>
+                            <span class="ltr:pl-1.5 rtl:pr-1.5">Users</span>
+                        </div>
+                        <div class="flex items-center justify-center w-4 h-4 dropdown-icon" :class="{'!rotate-180' : isActive('users')}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6">
+                                <path d="M11.9997 13.1714L16.9495 8.22168L18.3637 9.63589L11.9997 15.9999L5.63574 9.63589L7.04996 8.22168L11.9997 13.1714Z" fill="currentColor"></path>
+                            </svg>
+                        </div>
+                    </a>
+                    <ul x-cloak x-show="isActive('users')" x-collapse class="flex flex-col gap-1 text-black sub-menu dark:text-white/60 group-data-[sidebar=dark]/item:text-white/60 group-data-[sidebar=brand]/item:text-sky-200/50">
+                        <li><a href="@Url.Action("Profile", "Users")" class="@if (ViewBag.ActiveItem == "profile") {<text>active</text>}">My Profile</a></li>
+                        <li><a href="@Url.Action("Profile", "Users")" class="@if (ViewBag.ActiveItem == "profile") {<text>active</text>}">My Delegations</a></li>
+                        <li><a href="@Url.Action("Profile", "Users")" class="@if (ViewBag.ActiveItem == "profile") {<text>active</text>}">My Records</a></li>
+
+                        <li id="sidebarUserManagement" class="hidden"><a href="@Url.Action("Management", "Users")" class="@if (ViewBag.ActiveItem == "settings") {<text>active</text>}">Management</a></li>
+                    </ul>
+                </li>
+
+
+                <li id="sidebarConfiguration" class="menu nav-item hidden">
+                    <h2 class="my-2 text-sm text-black/50 dark:text-white/30 group-data-[sidebar=dark]/item:text-white/30 group-data-[sidebar=brand]/item:text-sky-200/50"><span>Supports</span></h2>
+                    <a href="javascript:void(0);" class="items-center justify-between text-black nav-link group" :class="{'active' : isActive('change')}" @@click="toggle('change')">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
+                                <path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.66l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42l-.36 2.54c-.59.23-1.13.54-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.61 8.82a.5.5 0 0 0 .12.66l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.66l1.92 3.32c.14.24.43.34.7.22l2.39-.96c.49.4 1.03.71 1.62.94l.36 2.54c.04.25.25.42.49.42h4c.24 0 .45-.17.49-.42l.36-2.54c.59-.23 1.13-.54 1.62-.94l2.39.96c.27.12.56.02.7-.22l1.92-3.32a.5.5 0 0 0-.12-.66l-2.03-1.58ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" />
+                            </svg>
+
+
+                            <span class="ltr:pl-1.5 rtl:pr-1.5">Configuration</span>
+                        </div>
+                        <div class="flex items-center justify-center w-4 h-4 dropdown-icon" :class="{'!rotate-180' : isActive('users')}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6">
+                                <path d="M11.9997 13.1714L16.9495 8.22168L18.3637 9.63589L11.9997 15.9999L5.63574 9.63589L7.04996 8.22168L11.9997 13.1714Z" fill="currentColor"></path>
+                            </svg>
+                        </div>
+                    </a>
+                    <ul x-cloak x-show="isActive('change')" x-collapse class="flex flex-col gap-1 text-black sub-menu dark:text-white/60 group-data-[sidebar=dark]/item:text-white/60 group-data-[sidebar=brand]/item:text-sky-200/50">
+                        <li><a href="@Url.Action("Remarks", "Configuration")" class="@if (ViewBag.ActiveItem == "Remarks") {<text>active</text>}">Remarks</a></li>
+                        <li><a href="@Url.Action("ScrapCode", "Configuration")" class="@if (ViewBag.ActiveItem == "ScrapCode") {<text>active</text>}">Code</a></li>
+                        <li><a href="@Url.Action("SpecialCase", "Configuration")" class="@if (ViewBag.ActiveItem == "ApprovalDesign") {<text>active</text>}">Approval</a></li>
+                    </ul>
+                </li>
+
+                <h2 class="my-2 text-sm text-black/50 dark:text-white/30 group-data-[sidebar=dark]/item:text-white/30 group-data-[sidebar=brand]/item:text-sky-200/50"><span>Guide</span></h2>
+                <li class="menu nav-item">
+                    <a href="@Url.Action("Index", "GuideBook")" class="nav-link group @if (ViewBag.ActiveItem == "Book") {<text>active</text>}" @@click="toggle('single')">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M2 4a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4zm11 0a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V4zM4 4v16h7V4H4zm9 0v16h7V4h-7z" />
+                            </svg>
+
+
+                            <span class="ltr:pl-1.5 rtl:pr-1.5">Book</span>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+
+
+        </div>
+    </div>
+</nav>
+
+
+<!-- End sidebar -->

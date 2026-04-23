@@ -1,0 +1,2375 @@
+
+@{
+    ViewBag.Title = "Forms";
+    ViewBag.pTitle = "Create PIA";
+    ViewBag.xData = "forms";
+    ViewBag.ActiveItem = "forms-createPia";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<!-- Start All Card -->
+<div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
+    <div class="flex justify-center items-center bg-muted/20 h-32">
+        <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded text-center">
+            Master PIA
+        </h2>
+    </div>
+
+
+    <!-- 4 kolom -->
+    <div class="flex flex-wrap gap-4 justify-between">
+
+        <div class="card flex-1 basis-1/3 min-w-[300px]">
+            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Type Of PIA</h2>
+            <div id="typeOfPiaDropdownWrapper" class="space-y-4">
+                <select id="typeOfPiaDropdown" class="form-input" required>
+                    <option value="">-- Select Type --</option>
+                </select>
+            </div>
+
+        </div>
+        <div class="card flex-1 basis-1/3 min-w-[300px]">
+
+            <div class="flex gap-4">
+
+                <div class="w-full">
+                    <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Facility</h2>
+                    <div class="space-y-4">
+                        <select id="facilityDropdown" class="form-input" required>
+
+                            <option value="">-- Select Facility --</option>
+                        </select>
+                        <input id="facilityInitiator" type="text" class="form-input w-full hidden" placeholder="Facility" required>
+                    </div>
+                </div>
+
+                <input type="hidden" id="supervisorInitiatorKpk" name="supervisorInitiatorKpk" />
+                <div class="w-full">
+                    <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Supervisor</h2>
+                    <div class="space-y-4">
+
+                        <input type="text" id="supervisorInitiatorName" name="supervisorInitiatorName" placeholder="Search Supervisor..." class="form-input w-full" autocomplete="off" />
+                        <div id="supervisorResults" class="dropdown-results absolute w-100 bg-white border border-muted rounded mt-1 z-50 hidden" style="max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="piaCodeTcResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden">
+            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">TC</h2>
+            <div class="space-y-4">
+                <select id="tcDropdown" class="form-input" required>
+                </select>
+            </div>
+        </div>
+        <div id="piaCodeResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden">
+            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Reason Code</h2>
+            <div id="piaCodeDropdownWrapper" class="space-y-4">
+                <select id="piaCodeDropdown" class="form-input" required>
+                    <option value="">-- Select PIA Code --</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="piaCodeWCResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden">
+            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">WC</h2>
+            <div id="wcDropdownWrapper" class="space-y-4">
+                <select id="wcDropdown" class="form-input" required>
+                    <option value="">-- Select WC --</option>
+
+                </select>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="sectionContainer" class="flex justify-center items-center bg-muted/20 h-32">
+        <button id="continueBtnCreatePia"
+                class="flex items-center justify-center gap-2 px-6 py-2 bg-info text-white rounded-lg shadow w-full hover:bg-info/[0.85] transition">
+            Continue to Next Step
+            
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="w-5 h-5"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor"
+                 stroke-width="2">
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
+
+    <div id="formContainerDetailsPartNumber" class="space-y-4 mt-4 hidden">
+        <div class="flex justify-start pt-4 gap-4">
+            <!-- Button kiri -->
+            <button id="addRowBtn"
+                    class="flex items-center justify-center gap-2 px-6 py-2 bg-success text-white rounded-lg shadow hover:bg-success/[0.85] transition">
+               
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="w-5 h-5"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Row
+            </button>
+
+            <input type="file" id="excelFile" accept=".xlsx,.xls" class="hidden" />
+            <button id="importExcel"
+                    class="flex items-center justify-center gap-2 px-6 py-2 bg-info text-white rounded-lg shadow hover:bg-info/[0.85] transition">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="w-5 h-5"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 0l-4 4m4-4l4 4" />
+                </svg>
+                Import Excel
+            </button>
+
+            <button id="openModalsForAnalyzedCaseMaterial"
+                    class="flex items-center justify-center gap-2 px-6 py-2 bg-warning text-white rounded-lg shadow hover:bg-warning/[0.85] transition hidden">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="w-5 h-5"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M9 12h6m-6 4h4m6.414-9.414a2 2 0 00-2.828 0L11 12.172V15h2.828l5.586-5.586a2 2 0 000-2.828z" />
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M5 19a2 2 0 002 2h10a2 2 0 002-2V7l-4-4H7a2 2 0 00-2 2v14z" />
+                </svg>
+                Add Notes
+            </button>
+
+            <button id="selectCompanionTC"
+                    class="flex items-center justify-center gap-2 px-6 py-2 bg-muted text-white rounded-lg shadow hover:bg-muted/[0.85] transition hidden">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="w-5 h-5"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M10 13a5 5 0 007.07 0l1.41-1.41a5 5 0 00-7.07-7.07L10 5" />
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M14 11a5 5 0 00-7.07 0L5.51 12.41a5 5 0 007.07 7.07L14 19" />
+                </svg>
+                TC Companion
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-[1200px] w-full table-auto border border-muted border-collapse">
+                <thead>
+                    <tr class="ltr:text-left rtl:text-right">
+                        <th class="border border-muted">#</th>
+                        <th class="border border-muted">Part Number</th>
+                        <th class="border border-muted">Description</th>
+                        <th class="border border-muted">UM</th>
+                        <th class="border border-muted">PP</th>
+                        <th class="border border-muted">Base Value</th>
+                        <th class="border border-muted">Physical Quantity</th>
+                        <th class="border border-muted">System Quantity</th>
+                        <th class="border border-muted">Variance Quantity</th>
+                        <th class="border border-muted">Total Value</th>
+                        <th class="border border-muted" data-column="leader">Leader</th>
+                        <th class="border border-muted">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody id="listOfPartnumber">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex justify-between items-center bg-muted/20 h-32 px-6">
+            <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded">
+                Total Qty PIA: <span id="totalQty">0</span>
+            </h2>
+
+            <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded">
+                Total PIA: <span id="totalRupiah">Rp 0,00</span>
+            </h2>
+        </div>
+
+        <div id="buttonSubmitDraft" class="flex justify-between items-center bg-muted/20 h-36 px-4">
+            <button id="submitBtnCreatePia" type="button"
+                    class="flex items-center justify-center gap-2 px-6 py-2 bg-success text-white rounded-lg shadow w-full mr-2 hover:bg-success/[0.85] transition">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="w-5 h-5"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Submit PIA
+            </button>
+
+            <button id="draftBtnCreatePia"
+                    class="px-6 py-2 bg-warning text-white rounded-lg shadow w-full ml-2 hover:bg-warning transition hidden">
+                Draft PIA
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="addNotesForSpecialCodeRemarks" class="fixed inset-0 bg-black/80 z-[99998] hidden overflow-y-auto w-3000">
+    <div class="flex items-start justify-center min-h-screen px-4">
+        <div class="relative w-full max-w-5xl p-0 my-8 overflow-hidden bg-white border rounded-xl shadow-lg border-black/10">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-3 bg-white border-b border-black/10">
+                <h5 class="text-lg font-semibold">Special Code Remarks</h5>
+            </div>
+
+            <!-- Body -->
+            <div class="p-5 space-y-5">
+                <div id="toastContainerrSpecialCodeRemarks" class="flex justify-center mb-2"></div>
+                <div>
+                    <label class="mb-2 text-sm font-semibold">Document Remarks</label>
+
+                    <input type="text" id="inputAddNotesForSpecialCodeRemarks" name="inputNotesSpecialRemarks" placeholder="Type your remarks for this document..."
+                           class="form-input w-full rounded border border-black/10" />
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full border border-black/20 text-sm" id="tableSpecialCodeRemarks">
+                        <thead class="bg-info">
+                            <tr>
+                                <th class="border px-2 py-1 w-12 text-center">No</th>
+                                <th class="border px-2 py-1">Part Number</th>
+                                <th class="border px-2 py-1">Part Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="flex items-center justify-end gap-3">
+                    <button id="closeAddNotesForSpecialCodeRemarks" type="button" class="btn bg-danger border-danger text-white hover:bg-danger/[0.85]">
+                        Close
+                    </button>
+                    <button type="button"
+                            id="saveAddNotesForSpecialCodeRemarks"
+                            class="btn bg-purple border-purple text-white hover:bg-purple/[0.85]">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalTCCompanion"
+     class="fixed inset-0 bg-black/60 z-[99999] hidden flex items-center justify-center">
+    <div class="bg-white w-[420px] rounded-xl shadow-lg">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-3 border-b">
+            <h5 class="text-base font-semibold text-gray-800">
+                TC Companion
+            </h5>
+        </div>
+
+        <!-- Body -->
+        <div class="px-5 py-4 space-y-3">
+            <label class="text-sm font-medium text-gray-700">
+                Select TC
+            </label>
+            <select id="TCCompanionDropdownModal"
+                    class="form-input w-full h-[40px] text-sm rounded-md">
+                <option value="">-- Select --</option>
+            </select>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end gap-3 px-5 py-3 border-t">
+            <button id="closedTcCompanionModals" class="px-4 py-2 text-sm rounded-md bg-danger text-white">
+                Cancel
+            </button>
+            <button id="saveTcCompanionModals" class="px-4 py-2 text-sm rounded-md bg-info text-white">
+                Save
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- End All Card -->
+@section scripts{
+
+    <script src="~/assets/js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        let partCounter = 0;
+        let selectedTC = null;
+        let allRemarks = [];
+        let selectedPiaCode = null;
+        let selectedCommit = false;
+        let selectedFacilities = plant;
+        let selectedFacilityInDropdown = null;
+        let specialRemarksCache = {};
+        const piaCodesWithNotes = ["MHK", "MII", "MOQ", "MQC"];
+        const piaCodesWithTCCompanion = ["MHK", "MII", "MOQ", "MQC", "MAL", "DDS", "DDT", "ENC", "ENM", "ENP", "MH", "OMF", "QHE", "QPX", "QRS"];
+
+        $(document).ready(function () {
+            localStorage.removeItem("specialCodeRemarks");
+            localStorage.removeItem("CompanionTc");
+            localStorage.removeItem("CompanionTcValue");
+            loadTypeOfPiaDropdown();
+            loadFacilityDropdown(
+                selectedFacilities,
+                "facilityDropdown",
+                "facilityInitiator",
+                "tcDropdown",
+                TC_URL
+            );
+
+            loadPiaCodeRemarks();
+            if (supervisorKpk) {
+                prefillSupervisor(supervisorKpk, urlGetEmployee);
+            }
+            initSupervisorDropdown(
+                "#supervisorInitiatorName",
+                "#supervisorResults",
+                "#supervisorInitiatorKpk",
+                "#supervisorInitiatorName",
+                urlGetEmployee
+            );
+        });
+
+        function showDropdownSpinner(wrapperId) {
+            $("#" + wrapperId).append(
+                '<div class="dropdown-spinner flex justify-center items-center p-2">' +
+                '<div class="animate-spin inline-block size-6 border-[3px] border-l-transparent border-purple rounded-full"></div>' +
+                '</div>'
+            );
+        }
+
+        function hideDropdownSpinner(wrapperId) {
+            $("#" + wrapperId + " .dropdown-spinner").remove();
+        }
+
+        function restoreDropdown(dropdownId) {
+            var dropdown = $("#" + dropdownId);
+            var parent = dropdown.parent();
+            var oldContent = dropdown.data("oldContent");
+
+            if (oldContent) {
+                parent.html(oldContent);
+                dropdown = $("#" + dropdownId);
+            }
+            return dropdown;
+        }
+
+        function populateDropdown(dropdown, data, options = {}) {
+            const {
+                valueField = "id",
+                placeholder = "-- Select Data --",
+                formatFn = (item) => item.name
+            } = options;
+
+            dropdown.empty();
+            dropdown.append(`<option value="">${placeholder}</option>`);
+
+            $.each(data, function (i, item) {
+                let displayText = formatFn(item);
+                let value = item[valueField];
+                dropdown.append(`<option value="${value}">${displayText}</option>`);
+            });
+        }
+
+        function handleAjaxError(errorMsg) {
+            showDynamicSwal({
+                title: "Error",
+                text: errorMsg,
+                icon: "error",
+                confirmText: "Close"
+            });
+        }
+
+        function loadTypeOfPiaDropdown() {
+            const dropdownId = "typeOfPiaDropdown";
+            const wrapperId = $("#" + dropdownId).parent().attr("id");
+            const dropdown = restoreDropdown(dropdownId);
+
+            showDropdownSpinner(wrapperId);
+
+            $.ajax({
+                url: urlGetTypeScrap,
+                type: 'GET',
+                success: function (data) {
+                    hideDropdownSpinner(wrapperId);
+
+
+                    populateDropdown(dropdown, data, {
+                        valueField: "Type_ID",
+                        placeholder: "-- Select Type --",
+                        formatFn: (item) => item.Type_Desc
+                    });
+                },
+                error: function (xhr, status, error) {
+                    hideDropdownSpinner(wrapperId);
+                    handleAjaxError("Failed to load type PIA data.");
+                }
+            });
+        }
+
+        function loadFacilityDropdown(facilities, dropdownId, inputId, tcDropdownId, tcUrl) {
+            const dropdown = document.getElementById(dropdownId);
+            const input = document.getElementById(inputId);
+            dropdown.innerHTML = "";
+
+            if (typeof facilities === "string") {
+                facilities = facilities.split(",").map(f => f.trim());
+            }
+            facilities = facilities.filter(Boolean);
+
+            if (!facilities.length) {
+                dropdown.innerHTML = `<option value="">-- Ask admin to assign facility --</option>`;
+                dropdown.disabled = true;
+                input.value = "";
+                selectedFacilityInDropdown = null;
+                return;
+            }
+
+            if (facilities.length === 1) {
+                const fac = facilities[0];
+                dropdown.innerHTML = `<option value="${fac}" selected>${fac}</option>`;
+                dropdown.disabled = true;
+
+                input.value = fac;
+                selectedFacilityInDropdown = fac;
+                const url = tcUrl + "?facility=" + encodeURIComponent(fac);
+                loadTcDropdown(tcDropdownId, url);
+
+                $('#piaCodeTcResultCard').removeClass('hidden');
+                $('#piaCodeWCResultCard').addClass('hidden');
+                $('#piaCodeResultCard').addClass('hidden');
+                return;
+            }
+
+            dropdown.append(new Option("-- Select Facility --", "", true, true));
+            dropdown.options[0].disabled = true;
+            facilities.forEach(fac => dropdown.append(new Option(fac, fac)));
+            dropdown.disabled = false;
+
+            dropdown.onchange = () => {
+                const fac = dropdown.value;
+                if (!fac) return;
+
+                input.value = fac;
+                selectedFacilityInDropdown = fac;
+
+                const url = tcUrl + "?facility=" + encodeURIComponent(fac);
+                loadTcDropdown(tcDropdownId, url);
+
+                $('#piaCodeTcResultCard').removeClass('hidden');
+                $('#piaCodeWCResultCard').addClass('hidden');
+                $('#piaCodeResultCard').addClass('hidden');
+            };
+        }
+
+        function loadTcDropdown(dropdownId, url) {
+            const wrapperId = dropdownId + "Wrapper";
+            const dropdown = $("#" + dropdownId);
+            dropdown.empty();
+            dropdown.append('<option value="">Loading...</option>');
+            dropdown.prop('disabled', true);
+            showDropdownSpinner(wrapperId);
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    hideDropdownSpinner(wrapperId);
+                    dropdown.empty();
+
+                    if (response.success && response.data.length > 0) {
+                        const filteredData = response.data.filter(item => TC.includes(item.TC));
+
+                        if (filteredData.length === 0) {
+                            dropdown.append('<option value="">-- No TC Available --</option>');
+                            dropdown.prop('disabled', true);
+                            return;
+                        }
+                        dropdown.append('<option value="" disabled selected>-- Select TC --</option>');
+                        dropdown.prop('disabled', false);
+                        filteredData.sort((a, b) => parseInt(a.TC) - parseInt(b.TC));
+                        filteredData.forEach(item => {
+                            const optionText = `${item.TC} - ${item.Type} - ${item.TcDescription}`;
+                            dropdown.append(
+                                `<option value="${item.TC}" data-type="${item.Type}" data-desc="${item.TcDescription}">${optionText}</option>`
+                            );
+                        });
+                        dropdown.off('change').on('change', function() {
+                            selectedTC = $(this).val();
+                            const selectedOption = $(this).find('option:selected');
+                            const type = selectedOption.data('type');
+                            const description = selectedOption.data('desc');
+                            const facility = document.getElementById("facilityInitiator").value;
+
+                            $('#piaCodeInput').val('');
+                            $('#piaCodeHidden').val('');
+                            $('#piaCodeResults').empty().hide();
+                            $('#piaCodeResultCard').removeClass('hidden');
+                            if (!["20", "22"].includes(selectedTC)) {
+                               loadWC(facility, "wcDropdown", "wcDropdown", "@Url.Action("GetWorkCenters", "DataForms")");
+                                $('#piaCodeWCResultCard').removeClass('hidden');
+                            } else {
+                                $('#piaCodeWCResultCard').addClass('hidden');
+                            }
+                            loadPiaCodeDropdown(
+                                facility,
+                                selectedTC,
+                                "piaCodeDropdown",
+                                "piaCodeDropdownWrapper",
+                                "@Url.Action("getScrapCodeByLocation", "DataForms")"
+                            );
+
+                        });
+
+                    } else {
+                        dropdown.append('<option value="">-- No TC Available --</option>');
+                        dropdown.prop('disabled', true);
+
+                        showDynamicSwal({
+                            title: "No Data",
+                            text: response.message || "Data Empty",
+                            icon: "info",
+                            confirmText: "OK"
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    hideDropdownSpinner(wrapperId);
+                    dropdown.empty();
+                    dropdown.append('<option value="">-- Error Loading TC --</option>');
+                    dropdown.prop('disabled', true);
+
+                    handleAjaxError("Something went wrong: " + error);
+                }
+            });
+        }
+
+        function loadWC(facility, dropdownId, wrapperId,url) {
+            const $dropdown = restoreDropdown(dropdownId);
+            showDropdownSpinner(wrapperId);
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                data: { facility: facility },
+                success: function (response) {
+                    hideDropdownSpinner(wrapperId);
+
+                    if (response.success) {
+                        populateDropdown($dropdown, response.data, {
+                            valueField: 'WC',
+                            placeholder: '-- Select WC --',
+                            formatFn: (item) => `${item.WC} - ${item.Description || ''}`
+                        });
+                    } else {
+                        handleAjaxError(response.message);
+                    }
+                },
+                error: function (err) {
+                    hideDropdownSpinner(wrapperId);
+                    handleAjaxError("Gagal load WC");
+                    console.error(err);
+                }
+            });
+        }
+
+        function loadPiaCodeDropdown(facility, selectedTC = null, dropdownId, wrapperId, url) {
+            const $dropdown = restoreDropdown(dropdownId);
+            showDropdownSpinner(wrapperId);
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                data: { location: facility, TC: selectedTC },
+                dataType: 'json',
+                success: function (response) {
+                    hideDropdownSpinner(wrapperId);
+
+                    if (response.success && response.data.length > 0) {
+                        populateDropdown($dropdown, response.data, {
+                            valueField: 'Code',
+                            placeholder: '-- Select PIA Code --',
+                            formatFn: (item) =>
+                            (item.ShowScrapCode
+                                ? `${item.ShowScrapCode} - ${item.Name}`
+                                : `${item.Code} - ${item.Name}`)
+                        });
+                        $dropdown.off("change").on("change", function () {
+                            selectedPiaCode = $(this).val();
+
+                            handleSpecialNotes(selectedPiaCode);
+                            handleTCCompanion(selectedPiaCode);
+                        });
+
+                    } else {
+                        handleAjaxError("Tidak ada PIA Code ditemukan");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    hideDropdownSpinner(wrapperId);
+                    handleAjaxError("Gagal load PIA Code");
+                    console.error(error);
+                }
+            });
+        }
+
+        function handleSpecialNotes(piaCode) {
+            const hasNotes = piaCodesWithNotes.includes(piaCode);
+            if (!hasNotes) {
+                localStorage.removeItem("specialCodeRemarks");
+            }
+            toggleHidden("#openModalsForAnalyzedCaseMaterial", hasNotes);
+        }
+        function handleTCCompanion(piaCode) {
+            const hasTCCompanion = piaCodesWithTCCompanion.includes(piaCode);
+            toggleHidden("#selectCompanionTC", hasTCCompanion);
+        }
+
+        $("#selectCompanionTC").on("click", function () {
+            toggleHidden("#modalTCCompanion", true);
+            loadTCCompanionDropdown();
+        });
+
+        function loadTCCompanionDropdown() {
+            const $dropdown = $("#TCCompanionDropdownModal");
+            const savedTC = localStorage.getItem("CompanionTc");
+
+            $dropdown.empty().append('<option value="">-- Select Companion TC --</option>');
+
+            $.ajax({
+                url: TcCompanionURL,
+                type: "GET",
+                dataType: "json",
+                success: function (res) {
+                    if (res.success && res.data && res.data.length > 0) {
+                        res.data.forEach(item => {
+                            $dropdown.append(
+                                `<option value="${item.TC}" data-name="${item.Name}">
+                            ${item.TC} - ${item.Name}
+                        </option>`
+                            );
+                        });
+                        if (savedTC) {
+                            $dropdown.val(savedTC);
+                        }
+                    }
+                },
+                error: function () {
+                    alert("Failed to load TC Companion");
+                }
+            });
+        }
+
+        $("#saveTcCompanionModals").on("click", function () {
+            const $selected = $("#TCCompanionDropdownModal option:selected");
+            const tc = $selected.val();
+            const name = $selected.data("name");
+
+            if (!tc) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'warning',
+                    title: 'Please select a TC Companion first',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                return;
+            }
+            const displayValue = `${tc} - ${name}`;
+            localStorage.setItem("CompanionTc", tc);
+            localStorage.setItem("CompanionTcValue", displayValue);
+            refreshRNColumn();
+            toggleHidden("#modalTCCompanion", false);
+        });
+
+        function refreshRNColumn() {
+            const companionTc = localStorage.getItem("CompanionTc");
+            const showRN = companionTc === "71";
+
+            const table = document.querySelector("#listOfPartnumber").closest("table");
+            const headerRow = table.querySelector("thead tr");
+
+            const leaderTh = headerRow.querySelector("[data-column='leader']");
+            let rnHeader = headerRow.querySelector("[data-column='rn']");
+
+            if (showRN) {
+                if (!rnHeader) {
+                    leaderTh.insertAdjacentHTML(
+                        "beforebegin",
+                        `<th class="border border-muted" data-column="rn">RN</th>`
+                    );
+                }
+            } else {
+                if (rnHeader) rnHeader.remove();
+            }
+
+            const rows = document.querySelectorAll("#listOfPartnumber tr");
+
+            rows.forEach((row, index) => {
+                const rowIndex = index + 1;
+                const leaderCell = row.querySelector("[data-cell='leader']");
+                const existingRNCell = row.querySelector("[data-cell='rn']");
+
+                if (showRN) {
+                    if (!existingRNCell) {
+                        leaderCell.insertAdjacentHTML(
+                            "beforebegin",
+                            `<td class="border border-muted" data-cell="rn">
+                               <input id="rn-${rowIndex}" 
+                               placeholder="RN" 
+                               type="text" 
+                               class="form-input w-full">
+                            </td>`
+                        );
+                    }
+                } else {
+                    if (existingRNCell) existingRNCell.remove();
+                }
+            });
+        }
+
+        $("#closedTcCompanionModals").on("click", function () {
+            toggleHidden("#modalTCCompanion", false);
+        });
+
+        function loadPiaCodeRemarks(callback) {
+           $.ajax({
+                url: "@Url.Action("GetScrapCodeRemarks", "DataForms")",
+                type: "GET",
+                success: function (response) {
+                    if (response.success) {
+                        allRemarks = response.data;
+                    }
+                }
+           });
+        }
+
+        function filterRemarksByPiaCode(partCounter, piaCode) {
+            const $dropdown = document.getElementById(`remarks-${partCounter}`);
+            const $hidden = document.getElementById(`remarksId-${partCounter}`);
+            $dropdown.innerHTML = "";
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "-- Select Remarks --";
+            $dropdown.appendChild(defaultOption);
+            const filtered = allRemarks.filter(r => r.ScrapCode === piaCode);
+
+            filtered.forEach(item => {
+                const option = document.createElement("option");
+                let displayText = item.Remarks;
+                if (displayText.length > 50) {
+                    displayText = displayText.substring(0, 50) + "...";
+                }
+
+                option.value = item.IdRemarks;
+                option.textContent = displayText;
+                option.title = item.Remarks;
+
+                $dropdown.appendChild(option);
+            });
+            $dropdown.addEventListener("change", function () {
+                $hidden.value = $dropdown.value;
+            });
+        }
+
+        function validateRequiredFields(fields, lockFields = false) {
+            const emptyFields = fields.filter(f => {
+                const el = document.getElementById(f.id);
+                if (!el) return true;
+                el.classList.remove("border-danger");
+
+                if (f.id === "wcDropdown") {
+                    const tcValue = document.getElementById("tcDropdown").value;
+                    if (["20", "22"].includes(tcValue)) return false;
+                }
+                if (el.tagName === "SELECT") {
+                    return el.value === "";
+                }
+                return !el.value || el.value.trim() === "";
+            });
+            emptyFields.forEach(f => {
+                const el = document.getElementById(f.id);
+                if (el) el.classList.add("border-danger");
+            });
+
+            if (emptyFields.length > 0) {
+                const missingLabels = emptyFields.map(f => f.label).join(", ");
+                showDynamicSwal({
+                    title: "Incomplete Form",
+                    text: `Please fill in the following field(s) first: ${missingLabels}`,
+                    icon: "warning",
+                    confirmText: "OK"
+                });
+                return false;
+            }
+            if (lockFields) {
+                fields.forEach(f => {
+                    const el = document.getElementById(f.id);
+                    if (!el) return;
+
+                    if (el.tagName === "INPUT") {
+                        el.readOnly = true;
+                    }
+
+                    if (el.tagName === "SELECT") {
+                        el.setAttribute("data-locked", "true");
+                        el.style.pointerEvents = "none";
+                    }
+                    el.style.backgroundColor = "#f0f0f0";
+                });
+            }
+
+            return true;
+        }
+
+        document.getElementById("continueBtnCreatePia").addEventListener("click", () => {
+
+            const requiredFields = [
+                { id: "supervisorInitiatorKpk", label: "Supervisor" },
+                { id: "tcDropdown", label: "TC" },
+                { id: "wcDropdown", label: "WC" },
+                { id: "piaCodeDropdown", label: "PIA Code" },
+                { id: "facilityDropdown", label: "Facility" },
+                { id: "typeOfPiaDropdown", label: "Type PIA" },
+                { id: "supervisorInitiatorName", label: "Supervisor" }
+            ];
+
+            showDynamicSwal({
+                title: "Confirmation",
+                text: "Do you want to continue to next step?",
+                icon: "question",
+                confirmText: "Yes, Continue",
+                cancelText: "No, Stay"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const isValid = validateRequiredFields(requiredFields, true);
+                    if (!isValid) return;
+                    const container = document.getElementById("sectionContainer");
+                    container.innerHTML = `
+                        <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded text-center">
+                            Details Of Part Number
+                        </h2>
+                    `;
+                    document.getElementById("formContainerDetailsPartNumber").classList.remove("hidden");
+                    if (partCounter === 0) {
+
+                        const selectedTC = document.getElementById("tcDropdown").value;
+
+
+                        createPartCard(selectedTC);
+                    }
+                }
+            });
+        });
+
+        function ensureSpecialColumnsInHeader(showSpecialFields) {
+            const tableHeadRow = document.querySelector("#listOfPartnumber").closest("table").querySelector("thead tr");
+
+            const rnExists = tableHeadRow.querySelector("[data-column='rn']");
+            const respExists = tableHeadRow.querySelector("[data-column='resp']");
+
+            if (showSpecialFields) {
+                const leaderTh = tableHeadRow.querySelector("th:nth-last-child(2)");
+
+                if (!rnExists) {
+                    leaderTh.insertAdjacentHTML("beforebegin", `<th class="border border-muted" data-column="rn">RN</th>`);
+                }
+                if (!respExists) {
+                    leaderTh.insertAdjacentHTML("beforebegin", `<th class="border border-muted" data-column="resp">Resp. Code</th>`);
+                }
+            }
+        }
+
+        function showMaxPartWarning() {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'warning',
+                title: 'Part detail max 30!',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+
+        document.getElementById("addRowBtn").addEventListener("click", () => {
+            const selectedTC = document.getElementById("tcDropdown").value; 
+            createPartCard(selectedTC);
+        });
+
+        function createPartCard(selectedTC) {
+            if (partCounter >= 30) {
+                showMaxPartWarning();
+                return;
+            }
+            partCounter++;
+            const companionTc = localStorage.getItem("CompanionTc");
+            const showSpecialFields = (companionTc == "71");
+
+            let minQty, stepQty;
+            if (selectedPiaCode === "CUP" || selectedPiaCode === "CUE") {
+                minQty = 0.01;
+                stepQty = 0.01;
+            } else {
+                minQty = 1;
+                stepQty = 1;
+            }
+
+            const newRow = document.createElement("tr");
+            newRow.id = `row-${partCounter}`;
+            newRow.className = "text-muted";
+            newRow.setAttribute("data-tc", selectedTC);
+
+            newRow.innerHTML = `
+                  <td class="text-center font-bold border border-muted">
+                    <div class="flex flex-col items-center justify-between h-full">
+                      <span class="border-b-2 border-muted w-full pb-1 block text-center">
+                        ${partCounter}
+                      </span>
+                        <i id="removeRow" class="fas fa-trash text-danger cursor-pointer pt-1" data-row="${partCounter}"></i>
+
+                    </div>
+                  </td>
+                  <td class="border border-muted relative">
+                    <input id="partNumber-${partCounter}" type="text" class="form-input w-full" placeholder="Part Number" list="partSuggest-${partCounter}" autocomplete="off" />
+                    <div id="partSuggest-${partCounter}" class="dropdown-results absolute z-[99999] w-100 bg-white border border-muted rounded mt-1 z-50 hidden" style="max-height: 200px; overflow-y: auto;"></div>
+                  </td>
+                  <td class="border border-muted"><input id="description-${partCounter}"  placeholder="Description" type="text" class="form-input w-full" readonly></td>
+                  <td class="border border-muted"><input id="unit-${partCounter}" type="text" placeholder="Um" class="form-input w-14" readonly></td>
+                  <td class="border border-muted"><input id="processPoint-${partCounter}"  placeholder="PP" type="text" class="form-input w-14"readonly></td>
+                  <td class="border border-muted"><input id="baseValue-${partCounter}"  placeholder="Base Value" type="text" class="form-input w-24" readonly></td>
+                  <td class="border border-muted"><input id="physicalQuantity-${partCounter}"  placeholder="Qty" type="number" step="${stepQty}"  min="${minQty}" class="form-input w-24"></td>
+                  <td class="border border-muted"><input id="systemQuantity-${partCounter}"  placeholder="Qty" type="number" step="${stepQty}" class="form-input w-24"></td>
+                  <td class="border border-muted"><input id="varianceQuantity-${partCounter}"  placeholder="Qty" type="number" step="${stepQty}" class="form-input w-24" readonly></td>
+                  <td class="border border-muted"><input id="totalValue-${partCounter}"  placeholder="Total Value" type="text" class="form-input w-full" readonly></td>
+                  <td class="border border-muted hidden"><input id="ftypit-${partCounter}" type="text" class="form-input w-full"></td>
+                  <td class="border border-muted hidden"><input id="typeit-${partCounter}" type="text" class="form-input w-full"></td>
+                  <td class="border border-muted hidden "><input id="planit-${partCounter}" type="text" class="form-input w-full"></td>
+                  <td class="border border-muted hidden "><input id="cmidit-${partCounter}" type="text" class="form-input w-full"></td>
+                  <td class="border border-muted hidden "><input id="commit-${partCounter}" type="text" class="form-input w-full"></td>
+                  
+                  <td class="border border-muted" data-cell="leader">
+                    <input id="leader-${partCounter}" type="text" class="form-input w-full" placeholder="Leader (search)" list="leaderList-${partCounter}" autocomplete="off">
+                    <div id="leaderList-${partCounter}" class="dropdown-results absolute w-100 bg-white border border-muted rounded mt-1 z-50 hidden" style="max-height: 200px; overflow-y: auto;"></div>
+                    <input type="hidden" id="leaderKpk-${partCounter}">
+                  </td>
+                  <td class="border border-muted">
+                    <select id="remarks-${partCounter}" class="form-select w-full">
+                      <option value="">-- Pilih Remarks --</option>
+                    </select>
+                    <input type="hidden" id="remarksId-${partCounter}">
+                  </td>
+                `;
+
+            document.getElementById("listOfPartnumber").appendChild(newRow);
+            refreshRNColumn();
+
+            const physicalQtyInput = document.getElementById(`physicalQuantity-${partCounter}`);
+            const systemQtyInput = document.getElementById(`systemQuantity-${partCounter}`);
+            const varianceQtyInput = document.getElementById(`varianceQuantity-${partCounter}`);
+
+            // Add event listeners for automatic variance quantity calculation
+            const calculateVarianceQuantity = () => {
+                const physical = parseFloat(physicalQtyInput.value) || 0;
+                const system = parseFloat(systemQtyInput.value) || 0;
+                const variance = physical - system;
+                varianceQtyInput.value = variance;
+                calculateTotal(partCounter);
+                validateQtyInput(physicalQtyInput, partCounter);
+            };
+
+            physicalQtyInput.addEventListener("input", calculateVarianceQuantity);
+            systemQtyInput.addEventListener("input", calculateVarianceQuantity);
+
+            initPartAutocomplete(partCounter, selectedTC);
+            filterRemarksByPiaCode(partCounter, selectedPiaCode);
+            initLeaderAutocomplete(partCounter, urlGetEmployee);
+            ['partNumber', 'description', 'unit', 'processPoint', 'baseValue', 'physicalQuantity', 'systemQuantity', 'varianceQuantity', 'totalValue', 'leader', 'remarks']
+                .forEach(field => {
+                    const input = document.getElementById(`${field}-${partCounter}`);
+                    if (input) {
+                        input.addEventListener('input', () => {
+                            validatePartCard(partCounter, showSpecialFields);
+                            // Recalculate total value when baseValue changes
+                            if (field === "baseValue") {
+                                calculateTotal(partCounter);
+                            }
+                        });
+                    }
+                });
+
+            if (showSpecialFields) {
+                ['rn'].forEach(field => {
+                    const input = document.getElementById(`${field}-${partCounter}`);
+                    if (input) {
+                        input.addEventListener('input', () => {
+                            validatePartCard(partCounter, showSpecialFields);
+                        });
+                    }
+                });
+            }
+            validatePartCard(partCounter, showSpecialFields);
+
+        }
+
+        function validateQtyInput(qtyInput, rowIndex) {
+            const value = qtyInput.value.toString();
+            if (selectedPiaCode !== "CUP" && selectedPiaCode !== "CUE") {
+                if (value.includes(",") || value.includes(".")) {
+                    qtyInput.value = value.replace(/[.,]/g, "");
+                    qtyInput.classList.add("border-danger");
+                    showQtyWarning(rowIndex, "Quantity for this PIA Code must be a whole number (no decimals)");
+                } else {
+                    qtyInput.classList.remove("border-danger");
+                    removeQtyWarning(rowIndex);
+                }
+            }
+            else {
+                qtyInput.classList.remove("border-danger");
+                removeQtyWarning(rowIndex);
+            }
+        }
+
+        function showQtyWarning(rowId, message) {
+            let existing = document.getElementById(`qty-warning-${rowId}`);
+            if (!existing) {
+                const warning = document.createElement("small");
+                warning.id = `qty-warning-${rowId}`;
+                warning.className = "text-danger text-xs block mt-1";
+                warning.textContent = message;
+                const qtyCell = document.querySelector(`#row-${rowId} td:nth-child(7)`);
+                qtyCell.appendChild(warning);
+            }
+        }
+
+        function removeQtyWarning(rowId) {
+            const existing = document.getElementById(`qty-warning-${rowId}`);
+            if (existing) existing.remove();
+        }
+        function isEmpty(value) {
+            return value.trim() === "";
+        }
+
+        function isInvalidQuantity(value) {
+            const num = parseFloat(value);
+            return isNaN(num) || num <= 0;
+        }
+
+        function isInvalidField(id, value) {
+            if (id.startsWith("quantity-")) {
+                return isInvalidQuantity(value);
+            }
+            return isEmpty(value);
+        }
+
+        function validatePartCard(partCounter, showSpecialFields) {
+            const rowTr = document.getElementById(`row-${partCounter}`);
+            let isValid = true;
+
+            const fields = [
+                `partNumber-${partCounter}`,
+                `description-${partCounter}`,
+                `unit-${partCounter}`,
+                `processPoint-${partCounter}`,
+                `baseValue-${partCounter}`,
+                `physicalQuantity-${partCounter}`,
+                `systemQuantity-${partCounter}`,
+                `varianceQuantity-${partCounter}`,
+                `totalValue-${partCounter}`,
+                `leaderKpk-${partCounter}`,
+                `remarks-${partCounter}`
+            ];
+
+            if (showSpecialFields) {
+                fields.push(`rn-${partCounter}`, `respCode-${partCounter}`);
+            }
+            fields.forEach(id => {
+                const input = document.getElementById(id);
+                if (!input) return;
+
+                const invalid = isInvalidField(id, input.value);
+
+                if (invalid) {
+                    isValid = false;
+                    input.classList.add("bg-danger/20", "dark:bg-danger/20");
+                } else {
+                    input.classList.remove("bg-danger/20", "dark:bg-danger/20");
+                }
+            });
+
+            if (rowTr) {
+                if (!isValid) {
+                    rowTr.classList.add("bg-danger/20", "dark:bg-danger/20");
+                } else {
+                    rowTr.classList.remove("bg-danger/20", "dark:bg-danger/20");
+                }
+            }
+
+            return isValid;
+        }
+
+        document.addEventListener("click", (e) => {
+            if (e.target.classList.contains("fa-trash")) {
+                const rowId = e.target.getAttribute("data-row");
+                if (rowId) removeRow(parseInt(rowId));
+            }
+        });
+
+        function removeRow(counter) {
+            const row = document.querySelector(`#listOfPartnumber #row-${counter}`);
+            if (!row) return;
+            row.remove();
+            reindexRows();
+            const remainingRows = document.querySelectorAll("#listOfPartnumber tr");
+            remainingRows.forEach(r => {
+                const commitInput = r.querySelector("input[id^='commit-']");
+                if (commitInput) r.dataset.commit = commitInput.value || "";
+            });
+
+            updateGrandTotal();
+            updateSelectedCommit();
+        }
+
+        function reindexRows() {
+            const rows = document.querySelectorAll("#listOfPartnumber tr");
+            rows.forEach((row, index) => {
+                const newIndex = index + 1;
+                row.id = `row-${newIndex}`;
+                const numberCell = row.querySelector("td .flex span");
+                if (numberCell) numberCell.textContent = newIndex;
+                const trash = row.querySelector("td .flex i");
+                if (trash) trash.setAttribute("data-row", newIndex);
+                const elements = row.querySelectorAll("input, select, datalist");
+                elements.forEach(el => {
+                    const oldId = el.id;
+                    if (oldId) el.id = oldId.replace(/\d+$/, newIndex);
+
+                    const oldName = el.name;
+                    if (oldName) el.name = oldName.replace(/\d+$/, newIndex);
+                });
+            });
+
+            partCounter = rows.length;
+        }
+
+        function resetRowExcept(counter) {
+
+            const clearIds = [
+                `description-${counter}`,
+                `baseValue-${counter}`,
+                `unit-${counter}`,
+                `processPoint-${counter}`,
+                `physicalQuantity-${counter}`,
+                `systemQuantity-${counter}`,
+                `varianceQuantity-${counter}`,
+                `totalValue-${counter}`,
+                `ftypit-${counter}`,
+                `typeit-${counter}`,
+                `planit-${counter}`,
+                `cmidit-${counter}`,
+                `commit-${counter}`,
+                `rn-${counter}`,
+                `respCode-${counter}`
+            ];
+
+            clearIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = "";
+            });
+            const rowTr = document.getElementById(`row-${counter}`);
+            if (rowTr) rowTr.dataset.commit = "";
+            updateSelectedCommit();
+            validatePartCard(counter, rowTr?.getAttribute("data-tc") === "22");
+        }
+
+        function initPartAutocomplete(partCounter, selectedTC) {
+            const input = document.getElementById(`partNumber-${partCounter}`);
+            const suggestBox = document.getElementById(`partSuggest-${partCounter}`);
+            const descInput = document.getElementById(`description-${partCounter}`);
+            const baseValueInput = document.getElementById(`baseValue-${partCounter}`);
+            const unitMeasurementInput = document.getElementById(`unit-${partCounter}`);
+            const planit = document.getElementById(`planit-${partCounter}`);
+            const cmidit = document.getElementById(`cmidit-${partCounter}`);
+            const commit = document.getElementById(`commit-${partCounter}`);
+            const processPointInput = document.getElementById(`processPoint-${partCounter}`);
+            const totalValueInput = document.getElementById(`totalValue-${partCounter}`);
+
+            const rowTr = document.getElementById(`row-${partCounter}`);
+            let isSelecting = false;
+            input.addEventListener("input", () => {
+                if (isSelecting) return;
+                resetRowExcept(partCounter);
+            });
+            let cacheData = [];
+            const apiCache = {};
+            let debounceTimer = null;
+            let duplicateLock = false;
+
+            function renderSuggest(response) {
+                if (duplicateLock) return;
+                suggestBox.innerHTML = "";
+                suggestBox.classList.add("hidden");
+
+                if (response.success && response.data.length > 0) {
+                    cacheData = response.data;
+                    document.body.appendChild(suggestBox);
+                    const rect = input.getBoundingClientRect();
+                    suggestBox.style.position = "absolute";
+                    suggestBox.style.left = rect.left + "px";
+                    suggestBox.style.top = rect.bottom + window.scrollY + "px";
+                    suggestBox.style.minWidth = rect.width + "px";
+                    suggestBox.style.maxWidth = "600px";
+                    suggestBox.style.zIndex = 99999;
+                    response.data.slice(0, 20).forEach(item => {
+                        const div = document.createElement("div");
+                        div.className = "px-3 py-1 hover:bg-info cursor-pointer text-sm";
+                        div.textContent = `${item.PartNum} - ${item.Description}`;
+                        div.addEventListener("click", () => handleSelect(item, partCounter));
+                        suggestBox.appendChild(div);
+                    });
+
+                    suggestBox.classList.remove("hidden");
+                } else {
+                    cacheData = [];
+                }
+            }
+
+            input.addEventListener("input", function () {
+                clearTimeout(debounceTimer);
+                const query = this.value.trim();
+                if (duplicateLock) duplicateLock = false;
+                debounceTimer = setTimeout(() => {
+                    if (query.length < 2) {
+                        suggestBox.innerHTML = "";
+                        cacheData = [];
+                        if (rowTr) {
+                            rowTr.dataset.commit = "";
+                            updateSelectedCommit();
+                        }
+                        return;
+                    }
+
+                    if (apiCache[query]) {
+                        renderSuggest(apiCache[query]);
+                        return;
+                    }
+
+                    $.ajax({
+                        url: "@Url.Action("GetPartMasterUpdated", "DataForms")",
+                        type: "GET",
+                        data: { data: query, tc: selectedTC, exact: false},
+                        success: function (response) {
+                            apiCache[query] = response;
+                            renderSuggest(response);
+                        },
+                        error: function () {
+                            suggestBox.innerHTML = "";
+                            cacheData = [];
+                        }
+                    });
+                }, 300);
+            });
+
+            function handleSelect(selected, localCounter) {
+                if (!selected) return;
+                isSelecting = true;
+                const input = document.getElementById(`partNumber-${localCounter}`);
+                const descInput = document.getElementById(`description-${localCounter}`);
+                const baseValueInput = document.getElementById(`baseValue-${localCounter}`);
+                const unitMeasurementInput = document.getElementById(`unit-${localCounter}`);
+                const processPointInput = document.getElementById(`processPoint-${localCounter}`);
+                const totalValueInput = document.getElementById(`totalValue-${localCounter}`);
+                const ftypit = document.getElementById(`ftypit-${localCounter}`);
+                const typeit = document.getElementById(`typeit-${localCounter}`);
+                const planit = document.getElementById(`planit-${localCounter}`);
+                const cmidit = document.getElementById(`cmidit-${localCounter}`);
+                const commit = document.getElementById(`commit-${localCounter}`);
+                const rowTr = document.getElementById(`row-${localCounter}`);
+
+                if (!input || !descInput || !baseValueInput || !unitMeasurementInput || !processPointInput || !ftypit || !typeit) {
+                    console.warn(`⚠️ Missing field(s) on row-${localCounter}`);
+                    return;
+                }
+                const allPartNumbers = Array.from(document.querySelectorAll("[id^='partNumber-']"))
+                    .filter(el => el.id !== input.id)
+                    .map(el => el.value.trim())
+                    .filter(v => v !== "");
+
+                if (allPartNumbers.includes(selected.PartNum.trim())) {
+                    duplicateLock = true;
+                    suggestBox.innerHTML = "";
+                    suggestBox.classList.add("hidden");
+
+                    showDynamicSwal({
+                        title: "Duplicate Part Number",
+                        text: `Part Number ${selected.PartNum.trim()} already exists!`,
+                        icon: "error",
+                        confirmText: "OK"
+                    }).then(() => resetRow(localCounter));
+                    return;
+                }
+                input.value = selected.PartNum;
+                descInput.value = selected?.Description ?? "";
+                baseValueInput.value = formatRupiah(selected?.BasePrice ?? 0);
+                unitMeasurementInput.value = selected?.Measurement ?? "";
+                processPointInput.value = selected?.ProcessPoint?.trim() ? selected.ProcessPoint : "N";
+                ftypit.value = selected?.ftypit ?? "";
+                typeit.value = selected?.typeit ?? "";
+                planit.value = selected?.planit ?? "";
+                cmidit.value = selected?.cmidit ?? "";
+                commit.value = selected?.commit ?? "";
+                if (rowTr) rowTr.dataset.commit = selected?.commit?.toLowerCase() ?? "";
+                calculateTotal(localCounter);
+                updateSelectedCommit();
+                suggestBox.classList.add("hidden");
+
+                function resetRow() {
+                    input.value = "";
+                    descInput.value = "";
+                    baseValueInput.value = "";
+                    unitMeasurementInput.value = "";
+                    processPointInput.value = "";
+                    document.getElementById(`ftypit-${localCounter}`).value = "";
+                    document.getElementById(`typeit-${localCounter}`).value = "";
+                    document.getElementById(`planit-${localCounter}`).value = "";
+                    document.getElementById(`cmidit-${localCounter}`).value = "";
+                    document.getElementById(`commit-${localCounter}`).value = "";
+                    totalValueInput.value = "";
+                    if (rowTr) rowTr.dataset.commit = "";
+                    updateSelectedCommit();
+                }
+                setTimeout(() => {
+                    isSelecting = false;
+                }, 0);
+            }
+        }
+
+        function updateSelectedCommit() {
+            const allRows = document.querySelectorAll("[id^='row-']");
+            let hasCommitX = false;
+            allRows.forEach(row => {
+                const commit = (row.dataset.commit || "").toLowerCase();
+                row.classList.toggle("bg-warning/20", commit === "x");
+                if (commit === "x") hasCommitX = true;
+            });
+
+            selectedCommit = hasCommitX;
+        }
+
+        function calculateTotal(counter) {
+            const baseValueInput = document.getElementById(`baseValue-${counter}`);
+            const varianceQtyInput = document.getElementById(`varianceQuantity-${counter}`);
+            const totalValueInput = document.getElementById(`totalValue-${counter}`);
+
+            if (!baseValueInput || !varianceQtyInput || !totalValueInput) return;
+
+            let rawBase = baseValueInput.value || "0";
+            rawBase = rawBase.replace(/[^\d,.-]/g, "");
+            rawBase = rawBase.replace(/\./g, "");
+            rawBase = rawBase.replace(",", ".");
+
+            const baseValue = parseFloat(rawBase) || 0;
+            const qty = parseFloat(varianceQtyInput.value) || 0;
+            const total = baseValue * qty;
+
+            totalValueInput.value = formatRupiah(total);
+            updateGrandTotal();
+        }
+
+        function updateGrandTotal() {
+            const rows = document.querySelectorAll("#listOfPartnumber tr");
+            let totalQty = 0;
+            let totalRupiah = 0;
+
+            const cardsData = [];
+
+            rows.forEach(row => {
+                const qtyInput = row.querySelector("input[id^='varianceQuantity-']");
+                const totalInput = row.querySelector("input[id^='totalValue-']");
+                const typeit = row.querySelector("input[id^='typeit-']")?.value || null;
+                const scrapCode = row.querySelector("input[id^='ftypit-']")?.value || null;
+                const commit = row.dataset.commit || null;
+
+                let qty = parseFloat(qtyInput?.value) || 0;
+                let total = totalInput?.value.replace(/[^\d,.-]/g, "") || "0";
+                total = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
+
+                totalQty += qty;
+                totalRupiah += total;
+
+                cardsData.push({ typeit, scrapCode, commit });
+            });
+
+            document.getElementById("totalQty").textContent = totalQty.toFixed(2);
+            document.getElementById("totalRupiah").textContent = formatRupiah(totalRupiah);
+            checkSpecialCaseKPKFromServer(
+                urlCheckSpecialCase,
+                cardsData,
+                totalRupiah,
+                (specialCases) => {
+
+                }
+            );
+        }
+
+        document.getElementById("importExcel").addEventListener("click", function () {
+            document.getElementById("excelFile").click();
+        });
+
+        document.getElementById("excelFile").addEventListener("change", function (e) {
+
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = function (evt) {
+
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                const filteredData = jsonData.filter(row =>
+                    row.some(cell => cell !== null && cell !== undefined && cell.toString().trim() !== "")
+                );
+                if (filteredData.length <= 1) {
+
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Empty Excel File',
+                        text: 'The Excel file has no data to import.'
+                    });
+
+                    e.target.value = "";
+                    return;
+                }
+                const invalidList = [];
+                const invalidProcessPointParts = [];
+
+                for (let r = 1; r < filteredData.length; r++) {
+
+                    const partNum = filteredData[r][0]?.toString().trim();
+                    if (!partNum) continue;
+
+                    if (!isValidToyPart(partNum)) {
+                        invalidList.push({
+                            row: r,
+                            value: partNum
+                        });
+                    }
+                }
+
+                if (invalidList.length > 0) {
+
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid Part Number Format",
+                        html: `
+                            <p>Please correct the following rows:</p>
+                            <div style="text-align:left;margin-top:6px">
+                                ${invalidList.map(x =>
+                                    `Row ${x.row}: <b>${x.value}</b>`
+                                ).join("<br>")}
+                            </div>
+
+                            <br><b>Required format:</b><br>
+                            <code>TOYNIT-PARTIT</code><br>
+                            Example:<br>
+                            <code>MM031-9007</code>
+                        `,
+                        confirmButtonText: "OK",
+                        allowOutsideClick: false
+                    });
+
+                    e.target.value = "";
+                    return;
+                }
+
+                Swal.fire({
+                    title: "Matching Data",
+                    text: "Please wait while the data is being matched with the master list...",
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                const totalAvailable = filteredData.length - 1;
+
+                let uniqueCount = 0;
+                let totalProcessedRows = 0;
+                let processedAjax = 0;
+                let totalAjaxRequest = 0;
+                const duplicateParts = [];
+                const missingRemarks = [];
+
+                const existingParts = Array.from(
+                    document.querySelectorAll("[id^='partNumber-']")
+                )
+                    .map(el => el.value.trim())
+                    .filter(v => v !== "");
+
+                for (let i = 1; i < filteredData.length; i++) {
+
+                    if (uniqueCount >= 30) break;
+
+                    const row = filteredData[i];
+                    if (!row || row.length < 2) continue;
+
+                    totalProcessedRows++;
+
+                    const partNum = row[0]?.toString().trim();
+                    const qty = row[1];
+                    const leaderValue = row[2];
+
+                    if (!partNum) continue;
+                    if (existingParts.includes(partNum)) {
+                        duplicateParts.push(partNum);
+                        continue;
+                    }
+                    existingParts.push(partNum);
+                    uniqueCount++;
+
+                    if (partCounter >= 30) break;
+                    let currentIndex;
+
+                    if (uniqueCount === 1 && partCounter === 1) {
+                        currentIndex = 1;
+                    } else {
+                        createPartCard(selectedTC);
+                        currentIndex = partCounter;
+                    }
+                    const remarksInput = document.getElementById(`remarks-${currentIndex}`);
+                    const remarksHidden = document.getElementById(`remarksId-${currentIndex}`);
+
+                    filterRemarksByPiaCode(currentIndex, selectedPiaCode);
+
+                    const remarksValue = row[3]?.toString();
+
+                    if (remarksValue) {
+
+                        const normalizedExcelRemarks = normalizeText(remarksValue);
+                        const matchedRemark = allRemarks
+                            .filter(r => r.ScrapCode === selectedPiaCode)
+                            .find(r => normalizeText(r.Remarks) === normalizedExcelRemarks);
+
+                        if (matchedRemark) {
+                            remarksInput.value = matchedRemark.IdRemarks;
+                            remarksHidden.value = matchedRemark.IdRemarks;
+                        } else {
+                            missingRemarks.push(remarksValue);
+                        }
+                    }
+                    const specialRemark = row[4]?.toString().trim();
+                    if (specialRemark) {
+                        specialRemarksCache[partNum] = {
+                            excelRow: i + 1,
+                            remark: specialRemark
+                        };
+
+                    }
+
+                    const partInput = document.getElementById(`partNumber-${currentIndex}`);
+                    const physicalQtyInput = document.getElementById(`physicalQuantity-${currentIndex}`);
+                    const systemQtyInput = document.getElementById(`systemQuantity-${currentIndex}`);
+                    const varianceQtyInput = document.getElementById(`varianceQuantity-${currentIndex}`);
+                    const descInput = document.getElementById(`description-${currentIndex}`);
+                    const baseValueInput = document.getElementById(`baseValue-${currentIndex}`);
+                    const unitInput = document.getElementById(`unit-${currentIndex}`);
+                    const processPointInput = document.getElementById(`processPoint-${currentIndex}`);
+                    const leaderInput = document.getElementById(`leader-${currentIndex}`);
+                    const leaderKpkInput = document.getElementById(`leaderKpk-${currentIndex}`);
+                    const ftypitInput = document.getElementById(`ftypit-${currentIndex}`);
+                    const typeitInput = document.getElementById(`typeit-${currentIndex}`);
+                    const planitInput = document.getElementById(`planit-${currentIndex}`);
+                    const commitInput = document.getElementById(`commit-${currentIndex}`);
+                    const cmiditInput = document.getElementById(`cmidit-${currentIndex}`);
+
+                    partInput.value = partNum;
+                    physicalQtyInput.value = qty || 0;
+                    validateQtyInput(physicalQtyInput, currentIndex);
+                    if (leaderValue) {
+
+                        const cleanLeader = leaderValue.toString().trim();
+
+                        $.ajax({
+                            url: "@Url.Action("GetEmployeeByNameOrKpk","DataForms")",
+                            type: "GET",
+                            data: { keyword: cleanLeader },
+                            success: function (res) {
+
+                                if (res.success && res.data) {
+
+                                    if (Array.isArray(res.data) && res.data.length) {
+                                        leaderInput.value = res.data[0].name;
+                                        leaderKpkInput.value = res.data[0].kpk;
+                                    }
+                                    else if (res.data.name && res.data.kpk) {
+                                        leaderInput.value = res.data.name;
+                                        leaderKpkInput.value = res.data.kpk;
+                                    }
+                                }
+                                else {
+                                    leaderInput.value = cleanLeader;
+                                }
+                            }
+                        });
+                    }
+                    totalAjaxRequest++;
+                    $.ajax({
+                        url: "@Url.Action("GetPartMasterUpdated","DataForms")",
+                        type: "GET",
+                        data: { data: partNum, tc: selectedTC, exact: true },
+                        success: function (response) {
+
+                            if (response.success && response.data.length > 0) {
+                                const selected = response.data[0];
+                                descInput.value = selected.Description || "";
+                                baseValueInput.value = formatRupiah(selected.BasePrice);
+                                unitInput.value = selected.Measurement || "";
+                                ftypitInput.value = selected.ftypit || "";
+                                typeitInput.value = selected.typeit || "";
+                                planitInput.value = selected.planit || "";
+                                cmiditInput.value = selected.cmidit || "";
+                                commitInput.value = selected.commit || "";
+                                processPointInput.value = selected.ProcessPoint?.trim() || "N";
+
+                                const isCommitX = selected?.commit?.toLowerCase() === 'x';
+                                const rowDiv = document.getElementById(`row-${currentIndex}`);
+
+                                if (rowDiv) rowDiv.classList.toggle('bg-warning/20', isCommitX);
+                                if (isCommitX) selectedCommit = true;
+                                if (!response.success || response.data.length === 0) {
+
+                                    const expectedPP = selectedTC === "23" ? "N" : "Y";
+
+                                    invalidProcessPointParts.push({
+                                        partNumber: partNum,
+                                        tc: selectedTC,
+                                        expected: expectedPP,
+                                        actual: expectedPP === "N" ? "Y" : "N",
+                                        reason: `Invalid Process Point for TC ${selectedTC}`
+                                    });
+
+                                    removeRowByElement(rowDiv);
+                                    return;
+                                }
+                                calculateTotal(currentIndex);
+                            }
+                        },
+                        complete: function () {
+                            processedAjax++;
+                            if (processedAjax >= totalAjaxRequest) {
+
+                                Swal.close();
+
+                                for (let i = 1; i <= partCounter; i++) {
+                                    validatePartCard(i, selectedTC == "22");
+                                }
+
+                                let htmlMessage = `<p>Imported <b>${uniqueCount}</b> unique parts from ${totalProcessedRows} rows.</p>`;
+                                let icon = "success";
+
+                                if (duplicateParts.length > 0 || missingRemarks.length > 0) {
+
+                                    icon = "warning";
+                                    htmlMessage += "<br>";
+
+                                    if (duplicateParts.length)
+                                        htmlMessage += `<p><b>Duplicate parts skipped:</b><br>${duplicateParts.join(", ")}</p>`;
+
+                                    if (missingRemarks.length)
+                                        htmlMessage += `<p><b>Remarks not found:</b><br>${missingRemarks.join(", ")}</p>`;
+
+                                    if (invalidProcessPointParts.length)
+                                        htmlMessage += `
+                                        <hr><b>Skipped (Invalid TC):</b>
+                                        <ul>${invalidProcessPointParts.map(p =>
+                                            `<li>${p.partNumber} (TC ${p.tc})</li>`
+                                        ).join("")}</ul>`;
+
+                                }
+
+                                Swal.fire({
+                                    icon: icon,
+                                    title: icon === "success"
+                                        ? "Import Completed"
+                                        : "Import Completed (Check Details)",
+                                    html: htmlMessage
+                                });
+
+                                document.getElementById("excelFile").value = "";
+                            }
+                        }
+                    });
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+
+        function removeRowByElement(rowElement) {
+            if (!rowElement) return;
+
+            rowElement.remove();
+            reindexRows();
+
+            document.querySelectorAll("#listOfPartnumber tr").forEach(r => {
+                const commitInput = r.querySelector("input[id^='commit-']");
+                r.dataset.commit = commitInput?.value || "";
+            });
+
+            updateGrandTotal();
+            updateSelectedCommit();
+        }
+
+        function initLeaderAutocomplete(counter, urlGetEmployee) {
+            const leaderInput = document.getElementById(`leader-${counter}`);
+            const leaderList = document.getElementById(`leaderList-${counter}`);
+            const leaderKpkInput = document.getElementById(`leaderKpk-${counter}`);
+            const facility = document.querySelector("#facilityInitiator")?.value.trim();
+            if (facility === "P1" && kpk) {
+                leaderKpkInput.value = kpk;
+                fetchData(urlGetEmployee, { keyword: kpk }, function (res) {
+                    if (res.success && res.data?.length > 0) { 
+                        leaderInput.value = res.data[0].name;
+                    } else {
+                        leaderInput.value = kpk;
+                    }
+                });
+                leaderInput.readOnly = true;
+                return;
+            }
+            leaderInput.addEventListener("input", function () {
+                const search = this.value.trim();
+                leaderList.innerHTML = "";
+                leaderList.classList.add("hidden");
+
+                if (search.length < 3) return;
+
+                fetchData(urlGetEmployee, { keyword: search }, function (res) {
+                    leaderList.innerHTML = "";
+                    if (res.success && Array.isArray(res.data)) {
+                        res.data.forEach(emp => {
+                            const item = document.createElement("div");
+                            item.className = "px-3 py-1 hover:bg-info cursor-pointer text-sm";
+                            item.textContent = `${emp.name} (${emp.kpk})`;
+                            item.dataset.kpk = emp.kpk;
+                            item.dataset.name = emp.name;
+                            item.addEventListener("click", () => {
+                                leaderInput.value = emp.name;
+                                leaderKpkInput.value = emp.kpk;
+                                leaderList.classList.add("hidden");
+                            });
+
+                            leaderList.appendChild(item);
+                        });
+                        leaderList.classList.remove("hidden");
+                    }
+                });
+            });
+            document.addEventListener("click", (e) => {
+                if (!leaderInput.contains(e.target) && !leaderList.contains(e.target)) {
+                    leaderList.classList.add("hidden");
+                }
+            });
+        }
+
+        function prefillSupervisor(kpk, apiUrl) {
+            if (!kpk) return;
+
+            fetchData(apiUrl, { keyword: kpk }, function (res) {
+                if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+                    const emp = res.data[0];
+                    $("#supervisorInitiatorKpk").val(emp.kpk);
+                    $("#supervisorInitiatorName").val(emp.name);
+                } else {
+                    $("#supervisorInitiatorKpk").val(kpk);
+                    $("#supervisorInitiatorName").val("");
+                }
+            });
+        }
+
+        function capitalizeWords(str) {
+            return str
+                .toLowerCase()
+                .replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        function initSupervisorDropdown(inputSelector, resultsSelector, kpkSelector, nameSelector, apiUrl) {
+            const $input = $(inputSelector);
+            const $results = $(resultsSelector);
+
+            $input.on("input", function () {
+                const query = $(this).val().trim();
+
+                if (query.length < 3) {
+                    $results.empty().hide();
+                    return;
+                }
+
+                fetchData(apiUrl, { keyword: query }, function (res) {
+                    $results.empty();
+
+                    if (res.success && Array.isArray(res.data)) {
+                        res.data.forEach(item => {
+                            const option = $("<div>")
+                                .addClass("dropdown-item hover:bg-success/[0.85] cursor-pointer p-2 rounded")
+                                .text(capitalizeWords(item.name) + " (" + item.kpk + ")")
+                                .on("click", function () {
+                                    $(kpkSelector).val(item.kpk);
+                                    $(nameSelector).val(capitalizeWords(item.name));
+                                    $results.empty().hide();
+                                });
+
+
+                            $results.append(option);
+                        });
+
+                        $results.show();
+                    } else {
+                        $results.hide();
+                    }
+                });
+            });
+        }
+
+        document.getElementById("submitBtnCreatePia").addEventListener("click", async () => {
+            const totalParts = document.querySelectorAll("[id^='row-']").length;
+            let invalidCards = [];
+
+            if (totalParts === 0) {
+                await Swal.fire({
+                    title: "No Parts Added",
+                    text: "You must add at least one part before submitting.",
+                    icon: "warning"
+                });
+                return;
+            }
+
+            for (let i = 1; i <= totalParts; i++) {
+                const rowDiv = document.getElementById(`row-${i}`);
+
+                const showSpecialFields = (selectedTC === "22");
+
+
+                const isValid = validatePartCard(i, showSpecialFields);
+                if (!isValid) invalidCards.push(i);
+            }
+
+            if (invalidCards.length > 0) {
+                await Swal.fire({
+                    title: "Missing Fields",
+                    text: `There are missing fields in card(s): ${invalidCards.join(", ")}. Please fill them in before submitting.`,
+                    icon: "warning"
+                });
+                return;
+            }
+            const remarksValidation = validateSpecialCodeRemarks();
+
+            if (!remarksValidation.valid) {
+                await Swal.fire({
+                    title: "Missing Remarks",
+                    text: remarksValidation.message,
+                    icon: "warning"
+                });
+                return;
+            }
+            let confirmationText = "Are you sure you want to save this PIA?";
+            let useHtml = false;
+
+            if (selectedCommit) {
+                const commodityName = "X";
+                confirmationText = `
+                    This document contains Commodity
+                    <span class="text-danger font-bold">${commodityName} (TOY)</span>.
+                    Are you sure?
+                `;
+                useHtml = true;
+            }
+
+            const result = await Swal.fire({
+                title: "Submit PIA",
+                ...(useHtml
+                    ? {
+                        html: confirmationText
+                    }
+                    : {
+                        text: confirmationText
+                    }),
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Save",
+                cancelButtonText: "Cancel"
+            });
+
+
+            if (!result.isConfirmed) return;
+
+            const submitBtn = document.getElementById("submitBtnCreatePia");
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = "0.6";
+
+            const payload = buildPiaPayload();
+
+            if (!payload.detectedKPKGlobal || payload.detectedKPKGlobal.length === 0) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = "";
+                await Swal.fire({
+                    title: "Missing Approvers",
+                    text: "Approval list cannot be empty. Please wait for the system to detect approvers or refresh and try again.",
+                    icon: "warning"
+                });
+                return;
+            }
+
+            const pdfBase64 = await generatePiaPDFBase64();
+            payload.PdfBase64 = encodeURIComponent(pdfBase64);
+            Swal.fire({
+                title: "Submitting...",
+                html: "<b>Step 1:</b> Sending email notification...<br><b>Step 2:</b> Saving data to database.<br><br>Please wait, this may take a few seconds.",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            try {
+                const data = await insertPia(payload);
+
+                Swal.close();
+
+                if (data.Error) {
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = "";
+                    Swal.fire({
+                        title: "❌ Failed",
+                        text: data.Error,
+                        icon: "error"
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Success",
+                        html: `PIA ID: <b>${data.IdPia}</b><br>Parts Count: <b>${data.PartsCount || 0}</b>`,
+                        icon: "success"
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            } catch (err) {
+                Swal.close();
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = "";
+                console.error("Error submitting PIA:", err);
+                if (err.isServerError) {
+                    Swal.fire({
+                        title: "Submission Failed",
+                        text: err.message,
+                        icon: "error"
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Connection Error",
+                        text: "Failed to reach the server. Please check your connection and try again.",
+                        icon: "error"
+                    });
+                }
+            }
+        });
+
+        document.getElementById("draftBtnCreatePia").addEventListener("click", () => {
+            const payload = buildPiaPayload();
+        });
+
+        function buildPiaPayload() {
+            const masterData = {
+                Facility: document.getElementById("facilityInitiator")?.value || null,
+                TC: document.getElementById("tcDropdown")?.value || null,
+                PiaCode: document.getElementById("piaCodeDropdown")?.value || null,
+                WC: document.getElementById("wcDropdown")?.value || null,
+                InitiatorKpk: typeof kpk !== "undefined" ? kpk : null,
+                Type_ID: document.getElementById("typeOfPiaDropdown")?.value || null,
+                SpecialCodeRemarks: localStorage.getItem("specialCodeRemarks") || null,
+                SpecialCodeTcCompanion: localStorage.getItem("CompanionTc") || null,
+            };
+            const rows = document.querySelectorAll("#listOfPartnumber tr");
+            const partDataList = [];
+            rows.forEach((row) => {
+
+                const partNum = row
+                    .querySelector('input[id^="partNumber-"]')
+                    ?.value
+                    ?.trim() || null;
+                if (!partNum) return;
+                const specialRemarksParts =
+                    specialRemarksCache[partNum]?.remark || "";
+
+                let rawBase =
+                    row.querySelector('input[id^="baseValue-"]')?.value || "0";
+
+                rawBase = rawBase.replace(/[^\d,.-]/g, "");
+                rawBase = rawBase.replace(/\./g, "");
+                rawBase = rawBase.replace(",", ".");
+                const baseValue = parseFloat(rawBase) || 0;
+
+                const physicalQty = Number(row.querySelector('input[id^="physicalQuantity-"]')?.value || "0");
+                const systemQty = Number(row.querySelector('input[id^="systemQuantity-"]')?.value || "0");
+                const varianceQty = Number(row.querySelector('input[id^="varianceQuantity-"]')?.value || "0");
+
+                let rawTotalValue = row.querySelector('input[id^="totalValue-"]')?.value || "0";
+                rawTotalValue = rawTotalValue.replace(/[^\d,.-]/g, "");
+                rawTotalValue = rawTotalValue.replace(/\./g, "");
+                rawTotalValue = rawTotalValue.replace(",", ".");
+                const totalValue = parseFloat(rawTotalValue) || 0;
+
+                const part = {
+                    PartNum: partNum,
+                    Description: row.querySelector('input[id^="description-"]')?.value || null,
+                    PhysicalQty: physicalQty,
+                    SystemQty: systemQty,
+                    VarianceQty: varianceQty,
+                    Qty: varianceQty,
+                    Value: totalValue,
+                    Remarks: row.querySelector('select[id^="remarks-"]')?.value || null,
+                    RemarksText:
+                        row.querySelector('select[id^="remarks-"] option:checked')?.textContent || null,
+                    SpecialcodeRemarksParts: specialRemarksParts,
+
+                    ProcessPoint: row.querySelector('input[id^="processPoint-"]')?.value || null,
+                    Ftypit: row.querySelector('input[id^="ftypit-"]')?.value || null,
+                    Typeit: row.querySelector('input[id^="typeit-"]')?.value || null,
+                    LeaderKPK: row.querySelector('input[id^="leaderKpk-"]')?.value || null,
+                    RnNumber: row.querySelector('input[id^="rn-"]')?.value || null,
+                    Measit: row.querySelector('input[id^="unit-"]')?.value || null,
+                    Planit: row.querySelector('input[id^="planit-"]')?.value || null,
+                    Cmidit: row.querySelector('input[id^="cmidit-"]')?.value || null,
+                    Commit: row.querySelector('input[id^="commit-"]')?.value || null,
+                    BasePrice: baseValue,
+                    RespCode: row.querySelector('input[id^="respCode-"]')?.value || null
+                };
+
+                partDataList.push(part);
+            });
+
+            return {
+                Master: masterData,
+                Parts: partDataList,
+                detectedKPKGlobal:
+                    typeof detectedKPKGlobal !== "undefined"
+                        ? detectedKPKGlobal
+                        : []
+            };
+        }
+
+        async function generatePiaPDFBase64() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                unit: "mm",
+                format: "a4",
+                compress: true
+            });
+
+            const payload = buildPiaPayload();
+            const master = payload.Master;
+            const parts = payload.Parts;
+            const totalQty = parts.reduce((sum, p) => sum + (parseFloat(p.Qty) || 0), 0);
+            const totalValue = parts.reduce((sum, p) => sum + (parseFloat(p.Value) || 0), 0);
+            const logoUrl = '@Url.Content("~/assets/images/mattel-logo.png")';
+            const logoImg = new Image();
+            logoImg.src = logoUrl;
+            await new Promise(resolve => (logoImg.onload = resolve));
+            const typeLabel =
+                parseInt(master.Type_ID) === 1 ? "REGULAR" :
+                    parseInt(master.Type_ID) === 2 ? "RAP" :
+                        master.Type_ID || "-";
+
+            const rnValue = (parts || []).map(p => p.RnNumber).filter(Boolean)[0] || "N/A";
+
+            const masterEntries = [
+                ["Facility", master.Facility || "-"],
+                ["TC", master.TC || "-"],
+                ["TC Companion", master.SpecialCodeTcCompanion || "N/A"],
+                ["PIA Code", master.PiaCode || "-"],
+                ["WC", master.WC || "-"],
+                ["RN", rnValue],
+                ["Initiator KPK", master.InitiatorKpk || "-"],
+                ["Type", typeLabel]
+            ];
+
+            const header = (doc, pageNumber, totalPages) => {
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const logoMaxWidth = 8;
+                const logoAspect = logoImg.width / logoImg.height;
+                const logoWidth = logoMaxWidth;
+                const logoHeight = logoWidth / logoAspect;
+                const logoX = 14;
+                const logoY = 8;
+                doc.addImage(logoImg, "JPEG", logoX, logoY, logoWidth, logoHeight, '', 'FAST');
+
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(0, 51, 102);
+                const title = "PIA NOTICE";
+                const textWidth = doc.getTextWidth(title);
+                const textY = logoY + logoHeight / 2 + 3;
+                doc.text(title, (pageWidth - textWidth) / 2, textY);
+                const lineY = logoY + logoHeight + 4;
+                doc.setDrawColor(0, 51, 102);
+                doc.setLineWidth(0.3);
+                doc.line(14, lineY, 196, lineY);
+
+                doc.setFontSize(9);
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(0, 0, 0);
+
+                let leftY = lineY + 7;
+                let rightY = lineY + 7;
+                const leftX = 14;
+                const rightX = 110;
+
+                for (let i = 0; i < 4; i++) {
+                    const [key, value] = masterEntries[i];
+                    doc.text(`${key}:`, leftX, leftY);
+                    doc.text(value, leftX + 28, leftY);
+                    leftY += 5;
+                }
+
+                for (let i = 4; i < masterEntries.length; i++) {
+                    const [key, value] = masterEntries[i];
+                    doc.text(`${key}:`, rightX, rightY);
+                    doc.text(value, rightX + 28, rightY);
+                    rightY += 5;
+                }
+
+                leftY += 3;
+                doc.setFont("helvetica", "bold");
+                doc.text("Total Qty:", leftX, leftY);
+                doc.setFont("helvetica", "normal");
+                doc.text(totalQty.toLocaleString(), leftX + 28, leftY);
+
+                rightY += 3;
+                doc.setFont("helvetica", "bold");
+                doc.text("Total Value:", rightX, rightY);
+                doc.setFont("helvetica", "normal");
+                doc.text(formatRupiah(totalValue), rightX + 28, rightY);
+
+                const pageHeight = doc.internal.pageSize.height;
+                doc.setFontSize(8);
+                doc.setTextColor(100);
+                doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - 30, pageHeight - 8);
+            };
+
+            const MAX_ROWS = 200;
+            const tableData = (parts || [])
+                .slice(0, MAX_ROWS)
+                .map(p => [
+                    p.PartNum || "-",
+                    p.Description || "-",
+                    (p.PhysicalQty !== undefined ? p.PhysicalQty : p.Qty) || 0,
+                    (p.SystemQty !== undefined ? p.SystemQty : "-") || "-",
+                    (p.VarianceQty !== undefined ? p.VarianceQty : p.Qty) || 0,
+                    (p.Value || 0).toFixed(2),
+                    p.ProcessPoint || "-",
+                    p.LeaderKPK || "-",
+                    p.RemarksText || "-",
+                    p.SpecialcodeRemarksParts || "N/A"
+                ]);
+
+            doc.autoTable({
+                startY: 65,
+                margin: { top: 65 },
+                head: [["Part Number", "Description", "Physical Qty", "System Qty", "Variance Qty", "Value", "Process Point", "Leader KPK", "Remarks", "Special Remarks"]],
+                body: tableData,
+                theme: "grid",
+                styles: { fontSize: 8, cellPadding: 1, lineWidth: 0.1 },
+                headStyles: {
+                    fillColor: [0, 51, 102],
+                    textColor: 255,
+                    fontStyle: "bold"
+                },
+                didDrawPage: (data) => {
+                    const pageCount = doc.internal.getNumberOfPages();
+                    header(doc, data.pageNumber, pageCount);
+                }
+            });
+            const pdfBase64 = doc.output("datauristring", { compress: true });
+            return pdfBase64;
+        }
+
+        function insertPia(payload) {
+            return fetch('@Url.Action("InsertPiaAsync", "DataForms")', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok) {
+                    const serverMsg = data.Error || ("Server error: HTTP " + res.status);
+                    const err = new Error(serverMsg);
+                    err.isServerError = true;
+                    throw err;
+                }
+                return data;
+            });
+        }
+
+        $("#openModalsForAnalyzedCaseMaterial").on("click", function (e) {
+            e.preventDefault();
+
+            const tbody = $("#tableSpecialCodeRemarks tbody");
+            tbody.empty();
+
+            let no = 1;
+
+            $("#listOfPartnumber tr").each(function () {
+                const partNumber = $(this)
+                    .find('input[id^="partNumber-"]')
+                    .val()
+                    ?.trim();
+
+                if (!partNumber) return;
+
+                const cachedRemark = specialRemarksCache[partNumber]?.remark || "";
+
+                const row = `
+            <tr>
+                <td class="border px-2 py-1 text-center">${no}</td>
+                <td class="border px-2 py-1">${partNumber}</td>
+                <td class="border px-2 py-1">
+                    <input
+                        type="text"
+                        class="form-input w-full special-remark-input"
+                        data-part="${partNumber}"
+                        value="${cachedRemark}"
+                        placeholder="Type your remarks for this part number"
+                    />
+                </td>
+            </tr>
+        `;
+
+                tbody.append(row);
+                no++;
+            });
+
+            $("#addNotesForSpecialCodeRemarks").removeClass("hidden");
+        });
+
+
+        $("#closeAddNotesForSpecialCodeRemarks").on("click", function () {
+            resetModalsForAnalyzedCaseMaterial();
+        });
+        $("#saveAddNotesForSpecialCodeRemarks").on("click", function () {
+
+            let hasValue = false;
+            const docRemark = $("#inputAddNotesForSpecialCodeRemarks").val().trim();
+            if (docRemark !== "") {
+                localStorage.setItem("specialCodeRemarks", docRemark);
+            }
+
+            $("#tableSpecialCodeRemarks tbody .special-remark-input").each(function () {
+                const partNumber = $(this).data("part");
+                const value = $(this).val().trim();
+
+                if (!partNumber) return;
+
+                if (value !== "") hasValue = true;
+
+                if (!specialRemarksCache[partNumber]) {
+                    specialRemarksCache[partNumber] = {
+                        excelRow: null,
+                        remark: ""
+                    };
+                }
+                specialRemarksCache[partNumber].remark = value;
+
+                const partIndex = $(`#listOfPartnumber input[value="${partNumber}"]`)
+                    .attr("id")
+                    ?.split("-")[1];
+
+                if (partIndex) {
+                    const partRemarkInput = $(`#specialRemark-${partIndex}`);
+                    if (partRemarkInput.length) {
+                        partRemarkInput.val(value);
+                    }
+                }
+            });
+
+            if (!hasValue) {
+                showSpecialCodeToast("At least one remark must be filled", "error");
+                return;
+            }
+
+            showSpecialCodeToast("Remarks saved", "success");
+
+            setTimeout(() => {
+                $("#addNotesForSpecialCodeRemarks").addClass("hidden");
+            }, 500);
+        });
+
+        function resetModalsForAnalyzedCaseMaterial() {
+            $("#addNotesForSpecialCodeRemarks").addClass("hidden");
+
+        }
+
+        function showSpecialCodeToast(message, type = "error") {
+            const toastHtml = `
+                <div class="px-4 py-2 rounded text-sm font-medium
+                    ${type === "error" ? "bg-danger border success" : ""}
+                    ${type === "success" ? "bg-success border-success" : ""}
+                ">
+                    ${message}
+                </div>
+            `;
+
+            $("#toastContainerrSpecialCodeRemarks")
+                .html(toastHtml)
+                .fadeIn(200);
+
+            setTimeout(() => {
+                $("#toastContainerrSpecialCodeRemarks").fadeOut(300, function () {
+                    $(this).empty();
+                });
+            }, 3000);
+        }
+
+        function validateSpecialCodeRemarks() {
+
+            if (!piaCodesWithNotes.includes(selectedPiaCode)) {
+                return { valid: true };
+            }
+
+            const remarks = localStorage.getItem("specialCodeRemarks");
+
+            if (!remarks || remarks.trim() === "") {
+                return {
+                    valid: false,
+                    message: "Special Remarks Notes must be filled in for the selected PIA code."
+
+                };
+            }
+
+            return { valid: true };
+        }
+
+    </script>
+}

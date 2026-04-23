@@ -1,0 +1,3140 @@
+﻿<style>
+    .report-bug-btn {
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        z-index: 9999;
+        background-color: #dc2626; /* merah */
+        color: white;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 12px; /* lebih melengkung */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+        .report-bug-btn:hover {
+            background-color: #b91c1c; /* merah lebih gelap saat hover */
+        }
+
+    div.dataTables_length select {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem; /* Tailwind text-sm */
+        line-height: 1.25rem;
+        border-radius: 0.5rem; /* rounded */
+        border: 1px solid #ccc;
+        min-width: 100px;
+    }
+</style>
+
+<!-- PDF FILTER MODAL -->
+<div id="pdfFilterForm"
+     class="fixed inset-0 bg-black/80 z-[99999] hidden flex items-center justify-center p-6 dark:bg-dark/90">
+
+    <!-- CARD -->
+    <div class="bg-white dark:bg-dark2 w-full max-w-5xl rounded-xl shadow-lg p-6 relative">
+
+        <!-- CLOSE -->
+        <div class="flex items-center justify-between mb-6 relative">
+            <h2 class="text-xl font-semibold">
+                Generate PDF Filters
+            </h2>
+
+            <button id="closePdfFilter"
+                    class="w-8 h-8 flex items-center justify-center
+                       rounded-full bg-muted/10 hover:bg-danger
+                       text-muted hover:text-white
+                       transition text-xl leading-none">
+                &times;
+            </button>
+        </div>
+
+        <!-- FORM GRID -->
+        <div class="flex flex-wrap gap-4 items-end">
+
+            <!-- Supervisor -->
+            <div class="relative flex-1 basis-[40%] min-w-[260px]">
+                <label class="text-sm font-semibold block mb-2">
+                    Supervisor
+                </label>
+
+                <input type="text"
+                       id="supervisorInitiatorNamePDF"
+                       placeholder="Search Supervisor..."
+                       autocomplete="off"
+                       class="form-input w-full text-sm p-2">
+
+                <input type="hidden" id="supervisorInitiatorKpkPDF" />
+
+                <div id="supervisorResultsPDF"
+                     class="absolute left-0 top-full w-full bg-white border border-gray-300
+                            rounded-md mt-1 max-h-[160px]
+                            overflow-y-auto hidden z-50 shadow">
+                </div>
+            </div>
+
+            <!-- Facility -->
+            <div class="flex-1 basis-[18%] min-w-[180px]">
+                <label class="text-sm font-semibold block mb-2">
+                    Facility
+                </label>
+
+                <select id="facilityDropdownPDF"
+                        class="form-input w-full text-sm p-2">
+                    <option value="">-- Select Facility --</option>
+                    <option value="P1">P1</option>
+                    <option value="P2">P2</option>
+                    <option value="P2S3">P2S3</option>
+                    <option value="P2S4">P2S4</option>
+                    <option value="P2S5">P2S5</option>
+                </select>
+            </div>
+
+            <!-- Scrap Code -->
+            <div class="flex-1 basis-[22%] min-w-[200px]">
+                <label class="text-sm font-semibold block mb-2">
+                    Scrap Code
+                </label>
+
+                <select id="scrapCodeDropdownPDF"
+                        class="form-input w-full text-sm p-2">
+                    <option value="">-- Select Scrap Code --</option>
+                </select>
+            </div>
+
+            <!-- APPLY -->
+            <div class="flex items-end min-w-[140px]">
+                <button id="applyPdfFilter"
+                        class="w-full flex items-center justify-center gap-2
+                   px-4 py-2 bg-success text-white
+                   rounded shadow mt-6 hover:bg-success/[0.85]">
+
+                    <!-- Icon Filter -->
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="w-4 h-4"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M3 4a1 1 0 011-1h16a1 1 0 011 1l-6 7v6l-4 2v-8L3 4z" />
+                    </svg>
+
+                    <span>Filter</span>
+
+                </button>
+            </div>
+
+
+        </div>
+        <!-- RESULT LIST -->
+        <div id="pdfResultList"
+             class="mt-6 hidden">
+
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-sm">
+                    Documents - STORE APPROVAL
+                </h3>
+
+                <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+                    <input id="selectAllPdfDocs"
+                           type="checkbox"
+                           class="w-4 h-4 accent-success cursor-pointer">
+
+                    Select All
+                </label>
+            </div>
+
+
+            <div id="pdfDocumentGrid"
+                 style="
+        display:grid;
+        grid-template-columns: repeat(10, minmax(0,1fr));
+        gap:4px;
+     "
+                 class="w-full text-xs">
+            </div>
+
+            <div class="flex justify-end mt-4">
+
+                <button id="downloadPdfBtn"
+                        disabled
+                        class="flex items-center gap-2 px-4 py-2
+                   bg-info text-white rounded shadow
+                   disabled:opacity-40 disabled:cursor-not-allowed
+                   hover:bg-info/80">
+
+                    <!-- Download icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="w-4 h-4"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                    </svg>
+
+                    <span id="downloadBtnText">
+                        Download Selected (0)
+                    </span>
+
+                </button>
+
+            </div>
+
+
+        </div>
+
+    </div>
+</div>
+
+<div id="addUserCreateScrapModals" class="fixed inset-0 bg-black/80 z-[99998] hidden overflow-y-auto w-300">
+    <div class="flex items-start justify-center min-h-screen px-4">
+        <div class="relative w-full max-w-sm p-0 my-8 overflow-hidden bg-white border rounded-xl shadow-lg border-black/10">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-3 bg-white border-b border-black/10">
+                <h5 class="text-lg font-semibold">Add New User</h5>
+
+            </div>
+
+            <!-- Body -->
+            <div class="p-5 space-y-5">
+
+                <div id="toastContainer" class="flex justify-center mb-2"></div>
+
+                <!-- Supervisor / KPK Autocomplete -->
+                <div>
+                    <label class="mb-2 text-sm font-semibold">KPK / Employee Name</label>
+                    <input type="hidden" id="addUserCreateScrapKpk" name="addUserKpk" />
+                    <input type="text" id="addUserCreateScrapName" name="addUserName" placeholder="Search Employee..."
+                           class="form-input w-full rounded border border-black/10" />
+                    <div id="addUserCreateScrapResults"
+                         class="dropdown-results absolute w-full bg-white border border-muted rounded mt-1 z-50 hidden"
+                         style="max-height: 200px; overflow-y: auto;"></div>
+                </div>
+
+
+                <button id="addDataUsersCreateScrapModals" type="button" class="btn bg-info border-info text-white w-full hover:bg-info/[0.85]">
+                    Add
+                </button>
+
+                <table class="min-w-[300px] w-full">
+                    <thead>
+                        <tr class="bg-gray-100 text-left">
+                            <th class="px-3 py-2">#</th>
+                            <th class="px-3 py-2">KPK</th>
+
+                            <th class="px-3 py-2">Name</th>
+
+                        </tr>
+                    </thead>
+                    <tbody id="listOfUsersCreateScrapModals">
+                    </tbody>
+                </table>
+
+
+                <!-- Action buttons -->
+                <div class="flex items-center justify-end gap-3">
+                    <button id="closeAddUserCreateScrap" type="button" class="btn bg-danger border-danger text-white hover:bg-danger/[0.85]">
+                        Close
+                    </button>
+                    <button type="button"
+                            id="saveAddUserCreateScrap"
+                            class="btn bg-purple border-purple text-white hover:bg-purple/[0.85]">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<button type="button"
+        class="report-bug-btn"
+        onclick="window.open('https://forms.office.com/Pages/ResponsePage.aspx?id=TblAX5LegUymKkAURVeR5ikAiMh_l5ZPohCDjiECdYxUQ1dSSjNJSjVXVVVOWlFLTlk3OVhHU0tMWC4u', '_blank')">
+    <i class="fas fa-bug"></i>
+    <span>Report Bug</span>
+</button>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="~/assets/libs/@("@")alpinejs/persist/cdn.min.js"></script>
+<script src="~/assets/libs/@("@")alpinejs/collapse/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
+
+
+<script>
+    var getLoadingContent = '@Url.Content("~/assets/loadercardrift.json")';
+    const plant = '@Session["Plant"]';
+    const TC = '@Session["TC"]';
+    const kpk = '@Session["Kpk"]';
+    const roleId = '@Session["RoleId"]';
+    const watermarkUrl = '@Url.Content("~/assets/images/Mattel-watermark.png")';
+    let isInitialValidation = true;
+    const rawUserName = @Html.Raw(Json.Encode(Session["UserName"] ?? ""));
+    const userName = rawUserName.trim().replace(/^"|"$/g, "");
+    let initialsUserTopbar = "";
+    const supervisorKpk = '@(Session["SupervisorKpk"] ?? "")';
+    const urlGetTypeScrap = '@Url.Action("GetTypeScraps", "DataForms")';
+    const urlGetEmployee = '@Url.Action("GetEmployeeByNameOrKpk", "DataForms")';
+    const urlCheckSpecialCase = '@Url.Action("GetScrapCodeApprovalsWithUsers", "DataForms")';
+    const urlGetSourceDataScrap = '@Url.Action("GetJoinedSourceDataScrap", "ListOfData")';
+    const urlGetScrapTotals = '@Url.Action("GetScrapTotals", "ListOfData")';
+    const urlUpdateApprovals = '@Url.Action("UpdateApprovals", "UpdateData")';
+    let detectedKPKGlobal = [];
+    const specialOrderForApproval = [19,30,32,36, 22,34,38, 18, 5,27, 15, 25, 24,35,39, 17, 16,26, 23, 20,31,33,37];
+    const pageSize = 10;
+    const updateScrapUrl = '@Url.Action("UpdateScrapStatusActiveSourceAsync", "DataReporting")';
+    const updateSourceDataUrl = '@Url.Action("UpdateSourceDataStatusFromPartsAsync", "DataReporting")';
+    let scrapTimerStarted = false;
+    const filterButton = document.getElementById('filtersScrapNotice');
+    const filterList = document.getElementById('filterList');
+    const applyButton = document.getElementById('applyFiltersButton');
+    const resetButton = document.getElementById('resetFiltersButton');
+    const facilities = ["P1", "P2", "P2S3", "P2S4", "P2S5"];
+    const totalScrapCodeUrl = '@Url.Action("GetScrapCodeSummaryCount", "DataReporting")';
+    const getRolesNameUrl = '@Url.Action("GetAllRoles", "ListOfData")';
+    const getDelegatesUrl = '@Url.Action("GetUserDelegates", "UpdateData")';
+    let currentFilters = {};
+    let selectedPdfDocIds = [];
+    const urlAddOrReactivateUser = '@Url.Action("AddOrReactivateUser", "UpdateData")';
+    const TC_URL = '@Url.Action("GetTcAndTypeWithFacility", "DataForms")';
+    const TcCompanionURL = '@Url.Action("GetTCCompanions", "DataForms")';
+
+    if (userName) {
+        const nameParts = userName.split(" ");
+
+
+        initialsUserTopbar = nameParts.length >= 2
+            ? nameParts[0][0] + nameParts[nameParts.length - 1][0]
+            : nameParts[0].slice(0, 2);
+
+        initialsUserTopbar = initialsUserTopbar.toUpperCase();
+
+    }
+    $(document).ready(function () {
+        startUpdateScrapTimer();
+        loadTotalApprovalCount();
+        toggleSidebarItems(roleId);
+        toggleTopbarByRole(roleId)
+        const userNameElement = document.getElementById("userNameSession");
+
+
+        if (userNameElement) {
+            userNameElement.textContent = userName ?? "";
+        }
+        const avatarElement = document.getElementById("avatarInitials");
+        if (avatarElement && initialsUserTopbar) {
+            avatarElement.textContent = initialsUserTopbar;
+        }
+        const profileElement = document.getElementById("profileInitials");
+        if (profileElement && initialsUserTopbar) {
+            profileElement.textContent = initialsUserTopbar;
+        }
+
+    });
+    function toggleHidden(selector, shouldShow) {
+        $(selector).toggleClass("hidden", !shouldShow);
+    }
+
+
+    function getCurrentDayType(mode = "default") {
+        const today = new Date();
+        const day = today.getDay();
+
+        if (mode === "everyday") {
+            return "Everyday";
+        }
+
+        if (day === 0 || day === 6) {
+            return "Weekend";
+        } else {
+            return "Weekdays";
+        }
+    }
+
+    function toggleSidebarItems(roleId) {
+        const role = parseInt(roleId, 10);
+        if (role === 1) {
+            document.getElementById("sidebarUserManagement")?.classList.remove("hidden");
+            document.getElementById("sidebarConfiguration")?.classList.remove("hidden");
+        }
+    }
+    function toggleTopbarByRole(roleId) {
+        const role = parseInt(roleId, 10);
+
+        const allowedRoles = [1, 3, 4];
+        const el = document.getElementById("divRequestToCreateScrapUser");
+
+        if (!el) return;
+
+        if (allowedRoles.includes(role)) {
+            el.classList.remove("hidden");
+        } else {
+            el.classList.add("hidden");
+        }
+    }
+
+    $("#statusUpdateManual").on("click", async function () {
+        try {
+
+
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait while we update the status.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+
+            const scrapResponse = await $.ajax({
+                url: updateScrapUrl,
+                type: 'POST'
+            });
+
+            const sourceResponse = await $.ajax({
+                url: updateSourceDataUrl,
+                type: 'POST'
+            });
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Update Completed',
+                text: 'All statuses have been successfully updated.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: 'An error occurred while updating the statuses.'
+            });
+        }
+    });
+
+    function startUpdateScrapTimer(intervalMs = 5 * 60 * 1000) {
+        if (scrapTimerStarted) return;
+        scrapTimerStarted = true;
+
+        setInterval(async function () {
+            try {
+                await $.ajax({
+                    url: updateScrapUrl,
+                    type: 'POST',
+                    success: function (data) {
+
+                    },
+                    error: function (xhr, status, error) {
+
+                    }
+                });
+                await $.ajax({
+                    url: updateSourceDataUrl,
+                    type: 'POST',
+                    success: function (data) {
+
+                    },
+                    error: function (xhr, status, error) {
+
+                    }
+                });
+
+            } catch (err) {
+            }
+        }, intervalMs);
+
+
+    }
+
+    function showDynamicSwal(options = {}) {
+        const {
+            title = "Are you sure?",
+            text = "Do you want to continue?",
+            icon = "warning",
+            confirmText = "Yes, Continue",
+            cancelText = "Cancel"
+        } = options;
+
+        return Swal.fire({
+            title,
+            text,
+            icon,
+            showCancelButton: true,
+            confirmButtonText: confirmText,
+            cancelButtonText: cancelText,
+            reverseButtons: true,
+        });
+    }
+
+    function fetchData(url, params = {}, callback) {
+        $.ajax({
+            url: url,
+            type: "GET",
+            data: params,
+            dataType: "json",
+            success: function (res) {
+                if (typeof callback === "function") {
+                    callback(res);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching data:", status, error);
+            }
+        });
+    }
+
+    function loadTotalApprovalCount(filters = currentFilters) {
+        return $.ajax({
+            url: urlGetSourceDataScrap,
+            type: "GET",
+            data: {
+                pageNumber: 1,
+                pageSize: 10,
+                approverKpk: kpk,
+                documentId: filters.documentId || "",
+                createdDate: filters.createdDate || "",
+                scrapCode: filters.scrapCode || "",
+                totalFrom: filters.totalFrom || "",
+                totalTo: filters.totalTo || ""
+            },
+            dataType: "json"
+        }).done(function (res) {
+            let count = res.TotalCount || 0;
+
+
+            const $badge = $("#approvalCountTotal");
+            if (count > 0) {
+                $badge.text(count).removeClass("hidden");
+            } else {
+                $badge.addClass("hidden");
+            }
+        }).fail(function (xhr, status, error) {
+            console.error("Error fetching total count:", error);
+            $("#approvalCountTotal").addClass("hidden");
+        });
+    }
+
+    function updateDetectedKPKGlobal(specialCases, grandTotal) {
+        const supervisorKpk = document.querySelector("#supervisorInitiatorKpk")?.value;
+        const supervisorRoleId = document.querySelector("#supervisorInitiatorRoleId")?.value;
+        detectedKPKGlobal = [];
+        if (supervisorKpk) {
+            detectedKPKGlobal.push({ kpk: supervisorKpk, roleId: supervisorRoleId || null });
+        }
+        const sortedCases = specialCases.sort((a, b) => (a.priorityScrapCase ?? 999) - (b.priorityScrapCase ?? 999));
+
+        sortedCases.forEach(sc => {
+            sc.kpkUsers.forEach(kpk => {
+                if (!detectedKPKGlobal.some(d => d.kpk === kpk)) {
+                    detectedKPKGlobal.push({ kpk, roleId: sc.roleId });
+                }
+            });
+        });
+
+        // ✅ DEBUG LOGGING: Shows tracing of approver detection
+        console.group("🔍 APPROVER DETECTION TRACE");
+        console.log("📌 Supervisor (Initiator):", { kpk: supervisorKpk, roleId: supervisorRoleId });
+        console.log("📋 Special Cases Detected:", specialCases);
+        console.log("✅ Final detectedKPKGlobal Array:", detectedKPKGlobal);
+        console.log("💰 Grand Total Value:", grandTotal);
+        console.groupEnd();
+    }
+
+    async function checkSpecialCaseKPKFromServer(url, cardsData, grandTotal, callback) {
+
+        try {
+            console.log("🔄 Starting approver detection process...");
+            const response = await fetch(url);
+            const result = await response.json();
+            if (!result.success) {
+                console.warn("⚠️  Failed to fetch approvals from server");
+                return;
+            }
+
+            console.log("✅ Approvals fetched from server. Total approvals:", result.data?.length);
+            const approvals = result.data;
+            const supervisorKpk = document.querySelector("#supervisorInitiatorKpk")?.value;
+
+            const detectedSpecialCases = [];
+            const addedIds = new Set();
+            let commitXPersisted = false;
+            const approvalsByTc = filterApprovalsByTc(
+                approvals,
+                selectedTC
+            );
+            console.log("📍 Filtered by TC:", { selectedTC, filteredCount: approvalsByTc.length });
+
+            const filteredApprovals = filterApprovalsByScrapCode(approvalsByTc, selectedScrapCode);
+            console.log("📍 Filtered by ScrapCode:", { selectedScrapCode, filteredCount: filteredApprovals.length });
+
+            commitXPersisted = processApprovals(filteredApprovals, detectedSpecialCases, addedIds, {
+                cardsData,
+                grandTotal,
+                selectedCommit,
+                commitXPersisted,
+                selectedFacilityInDropdown,
+                selectedScrapCode
+            });
+            console.log("📋 After first processApprovals:", { detectedCases: detectedSpecialCases.length, commitX: commitXPersisted });
+
+            if (commitXPersisted) {
+                processApprovals(
+                    filteredApprovals.filter(a => a.commit === "X"),
+                    detectedSpecialCases,
+                    addedIds,
+                    {
+                        cardsData,
+                        grandTotal,
+                        selectedCommit,
+                        commitXPersisted,
+                        selectedFacilityInDropdown,
+                        selectedScrapCode
+                    }
+                );
+                console.log("📋 After commit X processApprovals:", { detectedCases: detectedSpecialCases.length });
+            }
+            await filterBySupervisorChain(detectedSpecialCases, supervisorKpk);
+            console.log("📋 After supervisor chain filter:", { detectedCases: detectedSpecialCases.length });
+
+            updateDetectedKPKGlobal(detectedSpecialCases, grandTotal);
+            console.log("✅ detectedKPKGlobal updated successfully!");
+
+            if (typeof callback === "function") callback(detectedSpecialCases);
+        } catch (err) {
+            console.error("❌ Error in checkSpecialCaseKPKFromServer:", err);
+        }
+    }
+
+    function filterApprovalsByScrapCode(approvals, selectedScrapCode) {
+        const hasSpecificScrapCode = approvals.some(a => a.ScrapCode === selectedScrapCode);
+        return approvals.filter(a =>
+            hasSpecificScrapCode ? a.ScrapCode === selectedScrapCode : !a.ScrapCode
+        );
+    }
+    function filterApprovalsByTc(approvals, selectedTc) {
+        return approvals.filter(a =>
+            !a.Tc || a.Tc === selectedTc
+        );
+    }
+
+    function isApprovalMatch(approval, context) {
+        const { cardsData, grandTotal, selectedCommit, commitXPersisted } = context;
+        const minVal = approval.minValue != null ? parseFloat(approval.minValue) : null;
+        const maxVal = approval.maxValue != null ? parseFloat(approval.maxValue) : null;
+        const minValueMatch = minVal === null || grandTotal >= minVal;
+        const maxValueMatch = maxVal === null || grandTotal <= maxVal;
+        const typeMatch = !approval.ScrapTcType || cardsData.some(c => c.typeit === approval.ScrapTcType);
+
+        if (approval.commit === "X") {
+            return selectedCommit || commitXPersisted;
+        }
+        return typeMatch && minValueMatch && maxValueMatch;
+    }
+
+    function filterUsersByRole(users, roleId, facility, scrapCode) {
+        if (roleId === 3) {
+            return users.filter(
+                u =>
+                    u.Facility?.includes(facility) &&
+                    u.ScrapCodeResponsible?.includes(scrapCode)
+            );
+        }
+        if (roleId === 15) {
+            return users.filter(u => u.Facility?.includes(facility));
+        }
+        return users;
+    }
+
+    function processApprovals(approvals, detectedSpecialCases, addedIds, context) {
+        let commitXDetected = false;
+
+        approvals
+            .filter(a => a.RequiredApproverCount > 0)
+            .forEach(a => {
+                if (!isApprovalMatch(a, context) || addedIds.has(a.Id)) return;
+
+                let filteredUsers = filterUsersByRole(
+                    a.Users,
+                    a.Role_Id,
+                    context.selectedFacilityInDropdown,
+                    context.selectedScrapCode
+                );
+
+                detectedSpecialCases.push({
+                    id: a.Id,
+                    roleId: a.Role_Id,
+                    kpkUsers: filteredUsers.map(u => u.Kpk),
+                    priorityScrapCase:
+                        a.PriorityScrapCase != null ? parseInt(a.PriorityScrapCase) : null
+                });
+
+                addedIds.add(a.Id);
+
+                if (a.commit === "X") commitXDetected = true;
+            });
+
+        return commitXDetected || context.commitXPersisted;
+    }
+
+    async function filterBySupervisorChain(detectedSpecialCases, supervisorKpk) {
+        const chain = await getSupervisorChain(supervisorKpk);
+        const filteredChain = chain.filter(item => item.Kpk !== supervisorKpk).map(x => x.Kpk);
+
+        detectedSpecialCases.forEach(sc => {
+            if (sc.roleId === 5 || sc.roleId === 6) {
+                sc.kpkUsers = sc.kpkUsers.filter(kpk => filteredChain.includes(kpk));
+            }
+        });
+    }
+
+    async function getSupervisorChain(kpk) {
+        try {
+            const result = await $.ajax({
+                url: '@Url.Action("GetSupervisorChainByKpk", "DataForms")',
+                type: 'GET',
+                data: { kpk: kpk },
+                dataType: 'json'
+            });
+
+            if (result.success) {
+
+                return result.data;
+            } else {
+                console.error("Failed to fetch supervisor chain:", result.message);
+                return [];
+            }
+        } catch (err) {
+            console.error("Error fetching supervisor chain:", err);
+            return [];
+        }
+    }
+
+
+    function formatDate(dotNetDate) {
+        if (!dotNetDate) return "-";
+        const timestamp = parseInt(dotNetDate.replace(/[^0-9]/g, ""), 10);
+        const date = new Date(timestamp);
+
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return date.toLocaleDateString("en-US", options).replace(",", "");
+    }
+    function parseDotNetDate(dotNetDate) {
+        if (!dotNetDate) return null;
+        const match = /\/Date\((\d+)\)\//.exec(dotNetDate);
+        if (!match) return null;
+        return new Date(parseInt(match[1], 10));
+    }
+    function formatDateSimple(dotNetDate) {
+        if (!dotNetDate) return "-";
+
+        const timestamp = parseInt(dotNetDate.replace(/[^0-9]/g, ""), 10);
+        const d = new Date(timestamp);
+
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+
+        return `${day}-${month}-${year}`;
+    }
+
+    function parseDotNetDateChart(dotNetDate) {
+        if (!dotNetDate) return null;
+        const match = /\/Date\((\d+)\)\//.exec(dotNetDate);
+        if (match) {
+            return new Date(parseInt(match[1], 10));
+        }
+        const parsed = new Date(dotNetDate);
+        if (isNaN(parsed.getTime())) {
+            console.warn("⚠️ Invalid date format:", dotNetDate);
+            return null;
+        }
+        return parsed;
+    }
+
+    function isSameDay(d1, d2) {
+        return d1 && d2 &&
+            d1.getFullYear() === d2.getFullYear() &&
+            d1.getMonth() === d2.getMonth() &&
+            d1.getDate() === d2.getDate();
+    }
+    function normalizeText(text) {
+        return text
+            .toString()
+            .trim()
+            .replace(/^['"]+|['"]+$/g, "")
+            .replace(/\s+/g, " ")
+            .toLowerCase();
+    }
+    function getColorByName(name) {
+        if (!name) return "#CCCCCC";
+        var hash = 0;
+        for (var i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        var color = "#";
+        for (var j = 0; j < 3; j++) {
+            var value = (hash >> (j * 8)) & 0xFF;
+            value = Math.min(200, Math.max(60, value));
+
+            color += ("00" + value.toString(16)).substr(-2);
+        }
+        return color;
+    }
+
+    function getFirstAndLastName(fullName) {
+        if (!fullName) return "-";
+
+        const parts = fullName.trim().split(/\s+/);
+
+        if (parts.length === 1) return parts[0];
+
+        return `${parts[0]} ${parts[parts.length - 1]}`;
+    }
+
+    function getCurrentApproverNameForShowInList(masterStatus, approvals) {
+
+        if (masterStatus !== 1) return "-";
+        if (!approvals || approvals.length === 0) return "-";
+
+        const pending = approvals.filter(a => a.Centralized_StatusList_ID === 1);
+        if (pending.length === 0) return "-";
+
+        pending.sort(
+            (a, b) => a.Centralized_ApprovalList_Step - b.Centralized_ApprovalList_Step
+        );
+
+        return getFirstAndLastName(pending[0].ApproverName);
+    }
+
+    function renderTcCode(tc, tcCompanion) {
+        const mainTc = tc || "-";
+        const companionTc = tcCompanion || "-";
+
+        return `
+        <div class="flex flex-col leading-4 min-w-[110px]">
+            <span class="font-medium text-black dark:text-white/80">${mainTc}</span>
+            <span class="text-[11px] text-muted">TC Companion: ${companionTc}</span>
+        </div>`;
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById("listOfScrap");
+        tbody.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `
+        <tr>
+            <td colspan="9" class="text-center py-4 text-gray-500">
+                Currently no data available
+            </td>
+        </tr>`;
+            return;
+        }
+
+        data.forEach(item => {
+            const status = statusText(item.Centralized_SourceData_Master_Status);
+            const approverName = getCurrentApproverNameForShowInList(
+                item.Centralized_SourceData_Master_Status,
+                item.Approvals
+            );
+            const tcCodeHtml = renderTcCode(item.TC, item.TCCompanion || item.SpecialCodeTcCompanion);
+
+            let statusHtml = statusText(item.Centralized_SourceData_Master_Status);
+            if (item.Centralized_SourceData_Master_Status === 16) {
+                const deletedAt = item.DeletedAt ? formatDateSimple(item.DeletedAt) : '-';
+                const deletedByName = item.InitiatorName || '-';
+                const deletedByKpk = item.InitiatorKpk || '-';
+                statusHtml = `
+                <span
+                    title="Deleted by: ${deletedByKpk} - ${deletedByName}&#10;Deleted at: ${deletedAt}"
+                    class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                           bg-danger/20 text-danger font-bold cursor-help">
+                    DELETED
+                </span>`;
+            }
+
+            const row = `
+        <tr>
+            <td>${item.Centralized_SourceData_Master_ID_Str}</td>
+            <td>${item.Facility}</td>
+            <td>${item.InitiatorName}</td>
+            <td>${formatDate(item.Centralized_SourceData_Master_CreatedDate)}</td>
+            <td>${item.ScrapCode}</td>
+            <td>${tcCodeHtml}</td>
+            <td>${item.TotalQty && item.TotalQty > 0 ? item.TotalQty : '-'}</td>
+            <td>${item.TotalValue && item.TotalValue > 0 ? formatRupiah(item.TotalValue) : '-'}</td>
+            <td>${approverName}</td>
+            <td>${statusHtml}</td>
+            <td>
+                <i class="fas fa-eye text-info cursor-pointer hover:bg-muted/[0.85]"
+                   onclick="viewDetail('${item.Centralized_SourceData_Master_ID_Str}')"></i>
+            </td>
+        </tr>
+        `;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function viewDetail(docId) {
+        const encoded = btoa(docId);
+        const url = '@Url.Action("DetailScrap", "ScrapRecords")' + '?token=' + encoded;
+        window.location.href = url;
+    }
+    function formatRupiah(num) {
+        if (!num || isNaN(num)) return "Rp 0,00";
+        return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 2
+        }).format(num);
+    }
+    function formatRupiahShort(num) {
+        if (!num || isNaN(num)) return "Rp 0";
+
+        const thresholds = [
+            { value: 1_000_000_000_000, suffix: " Trillion" },
+            { value: 1_000_000_000, suffix: " Billion" },
+            { value: 1_000_000, suffix: " Million" }
+        ];
+
+        const absNum = Math.abs(num);
+        const threshold = thresholds.find(t => absNum >= t.value);
+
+        let result;
+        if (threshold) {
+            result = (num / threshold.value)
+                .toFixed(1)
+                .replace('.', ',') + threshold.suffix;
+        } else {
+            result = new Intl.NumberFormat("id-ID", {
+                maximumFractionDigits: 0
+            }).format(num);
+        }
+        return "Rp " + result;
+    }
+
+
+    function statusText(statusId) {
+        switch (statusId) {
+            case 1:
+                return `
+                <span
+                    title="Waiting for approval"
+                    class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                           bg-purple/20 text-purple font-bold cursor-help">
+                    PENDING
+                </span>
+            `;
+            case 2:
+                return `
+                <span
+                    title="Approved by assigned approver"
+                    class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                           bg-info/20 text-info font-bold cursor-help">
+                    APPROVED
+                </span>
+            `;
+            case 3:
+                return `
+                <span
+                    title="This document has been rejected"
+                    class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                           bg-danger/20 text-danger font-bold cursor-help">
+                    REJECTED
+                </span>
+            `;
+            case 4:
+                return `
+                <span
+                    title="Approval finished, waiting for keyed in"
+                    class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                           bg-success/20 text-success font-bold cursor-help">
+                    ACTIVE
+                </span>
+            `;
+            case 5:
+                return `
+                <span
+                    title="This document has been rejected"
+                    class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                           bg-danger/20 text-danger font-bold cursor-help">
+                    REJECTED
+                </span>
+            `;
+            case 9:
+                return `
+                <span
+                    title="Document has been keyed in by data entry"
+                    class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                           bg-info/20 text-info font-bold cursor-help">
+                    KEYED IN
+                </span>
+            `;
+            case 16:
+                return `
+                <span
+                    title="This document has been deleted by the initiator"
+                    class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                           bg-danger/20 text-danger font-bold cursor-help">
+                    DELETED
+                </span>
+            `;
+            default:
+                return `
+                <span
+                    title="Status not recognized"
+                    class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                           bg-muted/20 text-muted font-bold cursor-help">
+                    UNKNOWN
+                </span>
+            `;
+        }
+    }
+
+    function statusTextPartList(statusId) {
+        switch (statusId) {
+            case 1:
+                return `
+                <span class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                               bg-purple/20 text-purple font-bold">
+                    PENDING
+                </span>
+            `;
+            case 2:
+                return `
+                 <span class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                                bg-danger/20 text-danger font-bold">
+                     REJECTED
+                 </span>
+            `;
+            case 3:
+                return `
+                <span class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                               bg-success/20 text-success font-bold">
+                    ACTIVE
+                </span>
+            `;
+            case 5:
+                return `
+                <span class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                               bg-info/20 text-info font-bold">
+                    KEYED IN
+                </span>
+            `;
+            case 16:
+                return `
+                <span class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                               bg-danger/20 text-danger font-bold">
+                    DELETED
+                </span>
+            `;
+            default:
+                return `
+                <span class="inline-block items-center rounded text-xs justify-center px-1.5 py-0.5
+                               bg-muted/20 text-muted font-bold">
+                    UNKNOWN
+                </span>
+            `;
+        }
+    }
+
+    function getApprovalStatus(statusId) {
+        switch (statusId) {
+            case 2:
+                return { statusText: "Approved", badgeClass: "bg-success" };
+            case 3:
+                return { statusText: "Rejected", badgeClass: "bg-danger" };
+            default:
+                return { statusText: "Pending", badgeClass: "bg-purple" };
+        }
+    }
+    function statusBadge(statusId) {
+        switch (statusId) {
+            case 1:
+                return { text: "Pending", class: "shadow-purple/50 bg-purple text-white", icon: "fas fa-hourglass-half" };
+            case 4:
+                return { text: "Active", class: "shadow-success/50 bg-success text-white", icon: "fas fa-check" };
+            case 5:
+                return { text: "Rejected", class: "shadow-danger/50 bg-danger text-white", icon: "fas fa-times" };
+            case 9:
+                return { text: "Keyed In", class: "shadow-info/50 bg-info text-white", icon: "fas fa-pen" };
+            case 16:
+                return { text: "Deleted", class: "shadow-danger/50 bg-danger text-white", icon: "fas fa-trash" };
+            default:
+                return { text: "Unknown", class: "shadow-muted/50 bg-muted text-white", icon: "fas fa-question" };
+        }
+    }
+
+    function getRoleBadge(roleId) {
+        switch (roleId) {
+            case 10:
+            case 100:
+            case 5:
+            case 8:
+                return { badgeClass: "bg-success", textColor: "text-white" };
+            case 15:
+            case 3:
+                return { badgeClass: "bg-info", textColor: "text-white" };
+            case 11:
+            case 12:
+            case 6:
+                return { badgeClass: "bg-muted", textColor: "text-white" };
+            case 5:
+                return { badgeClass: "bg-purple", textColor: "text-white" };
+            case 1:
+            case 2:
+            case 7:
+            case 99:
+                return { badgeClass: "bg-light", textColor: "text-black" };
+            default:
+                return { badgeClass: "bg-black", textColor: "text-white" };
+        }
+    }
+    function isValidToyPart(value) {
+        return /^[A-Z0-9]+-[A-Z0-9]+$/i.test(value.trim());
+    }
+
+    function capitalizeWords(str) {
+        return str
+            .toLowerCase()
+            .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function renderPagination(totalCount, pageNumber, pageSize) {
+        const totalPages = Math.ceil(totalCount / pageSize);
+        const pagination = document.getElementById("buttonPagination");
+        pagination.innerHTML = "";
+        if (totalPages === 0) return;
+        const buttons = [];
+        buttons.push({ text: "First", page: 1, disabled: pageNumber === 1 });
+        buttons.push({ text: "Prev", page: pageNumber - 1, disabled: pageNumber === 1 });
+        let startPage = Math.max(1, pageNumber - 2);
+        let endPage = startPage + 4;
+        if (endPage > totalPages) {
+            endPage = totalPages;
+            startPage = Math.max(1, endPage - 4);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            buttons.push({ text: i, page: i, active: i === pageNumber });
+        }
+
+        buttons.push({ text: "Next", page: pageNumber + 1, disabled: pageNumber === totalPages });
+        buttons.push({ text: "Last", page: totalPages, disabled: pageNumber === totalPages });
+
+        buttons.forEach(btn => {
+            pagination.innerHTML += `
+        <li>
+            <button type="button"
+                class="flex justify-center px-3.5 py-2 rounded transition
+                    ${btn.active ? "text-white bg-purple border border-purple" : "text-purple hover:text-white hover:bg-purple border border-purple/5 hover:border-purple bg-purple/10"}
+                    ${btn.disabled ? "opacity-50 cursor-not-allowed" : ""}"
+                onclick="loadData(${btn.page}, ${pageSize})"
+                ${btn.disabled ? "disabled" : ""}>
+                ${btn.text}
+            </button>
+        </li>`;
+        });
+    }
+
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+    function isDocumentId(keyword) {
+        return /^[0-9]+$/.test(keyword);
+    }
+
+    document.getElementById("searchDetail").addEventListener("click", async function () {
+        const keyword = document.getElementById("searchInfoPartNumber").value.trim();
+        if (!keyword) {
+            Swal.fire({
+                icon: "warning",
+                title: "Input Required",
+                text: "Please enter part number or toy number before searching."
+            });
+            return;
+        }
+        if (isDocumentId(keyword)) {
+            const token = btoa(keyword);
+            window.location.href =
+                `@Url.Action("DetailScrap", "ScrapRecords")?token=${token}`;
+            return;
+        }
+
+
+        try {
+
+            Swal.fire({
+                title: "Loading...",
+                text: "Please wait while fetching data",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            const url = '@Url.Action("GetPartMasterUpdated", "DataForms")' +
+                        '?data=' + encodeURIComponent(keyword) +
+                        '&tc=P1';
+
+            const response = await fetch(url);
+            const result = await response.json();
+            Swal.close();
+
+            if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+                let htmlContent = result.data.map(part => {
+                    const processPoint = part.ProcessPoint && part.ProcessPoint.trim() !== ""
+                                         ? part.ProcessPoint
+                                         : "N";
+
+                    return `
+                        <div class="p-3 border border-black/10 rounded-xl bg-white shadow hover:shadow-md transition mb-3">
+                          <div class="flex justify-center items-center mb-2">
+                            <span class="font-semibold bg-muted/20 text-purple rounded-full text-base px-4 py-1">
+                                ${part.PartNum ?? "-"}
+                            </span>
+                          </div>
+
+                          <p class="text-sm text-gray-800"><b>Description:</b> ${part.Description ?? "-"}</p>
+                          <p class="text-sm text-gray-600"><b>Measurement:</b> ${part.Measurement ?? "-"}</p>
+                          <p class="text-sm text-gray-600"><b>Process Point:</b> <span class="font-medium">${processPoint}</span></p>
+                          <p class="text-sm text-gray-600"><b>Ftypit:</b> ${part.ftypit ?? "-"}</p>
+                          <p class="text-sm text-gray-600"><b>Typeit:</b> ${part.typeit ?? "-"}</p>
+                          <p class="text-sm text-gray-600"><b>Commit:</b> ${part.commit ?? "-"}</p>
+                          <p class="text-sm text-gray-600"><b>Base Price:</b> ${formatRupiah(part.BasePrice)}</p>
+                        </div>
+                    `;
+                }).join("");
+
+                Swal.fire({
+                    title: "🔎 Search Results",
+                    html: `<div style="max-height:320px; overflow-y:auto; text-align:left;">${htmlContent}</div>`,
+                    width: 550,
+                    confirmButtonText: "Close",
+                    showClass: {
+                        popup: "animate__animated animate__fadeInDown"
+                    },
+                    hideClass: {
+                        popup: "animate__animated animate__fadeOutUp"
+                    }
+                });
+
+            } else {
+                Swal.fire({
+                    icon: "info",
+                    title: "No results found",
+                    text: "No matching part numbers or toy numbers were found."
+                });
+            }
+
+        } catch (err) {
+            console.error("❌ Error fetching part master:", err);
+            Swal.close();
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Failed to load data. Please try again."
+            });
+        }
+    });
+
+    async function updateScrapCodesBasedOnFacilities() {
+          const selectedFacilities = Array.from(
+              document.querySelectorAll(".addFacilityCb:checked")
+          ).map(cb => cb.value);
+
+          const scrapContainer = document.getElementById("addUserScrapCodeResponsible");
+          if (!scrapContainer) {
+              console.error("❌ #addUserScrapCodeResponsible tidak ditemukan!");
+              return;
+          }
+          if (selectedFacilities.length === 0) {
+              scrapContainer.innerHTML = `
+                  <p class="text-muted text-sm col-span-4">
+                      Select facility to load scrap codes...
+                  </p>`;
+              return;
+          }
+
+          try {
+              const response = await fetch(
+                  `@Url.Action("getScrapCodeByLocation", "DataForms")?location=${encodeURIComponent(selectedFacilities.join(","))}`
+              );
+
+              const result = await response.json();
+
+
+              if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+                  scrapContainer.innerHTML = result.data.map(sc => `
+                      <label class="inline-flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" value="${sc.Code}" class="form-checkbox text-purple"/>
+                          <span class="text-black dark:text-white">${sc.Code}</span>
+                      </label>
+                  `).join("");
+              } else {
+                  scrapContainer.innerHTML = `
+                      <p class="text-danger text-sm col-span-4">
+                          No scrap codes found for selected facilities
+                      </p>`;
+              }
+          } catch (err) {
+              console.error("❌ Gagal fetch scrap codes:", err);
+              scrapContainer.innerHTML = `
+                  <p class="text-danger text-sm col-span-4">
+                      Failed to load scrap codes
+                  </p>`;
+          }
+    }
+
+    document.getElementById("downloadDocument").addEventListener("click", () => {
+        const roleId = parseInt('@Session["RoleId"]');
+        Swal.fire({
+            title: "Documents",
+            html: `
+        <div class="flex flex-col gap-2">
+            <button id="downloadKeyIn"
+                class="btn text-white flex items-center gap-2 disable"
+                style="background-color:#0066CC; border-color:#0066CC;"
+                onmouseover="this.style.backgroundColor='#0052A3'"
+                onmouseout="this.style.backgroundColor='#0066CC'">
+
+                <!-- Key Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 11v10m0 0H8m4 0h4" />
+                </svg>
+
+                Download Excel Key In P1
+            </button>
+
+              <button id="downloadKeyInP2"
+                class="btn text-white flex items-center gap-2"
+                style="background-color:#ff6bb5; border-color:#ff6bb5;">
+
+                <!-- Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 11v10m0 0H8m4 0h4" />
+                </svg>
+
+                Download Excel Key In P2
+            </button>
+
+            <button id="downloadScrapWeb" class="btn bg-success border-success text-white hover:bg-success/[0.85] hover:border-success/[0.85] flex items-center gap-2">
+                <!-- Excel Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14l-2.5-3 2.5-3 2.5 3-2.5 3zm5-7h-4V5h4v5z"/>
+                </svg>
+                Download Excel Template for Scrap
+            </button>
+               <button id="downloadScrapReport" class="btn bg-info border-info text-white hover:bg-info/[0.85] hover:border-info/[0.85] flex items-center gap-2">
+                   <!-- Excel Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m-6-8h6M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+                   </svg>
+                Download Excel Report [SCRAP]
+
+               </button>
+
+            <button id="downloadPdf" class="btn bg-success border-success text-white hover:bg-success/[0.85] hover:border-success/[0.85] flex items-center gap-2">
+                <!-- PDF Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8l-6-6h-4zM13 3.5L18.5 9H14a1 1 0 0 1-1-1V3.5zM12 12h2v6h-2v-6zm-4 0h2v6H8v-6z"/>
+                </svg>
+                Download PDF
+            </button>
+        </div>
+        `,
+            showConfirmButton: false,
+            showCloseButton: true,
+            width: 500
+        });
+
+        setTimeout(() => {
+            const swalContainer = Swal.getHtmlContainer();
+            const downloadKeyInBtn = swalContainer.querySelector("#downloadKeyIn");
+            const downloadKeyInBtnP2 = swalContainer.querySelector("#downloadKeyInP2");
+
+            if (!downloadKeyInBtn) return;
+
+            if (roleId !== 1 && roleId !== 20) {
+                downloadKeyInBtn.style.display = 'none';
+                downloadKeyInBtnP2.style.display = 'none';
+            } else {
+               downloadKeyInBtn.addEventListener("click", () => {
+                    copyToClipboard(
+                        "\\\\apckrm06a\\Materials\\Material_System\\DE\\RECONCILE\\00.Macro Scrap ONLINE-WEB\\P1"
+                    );
+               });
+
+                downloadKeyInBtnP2.addEventListener("click", () => {
+                    copyToClipboard(
+                        "\\\\apckrm06a\\Materials\\Material_System\\DE\\RECONCILE\\00.Macro Scrap ONLINE-WEB\\P2"
+                    );
+                });
+
+                function copyToClipboard(text) {
+                    const textarea = document.createElement("textarea");
+                    textarea.value = text;
+                    textarea.style.position = "fixed";
+                    textarea.style.opacity = "0";
+
+                    document.body.appendChild(textarea);
+                    textarea.focus();
+                    textarea.select();
+
+                    try {
+                        const success = document.execCommand("copy");
+                        if (success) {
+                            Swal.fire({
+                                icon: "info",
+                                title: "Path copied",
+                                text: "Paste it into File Explorer address bar",
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            throw new Error("Copy failed");
+                        }
+                    } catch (err) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Copy failed",
+                            text: "Please copy manually",
+                        });
+                    }
+
+                    document.body.removeChild(textarea);
+                }
+
+
+            }
+            document.getElementById("downloadScrapWeb").addEventListener("click", () => {
+                const fileUrl = '@Url.Content("~/assets/FileAttachment/Scrap Notice-Template Website.xlsx")';
+                window.location.href = fileUrl;
+            });
+            document.getElementById("downloadScrapReport").addEventListener("click", () => {
+                const existingOptions = document.getElementById("reportOptions");
+
+                if (existingOptions) {
+                    existingOptions.remove();
+                } else {
+                    const container = document.createElement("div");
+                    container.id = "reportOptions";
+                    container.className = "flex flex-col gap-2 mt-2";
+
+                    container.innerHTML = `
+                        <!-- Weekly Report Button -->
+                        <button id="weeklyReportBtn" class="btn bg-muted border-warning text-white hover:bg-warning/[0.85] flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v2h18V6a2 2 0 0 0-2-2zM3 20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10H3v10zm4-8h6v6H7v-6z"/>
+                            </svg>
+                            Weekly Report
+                        </button>
+                        <div id="weeklyOptions" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-200">
+                            <div class="flex justify-center flex-wrap gap-2" id="weeklyOptionsGrid"></div>
+                        </div>
+
+                        <!-- Monthly Report Button -->
+                        <button id="monthlyReportBtn" class="btn bg-muted border-warning text-white hover:bg-warning/[0.85] flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M7 11h10v2H7v-2zm0 4h7v2H7v-2z"/>
+                                <path fill-rule="evenodd" d="M5 3a2 2 0 0 0-2 2v2h18V5a2 2 0 0 0-2-2H5zm15 6H4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                            </svg>
+                            Monthly Report
+                        </button>
+                        <div id="monthlyOptions" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-200">
+                            <div class="grid grid-cols-4 gap-2" id="monthlyOptionsGrid"></div>
+                        </div>
+
+                        <!-- Yearly Report Button -->
+                        <button id="yearlyReportBtn" class="btn bg-muted border-warning text-white hover:bg-warning/[0.85] flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7 11h10v2H7v-2zm0 4h7v2H7v-2z"/>
+                            </svg>
+                            Date Range Report
+                        </button>
+                        <div id="yearlyOptions" class="hidden bg-gray-50 p-4 rounded-lg border border-gray-200">
+    <div class="flex flex-row gap-3 items-end">
+        <!-- Input Date From -->
+        <div class="flex-1">
+            <label class="text-xs font-semibold text-gray-700 mb-1 block">Start Date</label>
+            <input type="date"
+                   id="yearlyDateFrom"
+                   class="form-input w-full text-sm p-2 border border-gray-300 rounded"
+                   placeholder="From Date">
+        </div>
+        <!-- Input Date To -->
+        <div class="flex-1">
+            <label class="text-xs font-semibold text-gray-700 mb-1 block">End Date</label>
+            <input type="date"
+                   id="yearlyDateTo"
+                   class="form-input w-full text-sm p-2 border border-gray-300 rounded"
+                   placeholder="To Date">
+        </div>
+        <!-- Status Select -->
+        <div class="flex-1">
+            <label class="text-xs font-semibold text-gray-700 mb-1 block">Status</label>
+            <select id="yearlyStatusSelect"
+                    class="form-input w-full text-sm p-2 border border-gray-300 rounded">
+                <option value="" selected>ALL</option>
+            </select>
+        </div>
+    </div>
+                            <!-- Download Button -->
+                            <div class="mt-3 flex justify-center">
+                                <button id="downloadYearlyReportBtn"
+                                        class="btn bg-success border-success text-white hover:bg-success/[0.85] flex items-center gap-2 px-6 py-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                    </svg>
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById("downloadScrapReport").after(container);
+
+                    // Function to generate weeks in current month (DYNAMIC - ONLY SHOW PASSED WEEKS)
+                    function generateWeekOptions() {
+                        const grid = document.getElementById("weeklyOptionsGrid");
+                        grid.innerHTML = "";
+
+                        const now = new Date();
+                        const currentDay = now.getDate(); // Tanggal saat ini (1-31)
+
+                        // Tentukan current week berdasarkan tanggal
+                        // W1: 1-7, W2: 8-14, W3: 15-21, W4: 22-28, W5: 29-31
+                        let currentWeek = 1;
+                        if (currentDay >= 1 && currentDay <= 7) {
+                            currentWeek = 1;
+                        } else if (currentDay >= 8 && currentDay <= 14) {
+                            currentWeek = 2;
+                        } else if (currentDay >= 15 && currentDay <= 21) {
+                            currentWeek = 3;
+                        } else if (currentDay >= 22 && currentDay <= 28) {
+                            currentWeek = 4;
+                        } else if (currentDay >= 29) {
+                            currentWeek = 5;
+                        }
+
+                        // Hanya tampilkan W1 sampai current week (yang sudah dilalui)
+                        for (let i = 1; i <= currentWeek; i++) {
+                            const weekBtn = document.createElement("button");
+                            weekBtn.className = "px-4 py-2 bg-white border-2 border-info text-info hover:bg-info hover:text-white transition-all font-semibold text-sm";
+                            weekBtn.textContent = `W${i}`;
+                            weekBtn.onclick = () => downloadWeeklyReport(i);
+                            grid.appendChild(weekBtn);
+                        }
+                    }
+
+                    // Function to generate months
+                    function generateMonthOptions() {
+                        const grid = document.getElementById("monthlyOptionsGrid");
+                        grid.innerHTML = "";
+
+                        const months = [
+                            { value: 1, name: "Jan", fullName: "January" },
+                            { value: 2, name: "Feb", fullName: "February" },
+                            { value: 3, name: "Mar", fullName: "March" },
+                            { value: 4, name: "Apr", fullName: "April" },
+                            { value: 5, name: "May", fullName: "May" },
+                            { value: 6, name: "Jun", fullName: "June" },
+                            { value: 7, name: "Jul", fullName: "July" },
+                            { value: 8, name: "Aug", fullName: "August" },
+                            { value: 9, name: "Sep", fullName: "September" },
+                            { value: 10, name: "Oct", fullName: "October" },
+                            { value: 11, name: "Nov", fullName: "November" },
+                            { value: 12, name: "Dec", fullName: "December" }
+                        ];
+
+                        const now = new Date();
+                        const currentMonth = now.getMonth() + 1;
+                        const availableMonths = months.filter(m => m.value <= currentMonth);
+
+                        grid.className = "grid grid-cols-4 gap-2 p-2";
+                        grid.style.display = "grid";
+                        grid.style.gridTemplateColumns = "repeat(4, minmax(0, 1fr))";
+                        grid.style.gap = "8px";
+                        grid.style.width = "100%";
+                        grid.style.justifyItems = "center";
+
+                        availableMonths.forEach(month => {
+                            const monthBtn = document.createElement("button");
+                            monthBtn.type = "button";
+                            monthBtn.className = "w-full px-3 py-2 bg-white border-2 border-info text-info hover:bg-info hover:text-white transition-all font-semibold text-sm text-center";
+                            monthBtn.style.borderRadius = "0";
+                            monthBtn.textContent = month.name;
+                            monthBtn.title = month.fullName;
+                            monthBtn.onclick = () => downloadMonthlyReport(month.value);
+                            grid.appendChild(monthBtn);
+                        });
+                    }
+
+                    // Function to generate years (current + 3 previous) - REMOVED, REPLACED WITH DATE INPUTS
+                    // Now using date inputs for flexible date range selection
+
+                    // Function to load status options for Yearly Report
+                    function loadYearlyStatusOptions() {
+                        const statusSelect = document.getElementById("yearlyStatusSelect");
+                        if (!statusSelect) return;
+
+                        // Clear existing options except first one (ALL)
+                        statusSelect.innerHTML = '<option value="" selected>ALL</option>';
+
+                        // Populate status options to match the exported part status values
+                        const statuses = [
+                            { value: "1", text: "PENDING" },
+                            { value: "2", text: "REJECTED" },
+                            { value: "3", text: "ACTIVE" },
+                            { value: "5", text: "KEYED IN" },
+                            { value: "16", text: "DELETED" }
+                        ];
+
+                        statuses.forEach(status => {
+                            const option = document.createElement("option");
+                            option.value = status.value;
+                            option.textContent = status.text;
+                            statusSelect.appendChild(option);
+                        });
+                    }
+
+                    // Function to set date range limits based on user requirements
+                    function setYearlyDateLimits() {
+                        const dateFromInput = document.getElementById("yearlyDateFrom");
+                        const dateToInput = document.getElementById("yearlyDateTo");
+
+                        if (!dateFromInput || !dateToInput) return;
+
+                        // Set min date to November 12, 2023, to tighten the selectable past date range.
+                        const minDate = "2023-11-12";
+
+                        // Set max date to the current date.
+                        const maxDate = new Date().toISOString().split('T')[0];
+
+                        // Apply limits to both inputs
+                        dateFromInput.setAttribute("min", minDate);
+                        dateFromInput.setAttribute("max", maxDate);
+
+                        dateToInput.setAttribute("min", minDate);
+                        dateToInput.setAttribute("max", maxDate);
+
+                        console.log(`📅 Date limits set: ${minDate} to ${maxDate}`);
+                    }
+
+                    // Download functions
+                    function extractServerMessage(text, fallbackMessage) {
+                        if (!text) return fallbackMessage;
+                        const cleanText = text
+                            .replace(/<[^>]*>/g, " ")
+                            .replace(/\s+/g, " ")
+                            .trim();
+
+                        if (!cleanText) return fallbackMessage;
+                        return cleanText.length > 220
+                            ? fallbackMessage
+                            : cleanText;
+                    }
+
+                    function getFileNameFromDisposition(contentDisposition, fallbackName) {
+                        if (!contentDisposition) return fallbackName;
+
+                        const utfMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+                        if (utfMatch && utfMatch[1]) {
+                            try {
+                                return decodeURIComponent(utfMatch[1]);
+                            } catch (e) {
+                            }
+                        }
+
+                        const normalMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
+                        if (normalMatch && normalMatch[1]) {
+                            return normalMatch[1].replace(/['"]/g, "").trim();
+                        }
+
+                        return fallbackName;
+                    }
+
+                    async function downloadExcelFromUrl(url, fallbackName) {
+                        const response = await fetch(url, {
+                            method: "GET",
+                            cache: "no-store",
+                            credentials: "same-origin"
+                        });
+
+                        if (!response.ok) {
+                            let errorMessage = "Failed to download the report. Please try again.";
+                            try {
+                                const errorText = await response.text();
+                                errorMessage = extractServerMessage(errorText, errorMessage);
+                            } catch (e) {
+                            }
+                            throw new Error(errorMessage);
+                        }
+
+                        const contentType = (response.headers.get("Content-Type") || "").toLowerCase();
+                        const isExcelContent = contentType.indexOf("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") >= 0
+                            || contentType.indexOf("application/octet-stream") >= 0;
+
+                        if (!isExcelContent) {
+                            const responseText = await response.text();
+                            throw new Error(extractServerMessage(responseText, "Invalid file format received from server."));
+                        }
+
+                        const blob = await response.blob();
+                        if (!blob || blob.size === 0) {
+                            throw new Error("No data available for the selected criteria.");
+                        }
+
+                        const contentDisposition = response.headers.get("Content-Disposition");
+                        const filename = getFileNameFromDisposition(contentDisposition, fallbackName);
+
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.style.display = "none";
+                        a.href = downloadUrl;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(downloadUrl);
+                        document.body.removeChild(a);
+                    }
+
+                    async function downloadWeeklyReport(weekNum) {
+                        const now = new Date();
+                        const year = now.getFullYear();
+                        const month = now.getMonth(); // 0-based (0 = January)
+                        const monthDisplay = month + 1; // 1-based for display
+
+                        // Logika week berdasarkan tanggal dalam bulan
+                        // W1: 1-7, W2: 8-14, W3: 15-21, W4: 22-28, W5: 29-31
+                        let startDay, endDay;
+
+                        if (weekNum === 1) {
+                            startDay = 1;
+                            endDay = 7;
+                        } else if (weekNum === 2) {
+                            startDay = 8;
+                            endDay = 14;
+                        } else if (weekNum === 3) {
+                            startDay = 15;
+                            endDay = 21;
+                        } else if (weekNum === 4) {
+                            startDay = 22;
+                            endDay = 28;
+                        } else if (weekNum === 5) {
+                            startDay = 29;
+                            const lastDay = new Date(year, month + 1, 0);
+                            endDay = lastDay.getDate(); // 29, 30, atau 31
+                        }
+
+                        const startDate = new Date(year, month, startDay);
+                        const endDate = new Date(year, month, endDay);
+
+                        Swal.fire({
+                            title: "Preparing Weekly Report...",
+                            text: `Generating Week ${weekNum} report (${startDay}-${endDay})`,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        const url = '@Url.Action("DownloadScrapReport", "DataReporting")'
+                            + `?type=weekly&week=${weekNum}`
+                            + `&year=${year}`
+                            + `&month=${monthDisplay}`
+                            + `&startDate=${startDate.toISOString().split('T')[0]}`
+                            + `&endDate=${endDate.toISOString().split('T')[0]}`;
+
+                        try {
+                            const fallbackName = `ScrapReport_${year}-${String(monthDisplay).padStart(2, '0')}-W${weekNum}.xlsx`;
+                            await downloadExcelFromUrl(url, fallbackName);
+
+                            Swal.close();
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Download Complete!',
+                                text: `Your weekly report (W${weekNum}) has been downloaded successfully.`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } catch (error) {
+                            console.error('Download error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Download Failed',
+                                text: error.message || 'Failed to download the report. Please try again.'
+                            });
+                        }
+                    }
+
+                    async function downloadMonthlyReport(monthNum) {
+                        const year = new Date().getFullYear();
+
+                        const monthNames = ["January", "February", "March", "April", "May", "June",
+                                          "July", "August", "September", "October", "November", "December"];
+
+                        Swal.fire({
+                            title: "Preparing Monthly Report...",
+                            text: `Generating ${monthNames[monthNum - 1]} ${year} report`,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        const url = '@Url.Action("DownloadScrapReport", "DataReporting")'
+                            + `?type=monthly&month=${monthNum}&year=${year}`;
+
+                        try {
+                            const fallbackName = `ScrapReport_${year}-${String(monthNum).padStart(2, '0')}.xlsx`;
+                            await downloadExcelFromUrl(url, fallbackName);
+
+                            Swal.close();
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Download Complete!',
+                                text: `Your monthly report for ${monthNames[monthNum - 1]} ${year} has been downloaded successfully.`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } catch (error) {
+                            console.error('Download error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Download Failed',
+                                text: error.message || 'Failed to download the report. Please try again.'
+                            });
+                        }
+                    }
+
+                    async function downloadYearlyReport() {
+                        // Get values from inputs
+                        const dateFrom = document.getElementById("yearlyDateFrom").value;
+                        const dateTo = document.getElementById("yearlyDateTo").value;
+                        const status = document.getElementById("yearlyStatusSelect").value;
+
+                        // Validation
+                        if (!dateFrom || !dateTo) {
+                            Swal.fire({
+                                icon: "warning",
+                                title: "Input Required",
+                                text: "Please select both date range (Start date and End date)"
+                            });
+                            return;
+                        }
+
+                        // Validate date range
+                        const fromDate = new Date(dateFrom);
+                        const toDate = new Date(dateTo);
+
+                        if (fromDate > toDate) {
+                            Swal.fire({
+                                icon: "warning",
+                                title: "Invalid Date Range",
+                                text: "Start date must be before or equal to end date"
+                            });
+                            return;
+                        }
+
+                        // Optional: Check if date range is too large (e.g., more than 1 year)
+                        const daysDiff = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24));
+                        if (daysDiff > 365) {
+                            Swal.fire({
+                                icon: "warning",
+                                title: "Date Range Too Large",
+                                text: "Please select a date range within 1 year",
+                                confirmButtonText: "OK"
+                            });
+                            return;
+                        }
+
+                        // Get status text for display
+                        const statusSelect = document.getElementById("yearlyStatusSelect");
+                        const statusText = status ? statusSelect.options[statusSelect.selectedIndex].text : "All Status";
+
+                        Swal.fire({
+                            title: "Preparing Yearly Report...",
+                            text: `Generating report from ${dateFrom} to ${dateTo} (${statusText})`,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        // Build URL with parameters
+                        let url = '@Url.Action("DownloadScrapReport", "DataReporting")'
+                            + `?type=yearly`
+                            + `&startDate=${dateFrom}`
+                            + `&endDate=${dateTo}`;
+
+                        // Add status if selected
+                        if (status) {
+                            url += `&status=${status}`;
+                        }
+
+                        try {
+                            const fallbackName = `ScrapReport_${dateFrom.replace(/-/g, '')}_${dateTo.replace(/-/g, '')}.xlsx`;
+                            await downloadExcelFromUrl(url, fallbackName);
+
+                            Swal.close();
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Download Complete!',
+                                text: 'Your yearly report has been downloaded successfully.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } catch (error) {
+                            console.error('Download error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Download Failed',
+                                text: error.message || 'Failed to download the report. Please try again.'
+                            });
+                        }
+                    }
+
+                    // Toggle functions
+                    function toggleOptions(optionsId, generateFunc) {
+                        const optionsDiv = document.getElementById(optionsId);
+                        const allOptions = ["weeklyOptions", "monthlyOptions", "yearlyOptions"];
+
+                        // Close other options
+                        allOptions.forEach(id => {
+                            if (id !== optionsId) {
+                                document.getElementById(id).classList.add("hidden");
+                            }
+                        });
+
+                        if (optionsDiv.classList.contains("hidden")) {
+                            if (generateFunc) generateFunc(); // Only call if function exists
+                            optionsDiv.classList.remove("hidden");
+                        } else {
+                            optionsDiv.classList.add("hidden");
+                        }
+                    }
+
+                    // Event listeners for buttons
+                    document.getElementById("weeklyReportBtn").addEventListener("click", (e) => {
+                        e.preventDefault();
+                        toggleOptions("weeklyOptions", generateWeekOptions);
+                    });
+
+                    document.getElementById("monthlyReportBtn").addEventListener("click", (e) => {
+                        e.preventDefault();
+                        toggleOptions("monthlyOptions", generateMonthOptions);
+                    });
+
+                    document.getElementById("yearlyReportBtn").addEventListener("click", (e) => {
+                        e.preventDefault();
+                        loadYearlyStatusOptions(); // Load status options when opening
+                        setYearlyDateLimits(); // Set date range limits (3 years back)
+                        toggleOptions("yearlyOptions", null); // No generate function needed
+                    });
+
+                    // Event listener for Yearly Report Download button
+                    document.getElementById("downloadYearlyReportBtn")?.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        downloadYearlyReport();
+                    });
+                }
+            });
+
+            document.getElementById("downloadPdf").addEventListener("click", () => {
+
+                const form = document.getElementById("pdfFilterForm");
+                form.classList.toggle("hidden");
+                if (!form.classList.contains("hidden")) {
+                    document.getElementById("supervisorInitiatorNamePDF").focus();
+                }
+                initSupervisorAutocompleteForPDF();
+
+                $("#facilityDropdownPDF").on("change", function () {
+                    loadScrapCodeForPdf($(this).val());
+                });
+            });
+
+            $("#applyPdfFilter").off("click").on("click", async function () {
+
+                const approverKpkPdf = $("#supervisorInitiatorKpkPDF").val()?.trim();
+                const scrapCode = $("#scrapCodeDropdownPDF").val()?.trim();
+                const facility = $("#facilityDropdownPDF").val()?.trim();
+
+                if (!approverKpkPdf && !scrapCode) {
+                    Swal.fire("Warning", "Select Supervisor or Scrap Code first", "warning");
+                    return;
+                }
+
+                try {
+                    setApplyLoading(true);
+                    $("#pdfResultList").hide();
+
+                    const params = new URLSearchParams({
+                        approverKpkPdf,
+                        scrapCode,
+                        facility,
+                        pageNumber: 1,
+                        pageSize: 1000
+                    });
+
+                    params.append("statusList[0]", 1);
+
+                    const url = `${urlGetSourceDataScrap}?${params.toString()}`;
+                    const res = await fetch(url);
+                    const data = await res.json();
+
+                    renderStoreApprovalDocuments(data.Data || []);
+                }
+                catch (err) {
+                    console.error("❌ Failed Fetch PDF Filter:", err);
+                    Swal.fire("Error", "Failed load data", "error");
+                }
+                finally {
+                    setApplyLoading(false);
+                }
+
+            });
+        }, 10);
+    });
+
+    document.getElementById("closePdfFilter")
+        .addEventListener("click", closePdfModal);
+
+    document.getElementById("pdfFilterForm")
+        .addEventListener("click", (e) => {
+
+            if (e.target.id === "pdfFilterForm") {
+                closePdfModal();
+            }
+
+        });
+    function setApplyLoading(isLoading) {
+
+        const btn = $("#applyPdfFilter");
+
+        if (isLoading) {
+            btn.prop("disabled", true);
+            btn.data("oldhtml", btn.html());
+
+            btn.html(`
+            <svg class="w-4 h-4 animate-spin"
+                 xmlns="http://www.w3.org/2000/svg"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor">
+              <circle cx="12" cy="12" r="10"
+                  stroke="currentColor"
+                  stroke-width="4" opacity="0.25"></circle>
+              <path d="M12 2a10 10 0 0110 10"
+                    stroke-width="4"></path>
+            </svg>
+            <span>Loading...</span>
+        `);
+
+            btn.addClass("opacity-70 cursor-not-allowed");
+
+        } else {
+
+            btn.prop("disabled", false);
+            btn.html(btn.data("oldhtml"));
+            btn.removeClass("opacity-70 cursor-not-allowed");
+        }
+    }
+
+    function updateDownloadButton() {
+
+        const count = selectedPdfDocIds.length;
+
+        $("#downloadBtnText").text(`Download Selected (${count})`);
+        $("#downloadPdfBtn").prop("disabled", count === 0);
+
+    }
+
+    function closePdfModal() {
+
+        const modal = document.getElementById("pdfFilterForm");
+
+        modal.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+
+        setApplyLoading(false);
+        resetPdfForm();
+    }
+
+    function openPdfModal() {
+
+        const modal = document.getElementById("pdfFilterForm");
+
+        modal.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+
+        setApplyLoading(false);
+        updateDownloadButton();
+    }
+
+
+    function resetPdfForm() {
+        $("#supervisorInitiatorNamePDF").val("");
+        $("#supervisorInitiatorKpkPDF").val("");
+
+        $("#facilityDropdownPDF").prop("selectedIndex", 0);
+
+        $("#scrapCodeDropdownPDF")
+            .empty()
+            .append('<option value="">-- Select Scrap Code --</option>');
+
+        $("#supervisorResultsPDF").addClass("hidden").html("");
+        selectedPdfDocIds = [];
+
+        $("#selectAllPdfDocs").prop("checked", false);
+
+        $(".pdf-doc-item")
+            .removeClass("bg-success text-white")
+            .css("border-color", "#cbd5e1");
+        updateDownloadButton();
+        $("#pdfDocumentGrid").html("");
+        $("#pdfResultList").hide();
+    }
+
+
+    function renderStoreApprovalDocuments(dataList) {
+        const grid = $("#pdfDocumentGrid");
+        const container = $("#pdfResultList");
+        grid.html("");
+        container.hide();
+        selectedPdfDocIds = [];
+        const filtered = dataList.filter(x => {
+            if (!Array.isArray(x.Approvals)) return false;
+
+            const total = x.Approvals.length;
+            if (!total) return false;
+
+            const pending = x.Approvals.filter(a => a.Centralized_StatusList_ID === 1).length;
+            const approved = x.Approvals.filter(a => a.Centralized_StatusList_ID === 2).length;
+
+            return approved === (total - 1) && pending === 1;
+        });
+
+        if (!filtered.length) {
+            grid.append(`
+            <div class="col-span-10 text-center text-muted py-4">
+                No STORE APPROVAL document found
+            </div>
+        `);
+            container.show();
+            return;
+        }
+        filtered.forEach(row => {
+            grid.append(`
+            <div
+                class="pdf-doc-item"
+                data-id="${row.Centralized_SourceData_Master_ID_Str}"
+                style="
+                    width:100%;
+                    min-width:0;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    height:32px;
+                    font-size:10px;
+                    border:1px solid #cbd5e1;
+                    border-radius:4px;
+                    cursor:pointer;
+                    user-select:none;
+                ">
+                ${row.Centralized_SourceData_Master_ID_Str}
+            </div>
+        `);
+        });
+
+        container.show();
+        updateDownloadButton();
+        $("#downloadPdfBtn").off("click").on("click", function () {
+            downloadPDFMultiple();
+        });
+        $(".pdf-doc-item").on("click", function () {
+
+            const id = $(this).data("id");
+
+            if ($(this).hasClass("bg-success")) {
+                $(this)
+                    .removeClass("bg-success text-white")
+                    .css("border-color", "#cbd5e1");
+
+                selectedPdfDocIds = selectedPdfDocIds.filter(x => x !== id);
+
+            } else {
+                $(this)
+                    .addClass("bg-success text-white")
+                    .css("border-color", "#22c55e");
+
+                if (!selectedPdfDocIds.includes(id)) {
+                    selectedPdfDocIds.push(id);
+                }
+            }
+            syncSelectAllCheckbox();
+            updateDownloadButton();
+        });
+
+        $("#selectAllPdfDocs").off("change").on("change", function () {
+            const isChecked = $(this).prop("checked");
+            selectedPdfDocIds = [];
+            $(".pdf-doc-item").each(function () {
+
+                const id = $(this).data("id");
+
+                if (isChecked) {
+
+
+                    $(this)
+                        .addClass("bg-success text-white")
+                        .css("border-color", "#22c55e");
+
+                    selectedPdfDocIds.push(id);
+
+                } else {
+
+
+                    $(this)
+                        .removeClass("bg-success text-white")
+                        .css("border-color", "#cbd5e1");
+                }
+
+            });
+            updateDownloadButton();
+        });
+    }
+
+    function syncSelectAllCheckbox() {
+
+        const totalItems = $(".pdf-doc-item").length;
+        const checkedCount = $(".pdf-doc-item.bg-success").length;
+
+        $("#selectAllPdfDocs").prop(
+            "checked",
+            totalItems > 0 && checkedCount === totalItems
+        );
+
+    }
+
+    function generateQrToken(docId) {
+        return btoa(docId);
+    }
+
+    async function loadImage(url) {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = url;
+        await new Promise(resolve => img.onload = resolve);
+        return img;
+    }
+
+    function drawPageWatermark(doc, watermarkImg) {
+
+        const pageW = doc.internal.pageSize.getWidth();
+        const pageH = doc.internal.pageSize.getHeight();
+
+        doc.setGState(new doc.GState({ opacity: 0.08 }));
+
+        const wmW = pageW * 0.85;
+        const wmH = (watermarkImg.height / watermarkImg.width) * wmW;
+
+        doc.addImage(
+            watermarkImg,
+            "PNG",
+            (pageW - wmW) / 2,
+            (pageH - wmH) / 2,
+            wmW,
+            wmH
+        );
+
+        doc.setGState(new doc.GState({ opacity: 1 }));
+    }
+
+    async function downloadPDFMultiple() {
+
+        if (!selectedPdfDocIds.length) {
+            Swal.fire("Warning", "Select at least 1 document", "warning");
+            return;
+        }
+
+        $("#pdfFilterForm").addClass("hidden");
+
+        Swal.fire({
+            title: "Generating PDF",
+            text: "Please wait…",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        try {
+
+            const { jsPDF } = window.jspdf;
+
+            const doc = new jsPDF({
+                orientation: "landscape",
+                unit: "mm",
+                format: "a4"
+            });
+            const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
+            const qrColW   = pageW * 0.15;
+            const contentW = pageW - qrColW;
+            const blockW = contentW / 2;
+            const blockH = pageH / 2;
+
+            const qrColumnX = contentW;
+            const [logoImg, watermarkImg] = await Promise.all([
+                loadImage('@Url.Content("~/assets/images/mattel-logo.png")'),
+                loadImage(watermarkUrl)
+            ]);
+            const requests = selectedPdfDocIds.map(id =>
+                $.get(urlGetSourceDataScrap, {
+                    documentId: id,
+                    pageNumber: 1,
+                    pageSize: 1
+                })
+            );
+
+            const results = await Promise.all(requests);
+            let index = 0;
+
+            for (let i = 0; i < results.length; i++) {
+
+                if (index === 0) {
+
+                    if (i > 0) doc.addPage();
+
+                    drawPageWatermark(doc, watermarkImg);
+                    await drawQrColumn(
+                        doc,
+                        selectedPdfDocIds,
+                        i,
+                        qrColumnX,
+                        pageH
+                    );
+                }
+
+                const item = results[i].Data?.[0];
+                if (!item) continue;
+
+                const col = index % 2;
+                const row = Math.floor(index / 2);
+
+                const offsetX = col * blockW;
+                const offsetY = row * blockH;
+
+                await drawSingleScrapNotice(
+                    doc,
+                    selectedPdfDocIds[i],
+                    item,
+                    offsetX,
+                    offsetY,
+                    blockW,
+                    blockH,
+                    logoImg,
+                    watermarkImg
+                );
+
+                index++;
+                if (index === 4) index = 0;
+            }
+
+            doc.save(`Scrap_${Date.now()}.pdf`);
+            resetPdfForm();
+            Swal.close();
+
+        } catch (err) {
+
+            console.error(err);
+            Swal.fire("Error", err.message, "error");
+
+        }
+    }
+
+    async function drawQrColumn(doc, docIds, startIndex, qrColumnX, pageH) {
+
+        const colWidth = 60;
+        const qrSize = 22;
+        const spacing = 6;
+        let y = 8;
+
+        const headerH = 8;
+        for (let i = 0; i < 4; i++) {
+
+            const idx = startIndex + i;
+            if (!docIds[idx]) break;
+
+            const docId = docIds[idx];
+            const scrapHeaderH = 6;
+
+            doc.setFillColor(0, 51, 102);
+            doc.rect(
+                qrColumnX + 3,
+                y - 4,
+                colWidth - 6,
+                scrapHeaderH,
+                "F"
+            );
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7);
+            doc.setTextColor(255);
+
+            doc.text(
+                `Scrap Notice - ${docId}`,
+                qrColumnX + colWidth / 2,
+                y,
+                { align: "center" }
+            );
+            doc.setTextColor(0);
+            y += scrapHeaderH + 1;
+            const qrImg = await QRCode.toDataURL(
+                `http://ptmi-stage/ScrapNotice/ScrapRecords/DetailScrap?token=${btoa(docId)}`,
+                { width: 80 }
+            );
+
+            doc.addImage(
+                qrImg,
+                "PNG",
+                qrColumnX + (colWidth - qrSize) / 2,
+                y,
+                qrSize,
+                qrSize
+            );
+
+            y += qrSize + 2;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(6.5);
+            doc.setTextColor(0, 102, 204);
+
+            doc.text(
+                "Approved online\nNo signature required",
+                qrColumnX + colWidth / 2,
+                y,
+                {
+                    align: "center",
+                    lineHeightFactor: 1.05,
+                    maxWidth: colWidth - 6
+                }
+            );
+
+            doc.setTextColor(0);
+
+            y += 9;
+            doc.setDrawColor(170);
+            doc.setLineWidth(0.3);
+            doc.setLineDash([2, 2]);
+
+            doc.line(
+                qrColumnX + 4,
+                y,
+                qrColumnX + colWidth - 4,
+                y
+            );
+
+            doc.setLineDash([]);
+
+            y += spacing;
+        }
+    }
+
+    async function drawSingleScrapNotice(
+        doc,
+        docId,
+        item,
+        offsetX,
+        offsetY,
+        w,
+        h,
+        logoImg,
+        watermarkImg
+    ) {
+        const padding = 5;
+
+        // Outer border
+        doc.setDrawColor(160);
+        doc.setLineWidth(0.3);
+        doc.rect(offsetX, offsetY, w, h);
+
+        const y = offsetY + padding;
+        const headerH = 8;
+
+        // Header background
+        doc.setFillColor(0, 51, 102);
+        doc.rect(offsetX, y, w, headerH, "F");
+
+        // Logo
+        const logoW = 10;
+        const logoH = (logoImg.height / logoImg.width) * logoW;
+        doc.addImage(
+            logoImg,
+            "PNG",
+            offsetX + 4,
+            y + (headerH - logoH) / 2,
+            logoW,
+            logoH
+        );
+
+        // Header text
+        doc.setTextColor(255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.text("STORE APPROVAL", offsetX + 20, y + 5);
+
+        const title = `Scrap Notice - ${docId}`;
+        doc.text(
+            title,
+            offsetX + w - doc.getTextWidth(title) - 5,
+            y + 5
+        );
+
+        const sy = y + headerH + 4;
+        const boxW = w - 60;
+        const boxH = 28;
+
+        doc.setDrawColor(0);
+        doc.rect(offsetX + padding, sy, boxW, boxH);
+        doc.setTextColor(0);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        const colGap = 6;
+        const colW = (boxW - colGap) / 2;
+        const leftX = offsetX + padding + 3;
+        const rightX = leftX + colW + colGap;
+
+        let ty = sy + 5;
+
+        // Row 1
+        doc.text(`Total : ${formatRupiah(item.TotalValue)}`, leftX, ty);
+        doc.text(`Facility : ${item.Facility || "-"}`, rightX, ty);
+        ty += 5;
+
+        // Row 2
+        doc.text(`Scrap Code : ${item.ScrapCode || "-"}`, leftX, ty);
+        doc.text(`TC : ${item.TC || "-"}`, rightX, ty);
+        ty += 5;
+
+        // Row 3
+        doc.text(`Date : ${formatDateSimple(item.CreatedDate)}`, leftX, ty);
+        doc.text(`TC Companion : ${item.SpecialCodeTcCompanion || "-"}`, rightX, ty);
+        ty += 5;
+        doc.text(`WC : ${item.WC || "-"}`, rightX, ty);
+        ty += 5;
+        // Row 4 (full width)
+        doc.text(`Initiator : ${item.InitiatorName || "-"}`, leftX, ty);
+
+
+
+        // QR Code
+        const qrImg = await QRCode.toDataURL(
+            `http://ptmi-stage/ScrapNotice/ScrapRecords/DetailScrap?token=${btoa(docId)}`,
+            { width: 80 }
+        );
+
+        const qrSize = 26;
+        const qrX = offsetX + w - qrSize - 6;
+        const qrY = sy;
+
+        doc.addImage(qrImg, "PNG", qrX, qrY, qrSize, qrSize);
+
+        doc.setFontSize(7);
+        doc.setTextColor(0, 102, 204);
+        doc.text(
+            "Approved online\nno signature required",
+            qrX,
+            qrY + qrSize + 1.2,
+            { maxWidth: qrSize, lineHeightFactor: 0.9 }
+        );
+
+        // Divider line
+        const tableStartY = Math.max(sy + boxH + 10, qrY + qrSize + 12);
+        const cutLineY = tableStartY - 4;
+
+        doc.setDrawColor(180);
+        doc.setLineWidth(0.2);
+        doc.setLineDash([2, 2]);
+        doc.line(
+            offsetX + padding,
+            cutLineY,
+            offsetX + w - padding,
+            cutLineY
+        );
+        doc.setLineDash([]);
+        doc.setTextColor(0);
+
+        // Detail table
+        drawDetailTableInsideBlock(
+            doc,
+            item.ScrapParts || [],
+            offsetX,
+            tableStartY,
+            w,
+            h
+        );
+    }
+
+
+
+
+    function drawDetailTableInsideBlock(
+        doc,
+        scrapParts,
+        offsetX,
+        startY,
+        w,
+        h
+    ) {
+        if (!scrapParts.length) return;
+
+        const padding = 5;
+
+        const usableW = w - padding * 2;
+        const colWidth = usableW / 3;
+        const colX = [
+            offsetX + padding,
+            offsetX + padding + colWidth,
+            offsetX + padding + colWidth * 2
+        ];
+        const partColW = colWidth * 0.45;
+        const qtyColW = colWidth * 0.18;
+        const commitColW = colWidth * 0.22;
+        const umColW = colWidth * 0.15;
+        const partX = 0;
+        const qtyX = partColW;
+        const commitX = partColW + qtyColW;
+        const umX = partColW + qtyColW + commitColW;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7);
+
+        colX.forEach(x => {
+            doc.text("Part No", x + partX, startY);
+            doc.text("Qty", x + qtyX + qtyColW / 2, startY, { align: "center" });
+            doc.text("Commit", x + commitX + commitColW / 2, startY, { align: "center" });
+            doc.text("UM", x + umX + umColW / 2, startY, { align: "center" });
+        });
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6);
+
+        const rowHeight = 4;
+        const maxRows = 10;
+
+        let col = 0;
+        let row = 0;
+
+        for (let part of scrapParts) {
+
+            if (col > 2) break;
+
+            const x = colX[col];
+            const y = startY + 7 + row * rowHeight;
+            doc.text(
+                String(part.PartNum || "-"),
+                x + partX,
+                y,
+                {
+                    maxWidth: partColW - 1,
+                    lineHeightFactor: 1
+                }
+            );
+            doc.text(
+                String(part.Qty || "0"),
+                x + qtyX + qtyColW / 2,
+                y,
+                { align: "center" }
+            );
+
+            doc.text(
+                String(part.Commit || "-"),
+                x + commitX + commitColW / 2,
+                y,
+                { align: "center" }
+            );
+
+            doc.text(
+                String(part.Measit || "-"),
+                x + umX + umColW / 2,
+                y,
+                { align: "center" }
+            );
+
+            row++;
+
+            if (row >= maxRows) {
+                row = 0;
+                col++;
+            }
+        }
+    }
+
+
+
+    function initSupervisorAutocompleteForPDF() {
+
+        const $input = $("#supervisorInitiatorNamePDF");
+        const $results = $("#supervisorResultsPDF");
+        const $kpkHidden = $("#supervisorInitiatorKpkPDF");
+
+        $input.on("input", function () {
+
+            const query = $(this).val().trim();
+
+            if (query.length < 3) {
+                $results.empty().hide();
+                $kpkHidden.val("");
+                return;
+            }
+
+            fetchData(urlGetEmployee, { keyword: query }, function (res) {
+
+                $results.empty();
+
+                if (res.success && Array.isArray(res.data)) {
+
+                    res.data.forEach(item => {
+
+                        const option = $("<div>")
+                            .addClass("dropdown-item hover:bg-success/[0.85] cursor-pointer p-2 rounded")
+                            .text(capitalizeWords(item.name) + " (" + item.kpk + ")")
+                            .on("click", function () {
+
+                                $kpkHidden.val(item.kpk);
+                                $input.val(capitalizeWords(item.name));
+                                $results.empty().hide();
+                            });
+
+                        $results.append(option);
+                    });
+
+                    $results.show();
+                }
+                else {
+                    $results.hide();
+                }
+            });
+        });
+    }
+    function loadScrapCodeForPdf(facility) {
+
+        if (!facility) {
+            $("#scrapCodeDropdownPDF").html('<option value="">-- Select Scrap Code --</option>');
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("getScrapCodeByLocation", "DataForms")',
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                location: facility
+            },
+            success: function (response) {
+
+                const $ddl = $("#scrapCodeDropdownPDF");
+
+                $ddl.empty();
+                $ddl.append('<option value="">-- Select Scrap Code --</option>');
+
+                if (response.success && response.data.length) {
+
+                    response.data.forEach(item => {
+
+                        const text =
+                            (item.ShowScrapCode
+                                ? item.ShowScrapCode
+                                : item.Code)
+                            + " - " + item.Name;
+
+                        $ddl.append(
+                            `<option value="${item.Code}">
+                                ${text}
+                            </option>`
+                        );
+                    });
+
+                }
+            },
+            error: function () {
+                Swal.fire("Error", "Gagal load Scrap Code", "error");
+            }
+        });
+    }
+
+    function loadScrapCodeSummaryTotal() {
+        $.ajax({
+            url: totalScrapCodeUrl,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                if (!response.success) {
+                    console.error("Failed to load summary:", response.message);
+                    return;
+                }
+
+                const data = response.data;
+                const locationMap = {
+                    "midc": "#totalCodeP1",
+                    "fashion dolls": "#totalCodeP2",
+                    "p2s3": "#totalCodeP2S3",
+                    "p2s4": "#totalCodeP2S4",
+                    "p2s5": "#totalCodeP2S5"
+                };
+
+                $("#totalValueAll, #totalCodeP1, #totalCodeP2, #totalCodeP2S3, #totalCodeP2S4, #totalCodeP2S5")
+                    .empty()
+                    .append('<span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>');
+
+                let overallTotal = 0;
+
+                data.forEach(item => {
+                    const loc = item.Location.toLowerCase();
+                    const count = item.TotalScrap;
+
+                    if (loc === "overall total") {
+                        overallTotal = count;
+                        return;
+                    }
+                    for (const key in locationMap) {
+                        if (loc.includes(key)) {
+                            $(locationMap[key]).text(count);
+                            break;
+                        }
+                    }
+                });
+                $("#totalValueAll").text(overallTotal);
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX Error:", error);
+            }
+        });
+    }
+
+    function showTableLoader() {
+        const tbody = document.getElementById("listOfScrap");
+        if (!tbody) return;
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="11" class="py-12 text-center">
+                    <div class="flex flex-col justify-center items-center gap-3">
+                        <div class="relative inline-flex">
+                            <div class="size-10 border-[3px] border-purple/20 rounded-full"></div>
+                            <div class="size-10 border-[3px] border-transparent border-t-purple rounded-full animate-spin absolute inset-0"></div>
+                        </div>
+                        <span class="text-sm text-muted animate-pulse">Filtering data...</span>
+                    </div>
+                </td>
+            </tr>`;
+    }
+
+    function setApplyFilterLoading(isLoading) {
+        const $btn = $("#applyFiltersScrapListButton");
+        if (!$btn.length) return;
+        if (isLoading) {
+            $btn.prop("disabled", true).addClass("opacity-70 cursor-not-allowed");
+            $btn.data("orig-html", $btn.html());
+            $btn.html('<div class="animate-spin inline-block size-4 border-2 border-white/30 border-t-white rounded-full mr-1"></div> Filtering...');
+        } else {
+            $btn.prop("disabled", false).removeClass("opacity-70 cursor-not-allowed");
+            const origHtml = $btn.data("orig-html");
+            if (origHtml) $btn.html(origHtml);
+        }
+    }
+
+    $("#applyFiltersScrapListButton").on("click", function (e) {
+        e.preventDefault();
+
+        currentFilters = {
+            documentId: $("#scrapDocumentIDFilter").val(),
+            initiatorKpk: $("#scrapInitiatorKpkFilter").val(),
+            facility: $("#scrapFacilityFilter").val(),
+            createdDateFrom: $("#scrapCreatedDateFromFilter").val(),
+            createdDateTo: $("#scrapCreatedDateToFilter").val(),
+            scrapCode: $("#scrapCodeFilter").val(),
+            tc: $("#scrapTcCodeFilter").val(),
+            totalFrom: $("#scrapStartFromFilter").val(),
+            totalTo: $("#scrapEndTotalFilter").val()
+        };
+
+        showTableLoader();
+        setApplyFilterLoading(true);
+        loadData(1, 10, currentFilters).always(function () {
+            setApplyFilterLoading(false);
+        });
+    });
+
+    $("#resetFiltersScrapListButton").on("click", function (e) {
+        e.preventDefault();
+
+        $("#scrapDocumentIDFilter").val("");
+        $("#scrapInitiatorNameFilter").val("");
+        $("#scrapInitiatorKpkFilter").val("");
+        $("#scrapInitiatorResults").empty().addClass("hidden");
+        $("#scrapFacilityFilter").val("");
+        $("#scrapCreatedDateFromFilter").val("");
+        $("#scrapCreatedDateToFilter").val("");
+        $("#scrapCodeFilter").val("");
+        $("#scrapTcCodeFilter").val("");
+        $("#scrapStartFromFilter").val("");
+        $("#scrapEndTotalFilter").val("");
+
+        currentFilters = {};
+        showTableLoader();
+        loadData(1, 10, currentFilters);
+    });
+
+    $("#filterList").on("keydown", "input", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            $("#applyFiltersScrapListButton").trigger("click");
+        }
+    });
+
+
+
+
+    function fetchRoleNameFromAll(roleId) {
+        return fetch(getRolesNameUrl)
+            .then(res => res.json())
+            .then(data => {
+                const role = data.find(r => r.RoleId == roleId);
+                return role ? role.Name : "Unknown Role";
+            })
+            .catch(err => {
+                console.error("Error fetching roles:", err);
+                return "Unknown Role";
+            });
+    }
+
+    $("#requestToCreateScrapUser").on("click", function (e) {
+        e.preventDefault();
+        $("#addUserCreateScrapModals").removeClass("hidden");
+        initAddUserForCreateScrapAutocomplete();
+    });
+    function resetAddUserCreateScrapModal() {
+        $("#addUserCreateScrapModals").addClass("hidden");
+        $("#addUserCreateScrapName").val("");
+        $("#addUserCreateScrapKpk").val("");
+        $("#listOfUsersCreateScrapModals").empty();
+    }
+
+    $("#closeAddUserCreateScrap").on("click", function () {
+        resetAddUserCreateScrapModal();
+    });
+    function initAddUserForCreateScrapAutocomplete() {
+        const $input = $("#addUserCreateScrapName");
+        const $results = $("#addUserCreateScrapResults");
+        const $kpkHidden = $("#addUserCreateScrapKpk");
+
+        $input.on("input", function () {
+            const query = $(this).val().trim();
+
+            if (query.length < 3) {
+                $results.empty().hide();
+                $kpkHidden.val("");
+                return;
+            }
+
+            fetchData(urlGetEmployee, { keyword: query }, function (res) {
+                $results.empty();
+
+                if (res.success && Array.isArray(res.data)) {
+                    res.data.forEach(item => {
+                        const option = $("<div>")
+                            .addClass("dropdown-item hover:bg-success/[0.85] cursor-pointer p-2 rounded")
+                            .text(capitalizeWords(item.name) + " (" + item.kpk + ")")
+                            .on("click", function () {
+                                $kpkHidden.val(item.kpk);
+                                $input.val(capitalizeWords(item.name));
+                                $results.empty().hide();
+                            });
+                        $results.append(option);
+                    });
+                    $results.show();
+                } else {
+                    $results.hide();
+                }
+            });
+        });
+    }
+    $("#addDataUsersCreateScrapModals").on("click", function () {
+         const kpk = $("#addUserCreateScrapKpk").val();
+         const name = $("#addUserCreateScrapName").val();
+
+         const currentUserKpk = '@Session["Kpk"]';
+         if (kpk === currentUserKpk) {
+             showToast("You cannot add your own KPK!");
+             return;
+         }
+         const exists = $("#listOfUsersCreateScrapModals tr td:nth-child(2)")
+             .toArray()
+             .some(td => $(td).text().trim() === kpk);
+
+         if (exists) {
+             showToast("This KPK is already added!");
+             return;
+         }
+         const rowCount = $("#listOfUsersCreateScrapModals tr").length + 1;
+        $("#listOfUsersCreateScrapModals").append(`
+        <tr>
+            <td class="px-3 py-2">${rowCount}</td>
+            <td class="px-3 py-2">${kpk}</td>
+            <td class="px-3 py-2">${name}</td>
+        </tr>
+        `);
+        $("#addUserCreateScrapName").val("");
+        $("#addUserCreateScrapKpk").val("");
+
+    });
+    $("#saveAddUserCreateScrap").on("click", function () {
+        const users = [];
+
+        $("#listOfUsersCreateScrapModals tr").each(function () {
+            const $tds = $(this).find("td");
+
+            users.push({
+                Kpk: $tds.eq(1).text().trim(),
+                Name: $tds.eq(2).text().trim(),
+                RoleId: 2,
+                Facility: plant,
+                TC: TC,
+                ScrapCodeResponsible: null
+            });
+        });
+
+        if (users.length === 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "No Data",
+                text: "No users to save"
+            });
+            return;
+        }
+        Swal.fire({
+            title: "Processing...",
+            text: "Please wait",
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        const successUsers = [];
+        const failedUsers = [];
+        const requests = users.map(user =>
+            sendAddOrReactivateUser(user)
+                .done(res => {
+                    if (res && res.success) {
+                        successUsers.push(user.Kpk);
+                    } else {
+                        failedUsers.push(user.Kpk);
+                    }
+                })
+                .fail(() => {
+                    failedUsers.push(user.Kpk);
+                })
+        );
+        $.when(...requests).always(function () {
+            Swal.fire({
+                icon: failedUsers.length ? "warning" : "success",
+                title: "Process Finished",
+                html: `
+                <p><b>Success:</b> ${successUsers.length}</p>
+                <p><b>Failed:</b> ${failedUsers.length}</p>
+            `
+            });
+            if (successUsers.length > 0) {
+                resetAddUserCreateScrapModal();
+            }
+        });
+    });
+
+
+    function sendAddOrReactivateUser(user) {
+        return $.ajax({
+            url: urlAddOrReactivateUser,
+            type: "POST",
+            data: JSON.stringify(user),
+            contentType: "application/json"
+        });
+    }
+
+
+    function showToast(message, options = { color: 'bg-purple text-white shadow-purple/50' }) {
+        const toast = $(`
+          <div class="toast ${options.color} px-4 py-2 rounded shadow m-1">
+              ${message}
+          </div>
+      `);
+        $("#toastContainer").append(toast);
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    $("#logoutLink").click(function (event) {
+        event.preventDefault();
+        $.ajax({
+            type: 'GET',
+            url: 'https://ptmi/sso/api/deleteValues',
+            contentType: 'application/json',
+            success: function (response) {
+                sessionStorage.clear();
+                localStorage.clear();
+                document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+                Swal.fire(
+                    'Success',
+                    'Logout Success!',
+                    'success'
+                ).then(() => {
+                    window.location.href = 'https://ptmi/sso?returnUrl=' + encodeURIComponent('http://ptmi-stage/ScrapNotice');
+                });
+            },
+            error: function (error) {
+                Swal.fire(
+                    'Error',
+                    'SLO Failed!',
+                    'error'
+                );
+                console.error('Local logout failed', error);
+            }
+        });
+    });
+</script>

@@ -1,0 +1,680 @@
+﻿
+@{
+    ViewBag.Title = "Scrap Notice";
+    ViewBag.pTitle = "Dashboard";
+    ViewBag.xData = "dashboard";
+    ViewBag.ActiveItem = "default";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<!-- Start All Card -->
+<div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Total </p>
+                <h4 id="totalValueAll"
+                    class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Overall Total</p>
+            </div>
+            <div>
+                <div id="chart" dir="ltr"></div>
+            </div>
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Quantity</p>
+                <h4 id="totalQtyAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+
+                </h4>
+                <p class="text-muted">Pcs</p>
+            </div>
+
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Pending</p>
+                <h4 id="totalValuePending" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Value</p>
+            </div>
+
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Completed</p>
+                <h4 id="totalValueApprove" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+
+                </h4>
+                <p class="text-muted">Value</p>
+            </div>
+
+        </div>
+    </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div class="gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder md:col-span-2 xl:col-span-2 border-black/10">
+            <div class="flex items-center justify-between gap-4 mb-4">
+                <h2 class="text-base font-semibold text-black dark:text-white/80">Current Scrap Trend</h2>
+                <div>
+                    <div x-data="{ dropdown: false}" class="ltr:ml-auto rtl:mr-auto dropdown">
+                        <a href="javaScript:;" class="text-dark dark:text-white" @@click="dropdown = !dropdown" @@keydown.escape="dropdown = false">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
+                                <path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0
+                                    1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zm0-13H5V6h14v1z" />
+                            </svg>
+
+                        </a>
+                        <ul x-show="dropdown" @@click.away="dropdown = false" x-transition="" x-transition.duration.300ms="" class=" whitespace-nowrap ltr:right-0 rtl:left-0 text-dark ">
+                            <li id="weeklyPeriod" class="hover:bg-info/[0.85]"><a href="javascript:;">Weekly</a></li>
+                            <li id="monthlyPeriod" class="hover:bg-info/[0.85]"><a href="javascript:;">Monthly</a></li>
+                            <li id="yearlyPeriod" class="hover:bg-info/[0.85]"><a href="javascript:;">Yearly</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div id="areachart" dir="ltr">
+                <div class="flex flex-col items-center justify-center mt-20 space-y-4">
+                    <!-- Spinner -->
+                    <div class="flex flex-wrap items-center justify-center gap-4">
+                      
+                        <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                    </div>
+
+                    <!-- Text -->
+                    <p class="text-muted font-medium text-lg">Loading...</p>
+                </div>
+
+
+            </div>
+        </div>
+        <div class="p-5 bg-white border rounded border-black/10 dark:bg-darklight dark:border-darkborder">
+            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Top Scrap by Part Number</h2>
+            <div id="topScrapByPartNumber" class="grid grid-cols-1 gap-4">
+                <div class="space-y-1 animate-pulse">
+                    <div class="flex items-center gap-4">
+                        <!-- Icon / avatar -->
+                        <span class="flex items-center justify-center rounded size-10 bg-muted"></span>
+
+                        <!-- Text skeleton -->
+                        <div class="overflow-hidden grow">
+                            <div class="bg-muted/50 h-4 w-70 mb-2 rounded"></div>
+                            <ul class="flex items-center gap-3 text-xs">
+                                <li class="bg-muted/50 h-3 w-20 rounded"></li>
+                                <li class="bg-muted/50 h-3 w-16 rounded"></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Progress skeleton -->
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="relative w-full h-1 bg-muted rounded-2xl">
+                            <div class="bg-muted h-full w-[65%] rounded-2xl"></div>
+                        </div>
+                        <!-- Number skeleton -->
+                        <p class="bg-muted/50 h-4 w-10 rounded"></p>
+                    </div>
+                </div>
+                <div class="space-y-1 animate-pulse">
+                    <div class="flex items-center gap-4">
+                        <!-- Icon / avatar -->
+                        <span class="flex items-center justify-center rounded size-10 bg-muted"></span>
+
+                        <!-- Text skeleton -->
+                        <div class="overflow-hidden grow">
+                            <div class="bg-muted/50 h-4 w-70 mb-2 rounded"></div>
+                            <ul class="flex items-center gap-3 text-xs">
+                                <li class="bg-muted/50 h-3 w-20 rounded"></li>
+                                <li class="bg-muted/50 h-3 w-16 rounded"></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Progress skeleton -->
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="relative w-full h-1 bg-muted rounded-2xl">
+                            <div class="bg-muted h-full w-[65%] rounded-2xl"></div>
+                        </div>
+                        <!-- Number skeleton -->
+                        <p class="bg-muted/50 h-4 w-10 rounded"></p>
+                    </div>
+                </div>
+                <div class="space-y-1 animate-pulse">
+                    <div class="flex items-center gap-4">
+                        <!-- Icon / avatar -->
+                        <span class="flex items-center justify-center rounded size-10 bg-muted"></span>
+
+                        <!-- Text skeleton -->
+                        <div class="overflow-hidden grow">
+                            <div class="bg-muted/50 h-4 w-70 mb-2 rounded"></div>
+                            <ul class="flex items-center gap-3 text-xs">
+                                <li class="bg-muted/50 h-3 w-20 rounded"></li>
+                                <li class="bg-muted/50 h-3 w-16 rounded"></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Progress skeleton -->
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="relative w-full h-1 bg-muted rounded-2xl">
+                            <div class="bg-muted h-full w-[65%] rounded-2xl"></div>
+                        </div>
+                        <!-- Number skeleton -->
+                        <p class="bg-muted/50 h-4 w-10 rounded"></p>
+                    </div>
+                </div>
+                <div class="space-y-1 animate-pulse">
+                    <div class="flex items-center gap-4">
+                        <!-- Icon / avatar -->
+                        <span class="flex items-center justify-center rounded size-10 bg-muted"></span>
+
+                        <!-- Text skeleton -->
+                        <div class="overflow-hidden grow">
+                            <div class="bg-muted/50 h-4 w-70 mb-2 rounded"></div>
+                            <ul class="flex items-center gap-3 text-xs">
+                                <li class="bg-muted/50 h-3 w-20 rounded"></li>
+                                <li class="bg-muted/50 h-3 w-16 rounded"></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Progress skeleton -->
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="relative w-full h-1 bg-muted rounded-2xl">
+                            <div class="bg-muted h-full w-[65%] rounded-2xl"></div>
+                        </div>
+                        <!-- Number skeleton -->
+                        <p class="bg-muted/50 h-4 w-10 rounded"></p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div class="gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">
+                Areas with Highest Scrap Total
+            </h2>
+
+            <div class="overflow-auto">
+                <table class="min-w-[640px] w-full">
+                    <thead>
+                        <tr class="ltr:text-left rtl:text-right">
+                            <th>Name</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>% Contribution</th>
+                        </tr>
+                    </thead>
+                    <tbody id="highestTotalScrapByAreaTable">
+                        <tr class="text-muted">
+                            <td colspan="4" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <!-- Spinner -->
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Highest Total Remarks</h2>
+            <div class="overflow-auto">
+                <table class="min-w-[640px] w-full">
+                    <thead>
+                        <tr class="ltr:text-left rtl:text-right">
+                            <th>Name</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>% Contribution </th>
+                        </tr>
+                    </thead>
+                    <tbody id="remarksWithHighestTotal">
+                        <tr class="text-muted">
+                            <td colspan="4" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <!-- Spinner -->
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End All Card -->
+
+@section scripts{
+
+
+    <script src="~/assets/js/main.js"></script>
+    <script src="~/assets/libs/apexcharts/apexcharts.min.js"></script>
+    <script>
+
+        const urlReportingData = '@Url.Action("GetScrapMasterWithSourceDataReporting", "DataReporting")';
+        const urlReportingDataByScrapCode = '@Url.Action("GetScrapMasterGroupedByScrapCode", "DataReporting")';
+        const urlReportingDataPerPartNumber = '@Url.Action("GroupPartsByPartNum", "DataReporting")';
+        const urlReportingDataPerScrapRemarks = '@Url.Action("GroupPartsByRemarks", "DataReporting")';
+
+        $(document).ready(function () {
+            loadScrapChart("weekly");
+            loadScrapTotals();
+            // Contoh: ambil semua data status 1,4,9, tanpa filter approver
+            loadHighestScrapDataByArea(null, '1,4,9').done(function (res) {
+                // res.Data sudah berisi array hasil JSON dari controller
+                renderHighestScrapTable(res.Data);
+            });
+
+
+            loadHighestScrapDataPartNumber(null, '1,4,9').done(function (data) {
+                renderTopScrapByPartNumber(data);
+            });
+            loadRemarksData().done(function (data) {
+                renderRemarksTable(data);
+            });
+
+        });
+
+        document.getElementById("weeklyPeriod").addEventListener("click", () => {
+            loadScrapChart("weekly");
+        });
+
+        document.getElementById("monthlyPeriod").addEventListener("click", () => {
+            loadScrapChart("monthly");
+        });
+
+        document.getElementById("yearlyPeriod").addEventListener("click", () => {
+            loadScrapChart("yearly");
+        });
+
+        function renderAreaChart(targetId, seriesData, labels) {
+            const chartEl = document.querySelector(targetId);
+            chartEl.innerHTML = ""; // hapus chart lama
+
+            // Cari nilai maksimum untuk sumbu Y
+            const allValues = seriesData?.[0]?.data || [0];
+            const maxValue = Math.max(...allValues, 0);
+
+            // Jumlah ticks maksimum
+            const tickCount = 6;
+
+            // Hitung step agar bulat, minimal 1 juta jika nilai besar
+            let step = maxValue === 0 ? 1_000_000 : Math.ceil(maxValue / tickCount / 1_000_000) * 1_000_000;
+
+            // Hitung max yang rapi
+            const roundedMax = step * tickCount;
+
+            const options = {
+                chart: {
+                    type: "area",
+                    height: 300,
+                    zoom: { enabled: false },
+                    toolbar: { show: false },
+                    fontFamily: "Inter, sans-serif",
+                },
+                series: seriesData || [
+                    {
+                        name: "Income",
+                        data: [0]
+                    }
+                ],
+                colors: ["#94989a"],
+                dataLabels: { enabled: false },
+                stroke: { width: 2, curve: "smooth" },
+                xaxis: {
+                    categories: labels || ["No Data"],
+                    labels: {
+                        style: { fontSize: "12px", fontFamily: "Inter, sans-serif" }
+                    },
+                    axisBorder: { color: "#e0e6ed" },
+                },
+                yaxis: {
+                    min: 0,                     // mulai dari 0
+                    max: roundedMax,            // max bulat
+                    tickAmount: tickCount,      // maksimal 6 ticks
+                    labels: {
+                        formatter: function (val) {
+                            return formatRupiah(val); // format rupiah
+                        },
+                        style: { fontSize: "12px", fontFamily: "Inter, sans-serif" }
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return formatRupiah(val);
+                        }
+                    }
+                },
+                legend: { horizontalAlign: "left" },
+                grid: { borderColor: "#e8e8e8" },
+                stroke: {
+                    width: 2,
+                    curve: "smooth",
+                    colors: ["#333333"] // stroke hitam
+                },
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shade: "light",
+                        type: "vertical",
+                        shadeIntensity: 0.5,
+                        gradientToColors: ["#333333"],
+                        inverseColors: false,
+                        opacityFrom: 0.5,
+                        opacityTo: 0.05,
+                        stops: [0, 100]
+                    }
+                },
+
+            };
+
+            const chart = new ApexCharts(chartEl, options);
+            chart.render();
+            return chart;
+        }
+
+
+        async function loadScrapTotals() {
+            try {
+                const response = await $.ajax({
+                    url: urlGetScrapTotals,
+                    type: 'GET',
+                    data: { "statusList[0]": 1, "statusList[1]": 4, "statusList[2]": 9 },
+                    dataType: 'json'
+                });
+
+                // Update DOM dengan data dari server
+                $("#totalValueAll").empty().text(formatRupiahShort(response.TotalValueAll));
+                $("#totalQtyAll").empty().text(response.TotalQtyAll.toLocaleString("id-ID"));
+                $("#totalValuePending").empty().text(formatRupiahShort(response.TotalValuePending));
+                $("#totalValueApprove").empty().text(formatRupiahShort(response.TotalValueApproved));
+
+
+            } catch (err) {
+                console.error("Error fetch scrap totals:", err);
+            }
+        }
+
+        function loadHighestScrapData(approverKpk = null, allowedStatuses = null, period = null) {
+            return $.ajax({
+                url: urlReportingData,   // endpoint controller JSON
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    approverKpk: approverKpk,         // optional
+                    allowedStatuses: allowedStatuses, // optional, contoh "1,4,9"
+                    period: period                     // optional, default null
+                }
+            });
+        }
+        function loadHighestScrapDataByArea(approverKpk = null, allowedStatuses = null, period = null) {
+            return $.ajax({
+                url: urlReportingDataByScrapCode,   // endpoint controller JSON
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    approverKpk: approverKpk,         // optional
+                    allowedStatuses: allowedStatuses, // optional, contoh "1,4,9"
+                    period: period                     // optional, default null
+                }
+            });
+        }
+
+
+        function loadHighestScrapDataPartNumber(approverKpk = null, allowedStatuses = null) {
+            return $.ajax({
+                url: urlReportingDataPerPartNumber,  // endpoint JSON
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    approverKpk: approverKpk,          // kirim approver jika ada
+                    allowedStatuses: allowedStatuses    // kirim allowedStatuses, misal "1,2,3"
+                }
+            });
+        }
+
+        function loadRemarksData(approverKpk = null) {
+            return $.ajax({
+                url: urlReportingDataPerScrapRemarks, // endpoint controller
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    approverKpk: approverKpk,
+                    allowedStatuses: "1,4,9" // ✅ hanya ambil status 1, 4, 9
+                }
+            });
+        }
+        function renderRemarksTable(data) {
+            const tbody = document.getElementById("remarksWithHighestTotal");
+            tbody.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No Data</td></tr>`;
+                return;
+            }
+
+            // ✅ Ambil hanya top 6
+            const topData = data.slice(0, 6);
+
+            topData.forEach(item => {
+                tbody.innerHTML += `
+            <tr>
+                <td>${item.RemarksName}</td>
+                 <td>${item.TotalQty.toLocaleString("id-ID")}</td>
+                 <td>${formatRupiah(item.TotalValue)}</td>
+                <td>${item.ContributionPercent}%</td>
+            </tr>
+        `;
+            });
+        }
+
+        async function loadScrapChart(period = null, allowedStatuses = [1, 4, 9], approverKpk = null) {
+            try {
+                // Buat object data untuk querystring
+                const data = {};
+                if (allowedStatuses && allowedStatuses.length > 0) {
+                    data.allowedStatuses = allowedStatuses.join(","); // kirim "1,4,9"
+                }
+                if (period) data.period = period;
+                if (approverKpk) data.approverKpk = approverKpk;
+
+                // Panggil API
+                const response = await $.ajax({
+                    url: urlReportingData,
+                    type: 'GET',
+                    dataType: 'json',
+                    data: data
+                });
+
+                // Siapkan data chart
+                const chartData = prepareChartData(response.Data, period);
+                // Render chart
+                renderAreaChart("#areachart", chartData.series, chartData.labels);
+
+            } catch (err) {
+                console.error("Error loading scrap chart:", err);
+            }
+        }
+
+
+        function prepareChartData(data, period) {
+            let labels = [];
+            let totals = [];
+            const today = new Date();
+
+            // Helper: parse tanggal aman
+            const safeDate = (dotNetDate) => {
+                const d = parseDotNetDate(dotNetDate);
+                return d instanceof Date && !isNaN(d) ? d : null;
+            };
+
+            switch (period) {
+                case 'weekly': {
+                    // Mulai dari Monday minggu ini
+                    const start = new Date(today);
+                    const day = today.getDay(); // 0 = Sunday
+                    const diff = day === 0 ? -6 : 1 - day; // kalau Minggu → mundur ke Senin minggu lalu
+                    start.setDate(today.getDate() + diff);
+
+                    for (let i = 0; i < 7; i++) {
+                        const d = new Date(start);
+                        d.setDate(start.getDate() + i);
+                        labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+
+                        const totalValue = data
+                            .filter(g => g.ScrapItems?.some(x => {
+                                const itemDate = safeDate(x.CreatedDate);
+                                return isSameDay(itemDate, d);
+                            }))
+                            .reduce((sum, g) => sum + (g.TotalValue || 0), 0);
+
+                        totals.push(totalValue || 0);
+                    }
+                    break;
+                }
+
+                case 'monthly': {
+                    for (let m = 0; m < 12; m++) {
+                        labels.push(new Date(today.getFullYear(), m).toLocaleString('en-US', { month: 'short' }));
+
+                        const totalValue = data
+                            .filter(g => g.ScrapItems?.some(x => {
+                                const itemDate = safeDate(x.CreatedDate);
+                                return itemDate &&
+                                    itemDate.getMonth() === m &&
+                                    itemDate.getFullYear() === today.getFullYear();
+                            }))
+                            .reduce((sum, g) => sum + (g.TotalValue || 0), 0);
+
+                        totals.push(totalValue || 0);
+                    }
+                    break;
+                }
+
+                case 'yearly': {
+                    const years = [...new Set(
+                        data.flatMap(g =>
+                            g.ScrapItems?.map(x => {
+                                const d = safeDate(x.CreatedDate);
+                                return d ? d.getFullYear() : null;
+                            }).filter(y => y !== null)
+                        )
+                    )].sort();
+
+                    if (years.length === 0) {
+                        labels = ["No Data"];
+                        totals = [0];
+                        break;
+                    }
+
+                    labels = years.map(y => y.toString());
+                    totals = years.map(y =>
+                        data.filter(g => g.ScrapItems?.some(x => {
+                            const d = safeDate(x.CreatedDate);
+                            return d && d.getFullYear() === y;
+                        }))
+                            .reduce((sum, g) => sum + (g.TotalValue || 0), 0) || 0
+                    );
+
+                    break;
+                }
+
+                default:
+                    return prepareChartData(data, "weekly");
+            }
+
+            // Pastikan ada data valid
+            if (!totals.length || totals.every(v => v === 0)) {
+                labels = ["No Data"];
+                totals = [0];
+            }
+
+            return {
+                labels: labels,
+                series: [{ name: 'Total Value', data: totals }]
+            };
+        }
+
+
+
+
+        function renderHighestScrapTable(data, grandTotalQty, grandTotalValue) {
+           
+            const tbody = $('#highestTotalScrapByAreaTable');
+            tbody.empty();
+            const topData = data.slice(0, 6);
+
+            topData.forEach(item => {
+                const row = `<tr>
+                    <td>${item.ScrapCode}</td>
+                    <td>${item.TotalQty.toLocaleString("id-ID")}</td>
+                    <td>${formatRupiah(item.TotalValue)}</td>
+                    <td>${item.ContributionPercent}%</td>
+                </tr>`;
+                tbody.append(row);
+            });
+
+
+        }
+
+        function renderTopScrapByPartNumber(data) {
+            const container = $('#topScrapByPartNumber');
+            container.empty();
+
+            const topParts = Array.isArray(data) ? data.slice(0, 4) : [];
+
+            topParts.forEach(item => {
+                const partHtml = `
+                <div class="space-y-1">
+                    <div class="flex items-center gap-4">
+                        <span class="flex items-center justify-center rounded size-10 text-purple bg-purple/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-8-4.62a2 2 0 0 0-2 0l-8 4.62A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l8 4.62a2 2 0 0 0 2 0l8-4.62A2 2 0 0 0 21 16zm-9 4.18L5 16V8l7 4.18V20.18zm2 0V12.18L19 8v8l-6 4.18z"/>
+                            </svg>
+                        </span>
+
+                        <div class="flex items-center justify-between w-full">
+                            <div>
+                                <p class="dark:text-white">${item.PartNum}</p>
+                                <p class="text-muted">${item.Description}</p>
+                            </div>
+                            <p class="text-danger font-bold">${formatRupiah(item.TotalValue)}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="relative w-full h-1 bg-black/10 dark:bg-darkborder rounded-2xl">
+                            <div class="bg-purple h-full rounded-2xl" style="width: ${item.ContributionPercent}%;"></div>
+                        </div>
+                        <p class="text-purple text-[15px] leading-[22px] font-medium flex-none">
+                            ${item.ContributionPercent}%
+                        </p>
+                    </div>
+                </div>
+            `;
+                container.append(partHtml);
+            });
+        }
+
+
+
+
+    </script>
+}
