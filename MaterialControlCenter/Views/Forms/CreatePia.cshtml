@@ -188,7 +188,6 @@
                         <th class="border border-muted">Variance Quantity</th>
                         <th class="border border-muted">Total Value</th>
                         <th class="border border-muted" data-column="leader">Leader</th>
-                        <th class="border border-muted">Remarks</th>
                     </tr>
                 </thead>
                 <tbody id="listOfPartnumber">
@@ -557,6 +556,7 @@
                             $('#piaCodeResults').empty().hide();
                             $('#piaCodeResultCard').removeClass('hidden');
                             $('#piaCodeRemarksResultCard').removeClass('hidden');
+                            $('#remarksDropdown').empty().append('<option value="">-- Select Remarks --</option>');
                             if (!["20", "22"].includes(selectedTC)) {
                                loadWC(facility, "wcDropdown", "wcDropdown", "@Url.Action("GetWorkCenters", "DataForms")");
                                 $('#piaCodeWCResultCard').removeClass('hidden');
@@ -568,7 +568,7 @@
                                 selectedTC,
                                 "piaCodeDropdown",
                                 "piaCodeDropdownWrapper",
-                                "@Url.Action("getScrapCodeByLocation", "DataForms")"
+                                "@Url.Action("GetPiaCodeByLocation", "DataForms")"
                             );
 
                         });
@@ -651,6 +651,16 @@
 
                             handleSpecialNotes(selectedPiaCode);
                             handleTCCompanion(selectedPiaCode);
+
+                            if (selectedPiaCode) {
+                                $('#piaCodeRemarksResultCard').removeClass('hidden');
+                                loadRemarksDropdown(selectedPiaCode);
+                            } 
+                            else {
+                                $('#piaCodeRemarksResultCard').addClass('hidden');
+                                $('#remarksDropdown').empty()
+                                    .append('<option value="">-- Select Remarks --</option>');
+                            }
                         });
 
                     } else {
@@ -661,6 +671,34 @@
                     hideDropdownSpinner(wrapperId);
                     handleAjaxError("Gagal load PIA Code");
                     console.error(error);
+                }
+            });
+        }
+
+        function loadRemarksDropdown(piaCode) {
+            const $dropdown = $('#remarksDropdown');
+            $dropdown.empty().append('<option value="">Loading...</option>');
+            $dropdown.prop('disabled', true);
+
+            $.ajax({
+                url: '@Url.Action("GetRemarksByPiaCode", "DataForms")' + '?piaCode=' + encodeURIComponent(piaCode),
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    $dropdown.empty().append('<option value="">-- Select Remarks --</option>');
+                    $dropdown.prop('disabled', false);
+
+                    if (response.success && response.data.length > 0) {
+                        response.data.forEach(item => {
+                            $dropdown.append(`<option value="${item.Id}">${item.RemarksText}</option>`);
+                        });
+                    } else {
+                        $dropdown.append('<option value="">-- No Remarks Available --</option>');
+                    }
+                },
+                error: function() {
+                    $dropdown.empty().append('<option value="">-- Error Loading Remarks --</option>');
+                    $dropdown.prop('disabled', false);
                 }
             });
         }
@@ -884,7 +922,8 @@
                 { id: "piaCodeDropdown", label: "PIA Code" },
                 { id: "facilityDropdown", label: "Facility" },
                 { id: "typeOfPiaDropdown", label: "Type PIA" },
-                { id: "supervisorInitiatorName", label: "Supervisor" }
+                { id: "supervisorInitiatorName", label: "Supervisor" },
+                { id: "remarksDropdown", label: "Remarks" }
             ];
 
             showDynamicSwal({
@@ -900,7 +939,7 @@
                     const container = document.getElementById("sectionContainer");
                     container.innerHTML = `
                         <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded text-center">
-                            Details Of Part Number
+                            PIA Detail Form
                         </h2>
                     `;
                     document.getElementById("formContainerDetailsPartNumber").classList.remove("hidden");
@@ -1006,12 +1045,6 @@
                     <div id="leaderList-${partCounter}" class="dropdown-results absolute w-100 bg-white border border-muted rounded mt-1 z-50 hidden" style="max-height: 200px; overflow-y: auto;"></div>
                     <input type="hidden" id="leaderKpk-${partCounter}">
                   </td>
-                  <td class="border border-muted">
-                    <select id="remarks-${partCounter}" class="form-select w-full">
-                      <option value="">-- Pilih Remarks --</option>
-                    </select>
-                    <input type="hidden" id="remarksId-${partCounter}">
-                  </td>
                 `;
 
             document.getElementById("listOfPartnumber").appendChild(newRow);
@@ -1037,7 +1070,7 @@
             initPartAutocomplete(partCounter, selectedTC);
             filterRemarksByPiaCode(partCounter, selectedPiaCode);
             initLeaderAutocomplete(partCounter, urlGetEmployee);
-            ['partNumber', 'description', 'unit', 'processPoint', 'baseValue', 'physicalQuantity', 'systemQuantity', 'varianceQuantity', 'totalValue', 'leader', 'remarks']
+            ['partNumber', 'description', 'unit', 'processPoint', 'baseValue', 'physicalQuantity', 'systemQuantity', 'varianceQuantity', 'totalValue', 'leader']
                 .forEach(field => {
                     const input = document.getElementById(`${field}-${partCounter}`);
                     if (input) {
@@ -1130,7 +1163,6 @@
                 `varianceQuantity-${partCounter}`,
                 `totalValue-${partCounter}`,
                 `leaderKpk-${partCounter}`,
-                `remarks-${partCounter}`
             ];
 
             if (showSpecialFields) {
@@ -1554,7 +1586,6 @@
                 let processedAjax = 0;
                 let totalAjaxRequest = 0;
                 const duplicateParts = [];
-                const missingRemarks = [];
 
                 const existingParts = Array.from(
                     document.querySelectorAll("[id^='partNumber-']")

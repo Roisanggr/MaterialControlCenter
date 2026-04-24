@@ -48,7 +48,6 @@ namespace MaterialControlCenter.Controllers
 
                 List<TcAndTypeMaster> tcAndTypes = dbScrap.getTcAndType();
 
-
                 if (tcAndTypes != null && tcAndTypes.Count > 0)
                 {
                     return Json(new { success = true, data = tcAndTypes }, JsonRequestBehavior.AllowGet);
@@ -1080,6 +1079,67 @@ namespace MaterialControlCenter.Controllers
             }
         }
 
+        [HttpGet]
+        public JsonResult GetRemarksByPiaCode(string piaCode)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(piaCode))
+                    return Json(new { success = false, message = "PIA Code is required." }, JsonRequestBehavior.AllowGet);
+
+                var allRemarks = dbScrap.GetPiaCodeRemarks();
+
+                var filtered = allRemarks
+                    .Where(r => r.ScrapCode != null &&
+                                r.ScrapCode.Equals(piaCode, StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(r => r.Remarks)
+                    .Select(r => new
+                    {
+                        Id = r.IdRemarks,
+                        RemarksText = r.Remarks
+                    })
+                    .ToList();
+
+                if (!filtered.Any())
+                    return Json(new { success = false, message = "No remarks found for this PIA Code." }, JsonRequestBehavior.AllowGet);
+
+                return Json(new { success = true, data = filtered }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetPiaCodeByLocation(string location, int? TC = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(location))
+                    return Json(new { success = false, message = "Location is required." }, JsonRequestBehavior.AllowGet);
+
+                var piaCodes = dbScrap.GetAllPiaCodes()
+                    .Where(p => p.Location != null &&
+                                p.Location.Equals(location, StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(p => p.Code)
+                    .Select(p => new
+                    {
+                        Code = p.Code,
+                        Name = p.Name,
+                    })
+                    .ToList();
+
+                if (!piaCodes.Any())
+                    return Json(new { success = false, message = "No PIA Code found for location: " + location }, JsonRequestBehavior.AllowGet);
+
+                return Json(new { success = true, data = piaCodes }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
 
 
     }
