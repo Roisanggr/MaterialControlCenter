@@ -2418,6 +2418,123 @@ namespace MaterialControlCenter.Service
             }
         }
 
+        public bool InsertScrapCodeRemark(string scrapCode, string remarks)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                // Cek IdRemarks terakhir
+                int nextId = 1;
+                string maxQuery = "SELECT ISNULL(MAX(IdRemarks), 0) + 1 FROM [Scrap].[dbo].[scrap_code_remarks]";
+                using (SqlCommand cmd = new SqlCommand(maxQuery, conn))
+                    nextId = (int)cmd.ExecuteScalar();
+
+                string insertQuery = @"INSERT INTO [Scrap].[dbo].[scrap_code_remarks] 
+                               (IdRemarks, ScrapCode, Remarks) 
+                               VALUES (@IdRemarks, @ScrapCode, @Remarks)";
+                using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@IdRemarks", nextId);
+                    cmd.Parameters.AddWithValue("@ScrapCode", scrapCode);
+                    cmd.Parameters.AddWithValue("@Remarks", remarks);
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        public bool InsertPiaCodeRemark(int piaCode, string remarks)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string insertQuery = @"
+            INSERT INTO [Scrap].[dbo].[pia_code_remarks] 
+                (pia_code, remarks, created_at) 
+            VALUES 
+                (@PiaCode, @Remarks, GETDATE())";
+
+                using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@PiaCode", piaCode);
+                    cmd.Parameters.AddWithValue("@Remarks", remarks);
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        public bool InsertTprCodeRemark(string code, string remarks)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string insertQuery = @"INSERT INTO [Scrap].[dbo].[tpr_code_remarks] 
+                               (Code, Remarks) 
+                               VALUES (@Code, @Remarks)";
+                using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Code", code);
+                    cmd.Parameters.AddWithValue("@Remarks", remarks);
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        public List<ScrapCodeRemarkModel> GetPiaCodeRemarks()
+        {
+            var result = new List<ScrapCodeRemarkModel>();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = @"
+            SELECT r.id AS IdRemarks, r.remarks, p.code AS ScrapCode
+            FROM [Scrap].[dbo].[pia_code_remarks] r
+            INNER JOIN [Scrap].[dbo].[pia_code] p ON r.pia_code = p.id
+            WHERE ISNULL(r.is_deleted, 0) = 0";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        result.Add(new ScrapCodeRemarkModel
+                        {
+                            IdRemarks = reader["IdRemarks"] != DBNull.Value ? Convert.ToInt32(reader["IdRemarks"]) : 0,
+                            Remarks = reader["remarks"]?.ToString(),
+                            ScrapCode = reader["ScrapCode"]?.ToString()
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+
+        public List<ScrapCodeRemarkModel> GetTprCodeRemarks()
+        {
+            var result = new List<ScrapCodeRemarkModel>();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = @"
+            SELECT r.id AS IdRemarks, r.remarks, t.code AS ScrapCode
+            FROM [Scrap].[dbo].[tpr_code_remarks] r
+            INNER JOIN [Scrap].[dbo].[tpr_code] t ON r.tpr_code = t.id
+            WHERE ISNULL(r.is_deleted, 0) = 0";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        result.Add(new ScrapCodeRemarkModel
+                        {
+                            IdRemarks = reader["IdRemarks"] != DBNull.Value ? Convert.ToInt32(reader["IdRemarks"]) : 0,
+                            Remarks = reader["remarks"]?.ToString(),
+                            ScrapCode = reader["ScrapCode"]?.ToString()
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+
     }
 
 }

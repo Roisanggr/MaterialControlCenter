@@ -69,19 +69,18 @@
                 <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 grow">List Code</h2>
                 <!-- Button Filters -->
                 <button type="button" id="filtersScrapNotice" class="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium border border-black/20 text-muted hover:bg-gray-50 transition-all h-[38px] min-w-[100px]">
-                    <i class="ri-filter-line mr-2"></i>
-                    Filters
+                    <i class="ri-filter-line mr-2"></i>Filters
                 </button>
                 <!-- Button Add Code -->
                 <button type="button" id="addRemarksButton" class="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium bg-purple text-white hover:bg-purple/[0.85] transition-all h-[38px] min-w-[110px]">
-                    <i class="fas fa-plus mr-2"></i> 
-                    Add Code
+                    <i class="fas fa-plus mr-2"></i> Add Code
                 </button>
             </div>
+            <!-- Filtering -->
             <div id="filterList" class="hidden">
                 <!-- Container Grid untuk 4 Kolom -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <!-- 1. Application -->
+                    <!-- 1. Application -->
                     <div class="card p-3">
                         <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Application</h2>
                         <div class="space-y-1">
@@ -93,7 +92,7 @@
                             </select>
                         </div>
                     </div>
-                 <!-- 2. Location -->
+                    <!-- 2. Location -->
                     <div class="card p-3">
                         <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Location</h2>
                         <div class="space-y-1">
@@ -107,14 +106,14 @@
                             </select>
                         </div>
                     </div>
-                 <!-- 3. Area -->
+                    <!-- 3. Area -->
                     <div class="card p-3">
                         <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Area</h2>
                         <div class="space-y-1">
                             <input id="areaFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Enter Area Code">
                         </div>
                     </div>
-                 <!-- 4. Code -->
+                    <!-- 4. Code -->
                     <div class="card p-3">
                         <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Code</h2>
                         <div class="space-y-1">
@@ -122,9 +121,8 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Tombol Aksi di Kanan Bawah -->
-                <div class="flex w-full justify-end gap-2">
+            <!-- Button -->
+            <div class="flex w-full justify-end gap-2">
                     <!-- Button Apply Filters -->
                     <button id="applyFiltersButton" class="px-2 py-1 bg-success text-white rounded shadow hover:bg-success/[0.85] transition flex items-center justify-center text-sm mb-2">
                         <i class="ri-check-line text-sm mr-1"></i>Apply
@@ -135,7 +133,7 @@
                     </button>
                 </div>
             </div>
-            
+            <!-- Tabel Code -->
             <div class="overflow-auto">
                 <table class="min-w-[640px] w-full">
                     <thead>
@@ -145,7 +143,7 @@
                             <th class="px-3 py-2">Location</th>
                             <th class="px-3 py-2">Code</th>
                             <th class="px-3 py-2">Description</th>
-                            
+
                             <th class="px-3 py-2">Action</th>
                         </tr>
                     </thead>

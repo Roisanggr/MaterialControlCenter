@@ -1,6 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using MaterialControlCenter.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,9 +15,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Services;
 using System.Web.Services.Description;
-using MaterialControlCenter.Models;
-using System.Data.SqlClient;
-using System.Configuration;
+using System.Windows.Media.Imaging;
 
 namespace MaterialControlCenter.Controllers
 {
@@ -155,34 +156,87 @@ namespace MaterialControlCenter.Controllers
 
 
         [HttpGet]
-        public JsonResult GetScrapCodeRemarks(string scrapCode = "", string remarks = "")
+        public JsonResult GetScrapCodeRemarks(string scrapCode = "", string remarks = "", string application = "", string location = "", string area = "")
         {
             try
             {
-                List<ScrapCodeRemarkModel> rawRemarks = dbScrap.GetScrapCodeRemarks();
+                var locationMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "MIDC",          "P1"   },
+            { "Fashion Dolls", "P2"   },
+            { "P2S3",          "P2S3" },
+            { "P2S4",          "P2S4" },
+            { "P2S5",          "P2S5" }
+        };
+
                 List<ScrapCode> allScrapCodes = dbScrap.GetAllScrapCodes();
+                List<ScrapCode> allPiaCodes = dbScrap.GetAllPiaCodes();
+                List<ScrapCode> allTprCodes = dbScrap.GetAllTprCodes();
 
-                var joinedData = rawRemarks
-                    .Select(r => new
-                    {
-                        r.ScrapCode,
-                        r.Remarks,
-                        r.IdRemarks,
-                        Location = allScrapCodes.FirstOrDefault(c => c.Code == r.ScrapCode)?.Location ?? "-"
-                    });
+                // Scrap remarks
+                var scrapData = dbScrap.GetScrapCodeRemarks().Select(r => new
+                {
+                    r.IdRemarks,
+                    r.ScrapCode,
+                    r.Remarks,
+                    Application = "Scrap",
+                    Location = locationMap.TryGetValue(
+                        allScrapCodes.FirstOrDefault(c => c.Code == r.ScrapCode)?.Location ?? "", out string loc)
+                        ? loc
+                        : (allScrapCodes.FirstOrDefault(c => c.Code == r.ScrapCode)?.Location ?? "-")
+                });
 
+                // PIA remarks
+                var piaData = dbScrap.GetPiaCodeRemarks().Select(r => new
+                {
+                    r.IdRemarks,
+                    r.ScrapCode,
+                    r.Remarks,
+                    Application = "PIA",
+                    Location = allPiaCodes.FirstOrDefault(c => c.Code == r.ScrapCode)?.Location ?? "-"
+                });
+
+                // TPR remarks
+                var tprData = dbScrap.GetTprCodeRemarks().Select(r => new
+                {
+                    r.IdRemarks,
+                    r.ScrapCode,
+                    r.Remarks,
+                    Application = "TPR",
+                    Location = allTprCodes.FirstOrDefault(c => c.Code == r.ScrapCode)?.Location ?? "-"
+                });
+
+                // Gabungkan semua ke anonymous type yang seragam
+                var allData = scrapData
+                    .Select(r => new { r.IdRemarks, r.ScrapCode, r.Remarks, r.Application, r.Location })
+                    .Concat(piaData
+                        .Select(r => new { r.IdRemarks, r.ScrapCode, r.Remarks, r.Application, r.Location }))
+                    .Concat(tprData
+                        .Select(r => new { r.IdRemarks, r.ScrapCode, r.Remarks, r.Application, r.Location }))
+                    .ToList();
+
+                // Filter
                 if (!string.IsNullOrEmpty(scrapCode))
-                    joinedData = joinedData.Where(r => r.ScrapCode.Contains(scrapCode));
+                    allData = allData.Where(r => r.ScrapCode != null && r.ScrapCode.Contains(scrapCode)).ToList();
 
                 if (!string.IsNullOrEmpty(remarks))
-                    joinedData = joinedData.Where(r => r.Remarks.Contains(remarks));
+                    allData = allData.Where(r => r.Remarks != null && r.Remarks.Contains(remarks)).ToList();
 
-                return Json(new { success = true, data = joinedData.OrderBy(r => r.ScrapCode).ThenBy(r => r.Remarks).ToList() },
-                    JsonRequestBehavior.AllowGet);
+                if (!string.IsNullOrEmpty(application))
+                    allData = allData.Where(r => r.Application.Equals(application, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                if (!string.IsNullOrEmpty(location))
+                    allData = allData.Where(r => r.Location != null && r.Location.Equals(location, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                return Json(new
+                {
+                    success = true,
+                    data = allData.OrderBy(r => r.Application).ThenBy(r => r.ScrapCode).ToList()
+                }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = false, message = ex.Message, stackTrace = ex.StackTrace }, JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -689,23 +743,7 @@ namespace MaterialControlCenter.Controllers
 
 
 
-        [HttpPost]
-        public JsonResult AddScrapCodeRemark(ScrapCodeRemarkModel model)
-        {
-            try
-            {
-                bool success = dbScrap.SubmitScrapCodeRemark(model);
-
-                if (success)
-                    return Json(new { success = true, message = "Successfully added." });
-                else
-                    return Json(new { success = false, message = "Failed to add remark." });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = $"Error: {ex.Message}" });
-            }
-        }
+        
 
 
 
@@ -938,6 +976,107 @@ namespace MaterialControlCenter.Controllers
                     success = false,
                     message = ex.Message
                 }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetCodesByApplication(string application)
+        {
+            try
+            {
+                List<object> codes;
+
+                switch ((application ?? "").Trim().ToUpper())
+                {
+                    case "PIA":
+                        codes = dbScrap.GetAllPiaCodes()
+                            .OrderBy(c => c.Location).ThenBy(c => c.Code)
+                            .Select(c => new {
+                                value = c.IdRemarks.ToString(),
+                                label = $"{c.Location} - {c.Code} - {c.Name}"
+                            })
+                            .Cast<object>().ToList();
+                        break;
+
+                    case "TPR":
+                        codes = dbScrap.GetAllTprCodes()
+                            .OrderBy(c => c.Location).ThenBy(c => c.Code)
+                            .Select(c => new {
+                                value = c.Code,
+                                label = $"{c.Location} - {c.Code} - {c.Name}"
+                            })
+                            .Cast<object>().ToList();
+                        break;
+
+                    default: // Scrap
+                        var locationMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "MIDC",          "P1" },
+                    { "Fashion Dolls", "P2" },
+                    { "P2S3",          "P2S3" },
+                    { "P2S4",          "P2S4" },
+                    { "P2S5",          "P2S5" }
+                };
+
+                        codes = dbScrap.GetAllScrapCodes()
+                            .OrderBy(c => c.Location).ThenBy(c => c.Code)
+                            .Select(c => {
+                                string displayLocation = locationMap.TryGetValue(c.Location ?? "", out string mapped)
+                                    ? mapped
+                                    : (c.Location ?? "-");
+                                return new
+                                {
+                                    value = c.Code,
+                                    label = $"{displayLocation} - {c.Code} - {c.Name}"
+                                };
+                            })
+                            .Cast<object>().ToList();
+                        break;
+                }
+
+                return Json(new { success = true, data = codes }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult AddScrapCodeRemark(string Application, string ScrapCode, string Remarks)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(ScrapCode) || string.IsNullOrWhiteSpace(Remarks))
+                    return Json(new { success = false, message = "Code and Remarks are required." });
+
+                bool result;
+
+                switch ((Application ?? "").Trim().ToUpper())
+                {
+                    case "PIA":
+                        if (!int.TryParse(ScrapCode, out int piaCodeId))
+                            return Json(new { success = false, message = "Invalid PIA Code." });
+                        result = dbScrap.InsertPiaCodeRemark(piaCodeId, Remarks);
+                        break;
+
+                    case "TPR":
+                        result = dbScrap.InsertTprCodeRemark(ScrapCode, Remarks);
+                        break;
+
+                    default: // Scrap
+                        result = dbScrap.InsertScrapCodeRemark(ScrapCode, Remarks);
+                        break;
+                }
+
+                if (result)
+                    return Json(new { success = true, message = "Remarks saved successfully." });
+                else
+                    return Json(new { success = false, message = "Failed to save remarks." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
             }
         }
 

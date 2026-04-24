@@ -52,6 +52,13 @@ namespace MaterialControlCenter.Models
         public string ScrapCode { get; set; }
     }
 
+    public class AddRemarkRequest
+    {
+        public string Application { get; set; }
+        public string ScrapCode { get; set; }
+        public string Remarks { get; set; }
+    }
+
     public class WorkCenterModel
     {
         public int Id_WorkCenter { get; set; }
