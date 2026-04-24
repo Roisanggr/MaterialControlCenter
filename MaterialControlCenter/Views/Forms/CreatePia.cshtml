@@ -12,7 +12,7 @@
 <div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
     <div class="flex justify-center items-center bg-muted/20 h-32">
         <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded text-center">
-            Master PIA
+            PIA Header Form
         </h2>
     </div>
 
@@ -63,15 +63,6 @@
                 </select>
             </div>
         </div>
-        <div id="piaCodeResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden">
-            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Reason Code</h2>
-            <div id="piaCodeDropdownWrapper" class="space-y-4">
-                <select id="piaCodeDropdown" class="form-input" required>
-                    <option value="">-- Select PIA Code --</option>
-                </select>
-            </div>
-        </div>
-
         <div id="piaCodeWCResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden">
             <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">WC</h2>
             <div id="wcDropdownWrapper" class="space-y-4">
@@ -81,7 +72,22 @@
                 </select>
             </div>
         </div>
-
+        <div id="piaCodeResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden">
+            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Reason Code</h2>
+            <div id="piaCodeDropdownWrapper" class="space-y-4">
+                <select id="piaCodeDropdown" class="form-input" required>
+                    <option value="">-- Select PIA Code --</option>
+                </select>
+            </div>
+        </div>
+        <div id="piaCodeRemarksResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden">
+            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Remarks</h2>
+            <div id="remarksDropdownWrapper" class="space-y-4">
+                <select id="remarksDropdown" class="form-input" required>
+                    <option value="">-- Select Remarks --</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     <div id="sectionContainer" class="flex justify-center items-center bg-muted/20 h-32">
@@ -448,12 +454,15 @@
 
                 input.value = fac;
                 selectedFacilityInDropdown = fac;
+                console.log("Single facility auto-selected:", fac, "selectedFacilityInDropdown set to:", selectedFacilityInDropdown);
                 const url = tcUrl + "?facility=" + encodeURIComponent(fac);
+                console.log("Loading TC with URL:", url);
                 loadTcDropdown(tcDropdownId, url);
 
                 $('#piaCodeTcResultCard').removeClass('hidden');
                 $('#piaCodeWCResultCard').addClass('hidden');
                 $('#piaCodeResultCard').addClass('hidden');
+                $('#piaCodeRemarksResultCard').addClass('hidden');
                 return;
             }
 
@@ -468,13 +477,16 @@
 
                 input.value = fac;
                 selectedFacilityInDropdown = fac;
+                console.log("Facility selected:", fac, "selectedFacilityInDropdown set to:", selectedFacilityInDropdown);
 
                 const url = tcUrl + "?facility=" + encodeURIComponent(fac);
+                console.log("Loading TC with URL:", url);
                 loadTcDropdown(tcDropdownId, url);
 
                 $('#piaCodeTcResultCard').removeClass('hidden');
                 $('#piaCodeWCResultCard').addClass('hidden');
                 $('#piaCodeResultCard').addClass('hidden');
+                $('#piaCodeRemarksResultCard').addClass('hidden');
             };
         }
 
@@ -495,13 +507,35 @@
                     dropdown.empty();
 
                     if (response.success && response.data.length > 0) {
-                        const filteredData = response.data.filter(item => TC.includes(item.TC));
+                         const selectedFacility = selectedFacilityInDropdown || document.getElementById("facilityInitiator")?.value;
 
-                        if (filteredData.length === 0) {
-                            dropdown.append('<option value="">-- No TC Available --</option>');
-                            dropdown.prop('disabled', true);
-                            return;
-                        }
+                         console.log("DEBUG loadTcDropdown:", {
+                             selectedFacility: selectedFacility,
+                             selectedFacilityInDropdown: selectedFacilityInDropdown,
+                             facilityInitiatorValue: document.getElementById("facilityInitiator")?.value,
+                             allTCItems: response.data
+                         });
+
+                         // Filter: Type must be 'PIA', and either no Facility binding or matching facility
+                         const filteredData = response.data.filter(item => {
+                             const isTypeValid = item.Type === 'PIA';
+                             const isFacilityMatch = !item.Facility || item.Facility === selectedFacility;
+                             const willInclude = isTypeValid && isFacilityMatch;
+
+                             if (item.Type === 'PIA') {
+                                 console.log(`TC ${item.TC}: Type=${item.Type}, Facility=${item.Facility}, selectedFacility=${selectedFacility}, isFacilityMatch=${isFacilityMatch}, willInclude=${willInclude}`);
+                             }
+
+                             return willInclude;
+                         });
+
+                         console.log("Filtered TC data:", filteredData);
+
+                         if (filteredData.length === 0) {
+                             dropdown.append('<option value="">-- No TC Available --</option>');
+                             dropdown.prop('disabled', true);
+                             return;
+                         }
                         dropdown.append('<option value="" disabled selected>-- Select TC --</option>');
                         dropdown.prop('disabled', false);
                         filteredData.sort((a, b) => parseInt(a.TC) - parseInt(b.TC));
@@ -522,6 +556,7 @@
                             $('#piaCodeHidden').val('');
                             $('#piaCodeResults').empty().hide();
                             $('#piaCodeResultCard').removeClass('hidden');
+                            $('#piaCodeRemarksResultCard').removeClass('hidden');
                             if (!["20", "22"].includes(selectedTC)) {
                                loadWC(facility, "wcDropdown", "wcDropdown", "@Url.Action("GetWorkCenters", "DataForms")");
                                 $('#piaCodeWCResultCard').removeClass('hidden');
