@@ -290,12 +290,10 @@
     const supervisorKpk = '@(Session["SupervisorKpk"] ?? "")';
     const urlGetTypeScrap = '@Url.Action("GetTypeScraps", "DataForms")';
     const urlGetEmployee = '@Url.Action("GetEmployeeByNameOrKpk", "DataForms")';
-    const urlCheckSpecialCase = '@Url.Action("GetScrapCodeApprovalsWithUsers", "DataForms")';
     const urlGetSourceDataScrap = '@Url.Action("GetJoinedSourceDataScrap", "ListOfData")';
     const urlGetScrapTotals = '@Url.Action("GetScrapTotals", "ListOfData")';
     const urlUpdateApprovals = '@Url.Action("UpdateApprovals", "UpdateData")';
     let detectedKPKGlobal = [];
-    const specialOrderForApproval = [19,30,32,36, 22,34,38, 18, 5,27, 15, 25, 24,35,39, 17, 16,26, 23, 20,31,33,37];
     const pageSize = 10;
     const updateScrapUrl = '@Url.Action("UpdateScrapStatusActiveSourceAsync", "DataReporting")';
     const updateSourceDataUrl = '@Url.Action("UpdateSourceDataStatusFromPartsAsync", "DataReporting")';
@@ -531,177 +529,113 @@
         });
     }
 
-    function updateDetectedKPKGlobal(specialCases, grandTotal) {
-        const supervisorKpk = document.querySelector("#supervisorInitiatorKpk")?.value;
-        const supervisorRoleId = document.querySelector("#supervisorInitiatorRoleId")?.value;
+    function checkApprovalChain(application, partsData, options = {}) {
+const initiatorKpk = typeof kpk !== "undefined" ? kpk : null;
+if (!initiatorKpk) {
+    detectedKPKGlobal = [];
+    renderApprovalBadges([]);
+    return;
+}
+
+const app = String(application || "").toUpperCase();
+const defaultCodeSelectorByApp = {
+    SCRAP: "#scrapCodeDropdown",
+    PIA: "#piaCodeDropdown",
+    TPR: "#tprCodeDropdown"
+};
+
+const defaultCodeSelectors = [
+    defaultCodeSelectorByApp[app],
+    "#scrapCodeDropdown",
+    "#piaCodeDropdown",
+    "#tprCodeDropdown"
+].filter(Boolean);
+
+const selectedCodeFromDom = defaultCodeSelectors
+    .map(selector => document.querySelector(selector)?.value?.trim())
+    .find(v => !!v) || "";
+
+const facilitySelector = options.facilitySelector || "#facilityInitiator";
+const facility = (options.facility
+    || document.querySelector(facilitySelector)?.value?.trim()
+    || "");
+
+const documentCode = (options.documentCode
+    || document.querySelector(options.codeSelector || "")?.value?.trim()
+    || selectedCodeFromDom
+    || "");
+
+const partsJson = JSON.stringify(partsData || []);
+
+$.ajax({
+    url : '@Url.Action("GetApprovalChain", "DataForms")',
+    type: "GET",
+    data: {
+        application  : application,
+        initiatorKpk : initiatorKpk,
+        facility     : facility,
+        scrapCode    : documentCode,
+        partsJson    : partsJson
+    },
+    success: function (res) {
+        if (res.success && res.data && res.data.length > 0) {
+            detectedKPKGlobal = res.data;
+            renderApprovalBadges(res.data);
+        } else {
+            detectedKPKGlobal = [];
+            renderApprovalBadges([]);
+            console.warn("[ApprovalChain] No approvers resolved:", res?.message);
+        }
+    },
+    error: function (xhr, status, err) {
         detectedKPKGlobal = [];
-        if (supervisorKpk) {
-            detectedKPKGlobal.push({ kpk: supervisorKpk, roleId: supervisorRoleId || null });
+        renderApprovalBadges([]);
+        console.error("[ApprovalChain] Failed:", err);
+    }
+});
+}
+
+    function renderApprovalBadges(approvers) {
+        const container = document.getElementById("approvalBadgesContainer");
+        if (!container) return;
+
+        if (!approvers || approvers.length === 0) {
+            container.innerHTML = `
+            <span class="text-xs text-muted italic px-1">
+                Approvers will appear here once parts are added.
+            </span>`;
+            return;
         }
-        const sortedCases = specialCases.sort((a, b) => (a.priorityScrapCase ?? 999) - (b.priorityScrapCase ?? 999));
 
-        sortedCases.forEach(sc => {
-            sc.kpkUsers.forEach(kpk => {
-                if (!detectedKPKGlobal.some(d => d.kpk === kpk)) {
-                    detectedKPKGlobal.push({ kpk, roleId: sc.roleId });
-                }
-            });
-        });
+        // Warna default per priority tier
+        const tierColors = {
+            1: "bg-info",
+            2: "bg-warning",
+            3: "bg-danger"
+        };
 
-        // ✅ DEBUG LOGGING: Shows tracing of approver detection
-        console.group("🔍 APPROVER DETECTION TRACE");
-        console.log("📌 Supervisor (Initiator):", { kpk: supervisorKpk, roleId: supervisorRoleId });
-        console.log("📋 Special Cases Detected:", specialCases);
-        console.log("✅ Final detectedKPKGlobal Array:", detectedKPKGlobal);
-        console.log("💰 Grand Total Value:", grandTotal);
-        console.groupEnd();
+        const badges = approvers.map((a, i) => {
+            const color = tierColors[a.priority] || "bg-muted";
+            return `
+            <span class="inline-flex items-center gap-1 text-white text-xs
+                         px-2 py-1 rounded-full ${color}">
+                <b>Step ${i + 1}</b>&nbsp;
+                ${a.role}&nbsp;
+                <span class="opacity-80">(${a.kpk})</span>
+            </span>`;
+        }).join("");
+
+        container.innerHTML = `
+        <span class="text-xs font-semibold mr-1">Approval Chain:</span>
+        ${badges}`;
     }
 
-    async function checkSpecialCaseKPKFromServer(url, cardsData, grandTotal, callback) {
-
-        try {
-            console.log("🔄 Starting approver detection process...");
-            const response = await fetch(url);
-            const result = await response.json();
-            if (!result.success) {
-                console.warn("⚠️  Failed to fetch approvals from server");
-                return;
-            }
-
-            console.log("✅ Approvals fetched from server. Total approvals:", result.data?.length);
-            const approvals = result.data;
-            const supervisorKpk = document.querySelector("#supervisorInitiatorKpk")?.value;
-
-            const detectedSpecialCases = [];
-            const addedIds = new Set();
-            let commitXPersisted = false;
-            const approvalsByTc = filterApprovalsByTc(
-                approvals,
-                selectedTC
-            );
-            console.log("📍 Filtered by TC:", { selectedTC, filteredCount: approvalsByTc.length });
-
-            const filteredApprovals = filterApprovalsByScrapCode(approvalsByTc, selectedScrapCode);
-            console.log("📍 Filtered by ScrapCode:", { selectedScrapCode, filteredCount: filteredApprovals.length });
-
-            commitXPersisted = processApprovals(filteredApprovals, detectedSpecialCases, addedIds, {
-                cardsData,
-                grandTotal,
-                selectedCommit,
-                commitXPersisted,
-                selectedFacilityInDropdown,
-                selectedScrapCode
-            });
-            console.log("📋 After first processApprovals:", { detectedCases: detectedSpecialCases.length, commitX: commitXPersisted });
-
-            if (commitXPersisted) {
-                processApprovals(
-                    filteredApprovals.filter(a => a.commit === "X"),
-                    detectedSpecialCases,
-                    addedIds,
-                    {
-                        cardsData,
-                        grandTotal,
-                        selectedCommit,
-                        commitXPersisted,
-                        selectedFacilityInDropdown,
-                        selectedScrapCode
-                    }
-                );
-                console.log("📋 After commit X processApprovals:", { detectedCases: detectedSpecialCases.length });
-            }
-            await filterBySupervisorChain(detectedSpecialCases, supervisorKpk);
-            console.log("📋 After supervisor chain filter:", { detectedCases: detectedSpecialCases.length });
-
-            updateDetectedKPKGlobal(detectedSpecialCases, grandTotal);
-            console.log("✅ detectedKPKGlobal updated successfully!");
-
-            if (typeof callback === "function") callback(detectedSpecialCases);
-        } catch (err) {
-            console.error("❌ Error in checkSpecialCaseKPKFromServer:", err);
-        }
-    }
 
     function filterApprovalsByScrapCode(approvals, selectedScrapCode) {
         const hasSpecificScrapCode = approvals.some(a => a.ScrapCode === selectedScrapCode);
         return approvals.filter(a =>
             hasSpecificScrapCode ? a.ScrapCode === selectedScrapCode : !a.ScrapCode
         );
-    }
-    function filterApprovalsByTc(approvals, selectedTc) {
-        return approvals.filter(a =>
-            !a.Tc || a.Tc === selectedTc
-        );
-    }
-
-    function isApprovalMatch(approval, context) {
-        const { cardsData, grandTotal, selectedCommit, commitXPersisted } = context;
-        const minVal = approval.minValue != null ? parseFloat(approval.minValue) : null;
-        const maxVal = approval.maxValue != null ? parseFloat(approval.maxValue) : null;
-        const minValueMatch = minVal === null || grandTotal >= minVal;
-        const maxValueMatch = maxVal === null || grandTotal <= maxVal;
-        const typeMatch = !approval.ScrapTcType || cardsData.some(c => c.typeit === approval.ScrapTcType);
-
-        if (approval.commit === "X") {
-            return selectedCommit || commitXPersisted;
-        }
-        return typeMatch && minValueMatch && maxValueMatch;
-    }
-
-    function filterUsersByRole(users, roleId, facility, scrapCode) {
-        if (roleId === 3) {
-            return users.filter(
-                u =>
-                    u.Facility?.includes(facility) &&
-                    u.ScrapCodeResponsible?.includes(scrapCode)
-            );
-        }
-        if (roleId === 15) {
-            return users.filter(u => u.Facility?.includes(facility));
-        }
-        return users;
-    }
-
-    function processApprovals(approvals, detectedSpecialCases, addedIds, context) {
-        let commitXDetected = false;
-
-        approvals
-            .filter(a => a.RequiredApproverCount > 0)
-            .forEach(a => {
-                if (!isApprovalMatch(a, context) || addedIds.has(a.Id)) return;
-
-                let filteredUsers = filterUsersByRole(
-                    a.Users,
-                    a.Role_Id,
-                    context.selectedFacilityInDropdown,
-                    context.selectedScrapCode
-                );
-
-                detectedSpecialCases.push({
-                    id: a.Id,
-                    roleId: a.Role_Id,
-                    kpkUsers: filteredUsers.map(u => u.Kpk),
-                    priorityScrapCase:
-                        a.PriorityScrapCase != null ? parseInt(a.PriorityScrapCase) : null
-                });
-
-                addedIds.add(a.Id);
-
-                if (a.commit === "X") commitXDetected = true;
-            });
-
-        return commitXDetected || context.commitXPersisted;
-    }
-
-    async function filterBySupervisorChain(detectedSpecialCases, supervisorKpk) {
-        const chain = await getSupervisorChain(supervisorKpk);
-        const filteredChain = chain.filter(item => item.Kpk !== supervisorKpk).map(x => x.Kpk);
-
-        detectedSpecialCases.forEach(sc => {
-            if (sc.roleId === 5 || sc.roleId === 6) {
-                sc.kpkUsers = sc.kpkUsers.filter(kpk => filteredChain.includes(kpk));
-            }
-        });
     }
 
     async function getSupervisorChain(kpk) {
@@ -1460,7 +1394,7 @@
                         <!-- Weekly Report Button -->
                         <button id="weeklyReportBtn" class="btn bg-muted border-warning text-white hover:bg-warning/[0.85] flex items-center justify-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v2h18V6a2 2 0 0 0-2-2zM3 20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10H3v10zm4-8h6v6H7v-6z"/>
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm-7 14l-2.5-3 2.5-3 2.5 3-2.5 3zm5-7h-4V5h4v5z"/>
                             </svg>
                             Weekly Report
                         </button>
@@ -1853,17 +1787,17 @@
                         if (!dateFrom || !dateTo) {
                             Swal.fire({
                                 icon: "warning",
-                                title: "Input Required",
-                                text: "Please select both date range (Start date and End date)"
+                                title: "No Data",
+                                text: "Please select date range"
                             });
                             return;
                         }
 
-                        // Validate date range
-                        const fromDate = new Date(dateFrom);
-                        const toDate = new Date(dateTo);
+                        const start = new Date(dateFrom);
+                        const end = new Date(dateTo);
 
-                        if (fromDate > toDate) {
+                        // Check if start date is greater than end date
+                        if (start > end) {
                             Swal.fire({
                                 icon: "warning",
                                 title: "Invalid Date Range",
@@ -1873,7 +1807,7 @@
                         }
 
                         // Optional: Check if date range is too large (e.g., more than 1 year)
-                        const daysDiff = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24));
+                        const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
                         if (daysDiff > 365) {
                             Swal.fire({
                                 icon: "warning",
@@ -2061,8 +1995,11 @@
               <circle cx="12" cy="12" r="10"
                   stroke="currentColor"
                   stroke-width="4" opacity="0.25"></circle>
-              <path d="M12 2a10 10 0 0110 10"
-                    stroke-width="4"></path>
+              <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 2a10 10 0 0110 10"
+                ></path>
             </svg>
             <span>Loading...</span>
         `);
@@ -2444,7 +2381,7 @@
 
             y += qrSize + 2;
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(6.5);
+            doc.setFontSize(7);
             doc.setTextColor(0, 102, 204);
 
             doc.text(
@@ -2612,8 +2549,6 @@
             h
         );
     }
-
-
 
 
     function drawDetailTableInsideBlock(

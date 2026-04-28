@@ -69,12 +69,47 @@ namespace MaterialControlCenter.Models
         public int RoleId { get; set; }
         public string Facility { get; set; }
         public string TC { get; set; }
-        public string ScrapCodeResponsible { get; set; }
+        public string CodeResponsibility { get; set; }
     }
     public class UserAddHistoryModel
     {
         public string AddedByKpk { get; set; }
         public string AddedUserKpk { get; set; }
     }
+
+    public class PiaHeaderModel
+    {
+        public string Type { get; set; }
+        public string Facility { get; set; }
+        public string TC { get; set; }
+        public int PiaCode { get; set; } // Harus int sesuai FK ke pia_code.id
+        public string WC { get; set; }
+        public string TcCompanion { get; set; }
+        public string Remarks { get; set; }
+        public string CreatedByName { get; set; }
+        public int CreatedByKpk { get; set; }
+    }
+
+    public class PiaDetailModel
+    {
+        public int header_id { get; set; }
+        public int part_id { get; set; }
+        public string part_number { get; set; }
+        public string part_description { get; set; }
+        public string part_proccess { get; set; }
+        public string ftypit { get; set; }
+        public string typeit { get; set; }
+        public int planit { get; set; }
+        public int cmidit { get; set; }
+        public int commit_qty { get; set; }
+        public int measit { get; set; }
+        public int baspit { get; set; }
+        public decimal physical_qty { get; set; } // Gunakan decimal untuk tipe decimal(18,2)
+        public decimal system_qty { get; set; }
+        public decimal variance_qty { get; set; }
+        public decimal total_value { get; set; }
+        public string status { get; set; }
+    }
+
 
 }

@@ -286,34 +286,34 @@ namespace MaterialControlCenter.Controllers
         public JsonResult GetScrapCodeApprovalsWithUsers()
         {
 
-            List<ScrapCodeSpecialCaseApprovalRequirement> approvals = dbScrap.GetAllSpecialCase();
+            List<MccApprovalRule> approvals = dbScrap.GetMccApprovalRules("SCRAP");
 
 
             List<UserToolRoomModel> allUsers = dbScrap.GetAllUsersScrap();
 
 
             var grouped = approvals
-                .OrderBy(a => a.ScrapCode)
-                .ThenBy(a => a.Role_Id)
+                .OrderBy(a => a.Code)
+                .ThenBy(a => a.RoleId)
                 .Select(a => new
                 {
                     a.Id,
-                    a.ScrapCode,
-                    a.Role_Id,
+                    ScrapCode = a.Code,
+                    Role_Id = a.RoleId,
                     a.RequiredApproverCount,
-                    a.ScrapTcType,
-                    a.minValue,
-                    a.maxValue,
-                    a.commit,
+                    ScrapTcType = a.TcType,
+                    minValue = a.MinValue,
+                    maxValue = a.MaxValue,
+                    commit = a.Cmmit,
                     a.Tc,
-                    a.PriorityScrapCase,
+                    PriorityScrapCase = a.Priority,
                     Users = allUsers
-                            .Where(u => u.RoleId == a.Role_Id)
+                            .Where(u => u.RoleId == a.RoleId)
                             .Select(u => new
                             {
                                 u.Kpk,
                                 u.Facility,
-                                u.ScrapCodeResponsible
+                                u.CodeResponsibility
                             })
                             .ToList()
                 })
@@ -951,7 +951,7 @@ namespace MaterialControlCenter.Controllers
             {
                 success = true,
                 kpk = user.Kpk,
-                scrapCodes = user.ScrapCodeResponsible
+                scrapCodes = user.CodeResponsibility
             }, JsonRequestBehavior.AllowGet);
         }
 
@@ -1141,6 +1141,251 @@ namespace MaterialControlCenter.Controllers
             }
         }
 
+        [HttpGet]
+        public JsonResult GetApprovalChain(
+        string application,     // "SCRAP" | "PIA"
+        string initiatorKpk,    // KPK user yang submit
+        string facility,        // facility dokumen (P1, P2, P2S3, ...)
+        string scrapCode,       // selected scrap/pia code from document header
+        string partsJson,       // JSON: array of { value, code, tcType, commit }
+        decimal? totalValue = null) // opsional — kalau ada override total
+        {
+            try
+            {
+                // ── 1. Parse parts ───────────────────────────────────────────────
+                var parts = new List<PartApprovalContext>();
+                if (!string.IsNullOrWhiteSpace(partsJson))
+                {
+                    try
+                    {
+                        parts = JsonConvert.DeserializeObject<List<PartApprovalContext>>(partsJson)
+                                ?? new List<PartApprovalContext>();
+                    }
+                    catch
+                    {
+                        return Json(new { success = false, message = "Invalid partsJson format." },
+                            JsonRequestBehavior.AllowGet);
+                    }
+                }
+
+                // ── 2. Hitung max absolute value per-part ────────────────────────
+                decimal maxAbsValue = parts.Any()
+                    ? parts.Max(p => Math.Abs(p.Value))
+                    : (totalValue ?? 0m);
+
+                // ── 3. Ambil semua rules untuk aplikasi ini ──────────────────────
+                var rules = dbScrap.GetMccApprovalRules(application);
+                var allRoles = dbScrap.GetAllRoles();  // List<RoleModel> { RoleId, Name }
+                var supChain = GetSupervisorChain(initiatorKpk);
+
+                Debug.Print($"[GetApprovalChain] app={application}, scrapCode={scrapCode}, maxAbsValue={maxAbsValue}, " +
+                            $"rules={rules.Count}, chainLen={supChain.Count}");
+
+                // ── 4. Filter rules yang berlaku untuk context ini ───────────────
+                var activeRules = rules.Where(rule =>
+                {
+                    // A. Value range
+                    bool valueOk;
+                    if (rule.MinValue == null && rule.MaxValue == null)
+                        valueOk = true;
+                    else
+                    {
+                        bool minOk = rule.MinValue == null || maxAbsValue >= (decimal)rule.MinValue;
+                        bool maxOk = rule.MaxValue == null || maxAbsValue < (decimal)rule.MaxValue;
+                        valueOk = minOk && maxOk;
+                    }
+                    if (!valueOk) return false;
+
+                    // B. Code filter (priority: document header code, fallback: part code)
+                    if (!string.IsNullOrEmpty(rule.Code))
+                    {
+                        bool codeMatch = false;
+
+                        if (!string.IsNullOrWhiteSpace(scrapCode))
+                        {
+                            codeMatch = string.Equals(rule.Code, scrapCode, StringComparison.OrdinalIgnoreCase);
+                        }
+                        else
+                        {
+                            codeMatch = parts.Any(p =>
+                                string.Equals(p.Code, rule.Code, StringComparison.OrdinalIgnoreCase));
+                        }
+
+                        if (!codeMatch) return false;
+                    }
+
+                    // C. TcType filter
+                    if (!string.IsNullOrEmpty(rule.TcType))
+                    {
+                        bool tcTypeMatch = parts.Any(p =>
+                            string.Equals(p.TcType, rule.TcType, StringComparison.OrdinalIgnoreCase));
+                        if (!tcTypeMatch) return false;
+                    }
+
+                    // D. Commit filter
+                    if (!string.IsNullOrEmpty(rule.Cmmit) &&
+                        string.Equals(rule.Cmmit, "X", StringComparison.OrdinalIgnoreCase))
+                    {
+                        bool commitMatch = parts.Any(p => p.Commit);
+                        if (!commitMatch) return false;
+                    }
+
+                    return true;
+                }).ToList();
+
+                var rulesForResolution = activeRules
+                    .OrderBy(r => r.Priority ?? int.MaxValue)
+                    .ThenBy(r => r.Id)
+                    .ToList();
+
+                // SCRAP flow: step 1 selalu role_id 4 (Supervisor),
+                // setelah itu lanjut mengikuti priority dari mcc_approval_rule.
+                if (string.Equals(application, "SCRAP", StringComparison.OrdinalIgnoreCase))
+                {
+                    var supervisorRule = rulesForResolution.FirstOrDefault(r => r.RoleId == 4)
+                        ?? rules
+                            .Where(r => r.RoleId == 4)
+                            .OrderBy(r => r.Priority ?? int.MaxValue)
+                            .ThenBy(r => r.Id)
+                            .FirstOrDefault();
+
+                    if (supervisorRule != null)
+                    {
+                        rulesForResolution = rulesForResolution
+                            .Where(r => r.RoleId != 4)
+                            .ToList();
+
+                        rulesForResolution.Insert(0, supervisorRule);
+                    }
+                }
+
+                Debug.Print($"[GetApprovalChain] activeRules after filter={activeRules.Count}");
+
+                // ── 5. Resolve KPK per rule ──────────────────────────────────────
+                var approvalChain = new List<object>();
+
+                foreach (var rule in rulesForResolution)
+                {
+                    // Nama role dari tabel [Scrap].[dbo].[role]
+                    string roleName = allRoles.FirstOrDefault(r => r.RoleId == rule.RoleId)?.Name?.ToLower().Trim()
+                                      ?? "";
+
+                    string resolvedKpk = null;
+                    string resolvedName = null;
+                    string displayRole = allRoles.FirstOrDefault(r => r.RoleId == rule.RoleId)?.Name
+                                          ?? $"Role {rule.RoleId}";
+
+                    // Resolve berdasarkan nama role:
+                    //   "manager"  → supervisor langsung initiator (supChain[1])
+                    //   "director" → 2 level atas initiator (supChain[2])
+                    //   lainnya    → cari dari tabel user by role_id + facility
+                    if (roleName.Contains("manager") && !roleName.Contains("material"))
+                    {
+                        // Manager langsung initiator
+                        var mgr = supChain.ElementAtOrDefault(1);
+                        resolvedKpk = mgr?.Kpk;
+                        resolvedName = mgr?.Name ?? mgr?.Kpk;
+                    }
+                    else if (roleName.Contains("director") && !roleName.Contains("material"))
+                    {
+                        // Director langsung initiator (level ke-3 di chain)
+                        var dir = supChain.ElementAtOrDefault(2);
+                        var mgr = supChain.ElementAtOrDefault(1);
+                        if (dir != null &&
+                            !string.Equals(dir.Kpk, mgr?.Kpk, StringComparison.OrdinalIgnoreCase))
+                        {
+                            resolvedKpk = dir.Kpk;
+                            resolvedName = dir.Name ?? dir.Kpk;
+                        }
+                    }
+                    else
+                    {
+                        // Material Planner, Material Manager, Material Director, PresDir, dll
+                        // → cari dari tabel user by role_id + facility
+                        var userByRole = dbScrap.GetUserByRoleAndFacility(rule.RoleId, facility);
+                        resolvedKpk = userByRole?.Kpk;
+                        resolvedName = userByRole?.Name ?? userByRole?.Kpk;
+
+                        // Fallback khusus Material Manager:
+                        // jika tidak ada di tabel user, cari supervisor dari Material Planner
+                        if (resolvedKpk == null && roleName.Contains("material manager"))
+                        {
+                            // Cari Material Planner yang sudah diresolved sebelumnya
+                            var matPlannerEntry = approvalChain
+                                .Cast<dynamic>()
+                                .FirstOrDefault(x => ((string)x.role).ToLower().Contains("material planner"));
+
+                            if (matPlannerEntry != null)
+                            {
+                                string matPlannerKpk = (string)matPlannerEntry.kpk;
+                                var matPlannerEmp = dbSSO.GetUserByKpkSSO(matPlannerKpk);
+                                if (matPlannerEmp?.Supervisor != null)
+                                {
+                                    var matMgr = dbSSO.GetUserByKpkSSO(matPlannerEmp.Supervisor);
+                                    resolvedKpk = matMgr?.Kpk;
+                                    resolvedName = matMgr?.Name ?? matMgr?.Kpk;
+                                }
+                            }
+                        }
+                    }
+
+                    // Hanya tambahkan jika KPK berhasil di-resolve
+                    if (!string.IsNullOrEmpty(resolvedKpk))
+                    {
+                        approvalChain.Add(new
+                        {
+                            kpk = resolvedKpk,
+                            name = resolvedName ?? resolvedKpk,
+                            role = displayRole,
+                            roleId = rule.RoleId,
+                            priority = rule.Priority,
+                            ruleId = rule.Id
+                        });
+                    }
+                    else
+                    {
+                        Debug.Print($"[GetApprovalChain] WARNING: Could not resolve KPK for rule id={rule.Id}, " +
+                                    $"role={displayRole}, roleId={rule.RoleId}");
+                    }
+                }
+
+                // ── 6. Deduplicate by KPK (pertahankan entry pertama / priority terkecil) ──
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var result = new List<object>();
+                foreach (var entry in approvalChain)
+                {
+                    string kpkVal = (string)((dynamic)entry).kpk;
+                    if (!string.IsNullOrEmpty(kpkVal) && seen.Add(kpkVal))
+                        result.Add(entry);
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    application = application,
+                    scrapCode = scrapCode,
+                    maxAbsValue = maxAbsValue,
+                    activeRuleCount = activeRules.Count,
+                    totalSteps = result.Count,
+                    data = result
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                Debug.Print("[GetApprovalChain] ERROR: " + ex.ToString());
+                return Json(new { success = false, message = ex.Message },
+                    JsonRequestBehavior.AllowGet);
+            }
+        }
+
+
+        public class PartApprovalContext
+        {
+            public decimal Value { get; set; }   // totalValue part (bisa negatif)
+            public string Code { get; set; }   // scrapCode / piaCode (ftypit/cmidit)
+            public string TcType { get; set; }   // typeit: F/R/A/X
+            public bool Commit { get; set; }   // commit flag dari part master
+        }
 
     }
 }

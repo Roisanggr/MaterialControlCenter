@@ -108,7 +108,7 @@
             <!-- Button kiri -->
             <button id="addRowBtn"
                     class="flex items-center justify-center gap-2 px-6 py-2 bg-success text-white rounded-lg shadow hover:bg-success/[0.85] transition">
-               
+
                 <svg xmlns="http://www.w3.org/2000/svg"
                      class="w-5 h-5"
                      fill="none"
@@ -166,6 +166,11 @@
                 </svg>
                 TC Companion
             </button>
+            <span id="selectedTCCompanionDisplay" class="ml-4 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 hidden">
+                <span id="selectedTCCompanionText"></span>
+                <i id="tcCompanion71Icon" class="fas fa-info-circle text-info cursor-help hidden" 
+                   title="TC71 only procced for one P/N and RN# per document"></i>
+            </span>
         </div>
 
         <div class="overflow-x-auto">
@@ -197,6 +202,18 @@
             <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded">
                 Total Scrap: <span id="totalRupiah">Rp 0,00</span>
             </h2>
+        </div>
+
+        <div class="card mt-2 p-3">
+            <h2 class="text-sm font-semibold text-black dark:text-white/80 mb-2">
+                Approval Chain
+            </h2>
+            <div id="approvalBadgesContainer"
+                 class="flex flex-wrap gap-2 items-center min-h-[36px]">
+                <span class="text-xs text-muted italic">
+                    Approvers will appear here once parts are added.
+                </span>
+            </div>
         </div>
 
         <div id="buttonSubmitDraft" class="flex justify-between items-center bg-muted/20 h-36 px-4">
@@ -267,37 +284,8 @@
     </div>
 </div>
 
-<div id="modalTCCompanion"
-     class="fixed inset-0 bg-black/60 z-[99999] hidden flex items-center justify-center">
-    <div class="bg-white w-[420px] rounded-xl shadow-lg">
-        <!-- Header -->
-        <div class="flex items-center justify-between px-5 py-3 border-b">
-            <h5 class="text-base font-semibold text-gray-800">
-                TC Companion
-            </h5>
-        </div>
-
-        <!-- Body -->
-        <div class="px-5 py-4 space-y-3">
-            <label class="text-sm font-medium text-gray-700">
-                Select TC
-            </label>
-            <select id="TCCompanionDropdownModal"
-                    class="form-input w-full h-[40px] text-sm rounded-md">
-                <option value="">-- Select --</option>
-            </select>
-        </div>
-
-        <!-- Footer -->
-        <div class="flex justify-end gap-3 px-5 py-3 border-t">
-            <button id="closedTcCompanionModals" class="px-4 py-2 text-sm rounded-md bg-danger text-white">
-                Cancel
-            </button>
-            <button id="saveTcCompanionModals" class="px-4 py-2 text-sm rounded-md bg-info text-white">
-                Save
-            </button>
-        </div>
-    </div>
+<div id="modalTCCompanion" style="display: none;">
+    <!-- TC Companion modal - no longer used, replaced with Sweet Alert -->
 </div>
 
 <!-- End All Card -->
@@ -636,67 +624,188 @@
             }
             toggleHidden("#openModalsForAnalyzedCaseMaterial", hasNotes);
         }
+
+        function updateSelectedTCCompanionDisplay(tc, name) {
+            const displaySpan = document.getElementById("selectedTCCompanionDisplay");
+            const textSpan = document.getElementById("selectedTCCompanionText");
+            const icon = document.getElementById("tcCompanion71Icon");
+            const addRowBtn = document.getElementById("addRowBtn");
+
+            console.log("DEBUG updateSelectedTCCompanionDisplay:", { tc: tc, tcTrimmed: String(tc).trim(), name: name });
+
+            if (tc === "N/A") {
+                textSpan.textContent = "TC Companion is not required";
+                displaySpan.classList.remove("hidden");
+                icon.classList.add("hidden");
+                if (addRowBtn) addRowBtn.classList.remove("hidden");
+                return;
+            }
+
+            if (tc && name) {
+                textSpan.textContent = `${tc} - ${name}`;
+                displaySpan.classList.remove("hidden");
+                const isTc71 = String(tc).trim() === "71";
+                console.log("Is TC71?", isTc71);
+
+                if (isTc71) {
+                    icon.classList.remove("hidden");
+                    if (addRowBtn) addRowBtn.classList.add("hidden");
+                    console.log("✓ TC71: Icon shown, Add Row hidden");
+                } else {
+                    icon.classList.add("hidden");
+                    if (addRowBtn) addRowBtn.classList.remove("hidden");
+                    console.log("✓ Not TC71: Icon hidden, Add Row shown");
+                }
+            } else {
+                clearSelectedTCCompanionDisplay();
+            }
+        }
+
+        function clearSelectedTCCompanionDisplay() {
+            const displaySpan = document.getElementById("selectedTCCompanionDisplay");
+            const textSpan = document.getElementById("selectedTCCompanionText");
+            const icon = document.getElementById("tcCompanion71Icon");
+            const addRowBtn = document.getElementById("addRowBtn");
+
+            displaySpan.classList.add("hidden");
+            textSpan.textContent = "";
+            icon.classList.add("hidden");
+            if (addRowBtn) addRowBtn.classList.remove("hidden");
+        }
+
         function handleTCCompanion(scrapCode) {
             const hasTCCompanion = scrapCodesWithTCCompanion.includes(scrapCode);
             toggleHidden("#selectCompanionTC", hasTCCompanion);
+            if (!hasTCCompanion) {
+                clearSelectedTCCompanionDisplay();
+            }
         }
 
         $("#selectCompanionTC").on("click", function () {
-            toggleHidden("#modalTCCompanion", true);
-            loadTCCompanionDropdown();
+            showTCCompanionAlert();
         });
 
-        function loadTCCompanionDropdown() {
-            const $dropdown = $("#TCCompanionDropdownModal");
+        function showTCCompanionAlert() {
             const savedTC = localStorage.getItem("CompanionTc");
 
-            $dropdown.empty().append('<option value="">-- Select Companion TC --</option>');
+            Swal.fire({
+                title: "Select TC Companion",
+                html: `
+                    <div class="text-left">
+                        <label class="text-sm font-medium text-gray-700 block mb-2">
+                            Select TC
+                        </label>
+                        <select id="swalTCCompanionDropdown"
+                                class="form-input w-full h-[40px] text-sm rounded-md"
+                                style="padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            <option value="">-- Select --</option>
+                            <option value="N/A" data-name="TC Companion is not required">TC Companion is not required</option>
+                        </select>
+                    </div>
+                `,
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: "#3b82f6",
+                cancelButtonColor: "#dc2626",
+                didOpen: async () => {
+                    const $dropdown = document.getElementById("swalTCCompanionDropdown");
 
-            $.ajax({
-                url: TcCompanionURL,
-                type: "GET",
-                dataType: "json",
-                success: function (res) {
-                    if (res.success && res.data && res.data.length > 0) {
-                        res.data.forEach(item => {
-                            $dropdown.append(
-                                `<option value="${item.TC}" data-name="${item.Name}">
-                            ${item.TC} - ${item.Name}
-                        </option>`
-                            );
-                        });
-                        if (savedTC) {
-                            $dropdown.val(savedTC);
+                    $.ajax({
+                        url: TcCompanionURL,
+                        type: "GET",
+                        dataType: "json",
+                        success: function (res) {
+                            if (res.success && res.data && res.data.length > 0) {
+                                res.data.forEach(item => {
+                                    const option = document.createElement("option");
+                                    option.value = item.TC;
+                                    option.dataset.name = item.Name;
+                                    option.textContent = `${item.TC} - ${item.Name}`;
+                                    $dropdown.appendChild(option);
+                                });
+                                if (savedTC) {
+                                    $dropdown.value = savedTC;
+                                }
+                            }
+                        },
+                        error: function () {
+                            Swal.showValidationMessage("Failed to load TC Companion data");
                         }
-                    }
+                    });
                 },
-                error: function () {
-                    alert("Failed to load TC Companion");
+                preConfirm: () => {
+                    const $dropdown = document.getElementById("swalTCCompanionDropdown");
+                    const selectedValue = $dropdown.value;
+                    if (!selectedValue) {
+                        Swal.showValidationMessage("Please select a TC Companion");
+                        return false;
+                    }
+                    return selectedValue;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const $dropdown = document.getElementById("swalTCCompanionDropdown");
+                    const tc = result.value;
+                    const selectedOption = $dropdown.options[$dropdown.selectedIndex];
+                    const name = selectedOption ? selectedOption.dataset.name : "";
+                    const displayValue = tc === "N/A"
+                        ? "N/A"
+                        : `${tc} - ${name}`;
+
+                    // Phase 6: Check if TC Companion is changing and rows exist
+                    const previousTC = localStorage.getItem("CompanionTc");
+                    const existingRows = document.querySelectorAll("#listOfPartnumber tr").length;
+
+                    if (previousTC && previousTC !== tc && existingRows > 0) {
+                        // Show confirmation before clearing rows
+                        Swal.fire({
+                            title: "Are you sure to change TC?",
+                            text: "This action will clear all existing rows",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonText: "Yes, Change TC",
+                            cancelButtonText: "Cancel",
+                            confirmButtonColor: "#3b82f6",
+                            cancelButtonColor: "#dc2626"
+                        }).then((confirmResult) => {
+                            if (confirmResult.isConfirmed) {
+                                // Clear all rows
+                                document.querySelectorAll("#listOfPartnumber tr").forEach(row => row.remove());
+                                partCounter = 0;
+                                updateGrandTotal();
+                                updateSelectedCommit();
+
+                                // Set new TC Companion
+                                localStorage.setItem("CompanionTc", tc);
+                                localStorage.setItem("CompanionTcValue", displayValue);
+                                updateSelectedTCCompanionDisplay(tc, name);
+                                refreshRNColumn();
+
+                                // Create 1 new empty row
+                                const selectedTC = document.getElementById("tcDropdown").value;
+                                createPartCard(selectedTC);
+                            }
+                            // If cancelled, TC Companion selection remains unchanged (user can try again)
+                        });
+                    } else {
+                        // No previous TC or no rows exist, proceed normally
+                        localStorage.setItem("CompanionTc", tc);
+                        localStorage.setItem("CompanionTcValue", displayValue);
+                        updateSelectedTCCompanionDisplay(tc, name);
+                        refreshRNColumn();
+                    }
                 }
             });
         }
 
-        $("#saveTcCompanionModals").on("click", function () {
-            const $selected = $("#TCCompanionDropdownModal option:selected");
-            const tc = $selected.val();
-            const name = $selected.data("name");
+        function loadTCCompanionDropdown() {
+            // Deprecated: Now uses Sweet Alert instead. Kept for backward compatibility.
+        }
 
-            if (!tc) {
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'warning',
-                    title: 'Please select a TC Companion first',
-                    showConfirmButton: false,
-                    timer: 2000
-                });
-                return;
-            }
-            const displayValue = `${tc} - ${name}`;
-            localStorage.setItem("CompanionTc", tc);
-            localStorage.setItem("CompanionTcValue", displayValue);
-            refreshRNColumn();
-            toggleHidden("#modalTCCompanion", false);
+        $("#saveTcCompanionModals").on("click", function () {
+            // This is no longer used - Sweet Alert handles save directly
         });
 
         function refreshRNColumn() {
@@ -746,7 +855,7 @@
         }
 
         $("#closedTcCompanionModals").on("click", function () {
-            toggleHidden("#modalTCCompanion", false);
+            // This is no longer used - Sweet Alert handles close automatically
         });
 
         function loadScrapCodeRemarks(callback) {
@@ -909,7 +1018,30 @@
             });
         }
 
+        function isTCCompanionRequired() {
+            const button = document.getElementById("selectCompanionTC");
+            return button && !button.classList.contains("hidden");
+        }
+
+        function validateTCCompanionSelected() {
+            return localStorage.getItem("CompanionTc") !== null;
+        }
+
+        function validateTCCompanionBeforeAction() {
+            if (isTCCompanionRequired() && !validateTCCompanionSelected()) {
+                Swal.fire({
+                    title: "TC Companion Required",
+                    text: "Please select a TC Companion first",
+                    icon: "warning",
+                    confirmButtonText: "OK"
+                });
+                return false;
+            }
+            return true;
+        }
+
         document.getElementById("addRowBtn").addEventListener("click", () => {
+            if (!validateTCCompanionBeforeAction()) return;
             const selectedTC = document.getElementById("tcDropdown").value; 
             createPartCard(selectedTC);
         });
@@ -1121,8 +1253,8 @@
             reindexRows();
             const remainingRows = document.querySelectorAll("#listOfPartnumber tr");
             remainingRows.forEach(r => {
-                const commitInput = r.querySelector("input[id^='commit-']");
-                if (commitInput) r.dataset.commit = commitInput.value || "";
+                const commit = r.querySelector("input[id^='commit-']");
+                r.dataset.commit = commit?.value || "";
             });
 
             updateGrandTotal();
@@ -1380,39 +1512,41 @@
             const rows = document.querySelectorAll("#listOfPartnumber tr");
             let totalQty = 0;
             let totalRupiah = 0;
-
-            const cardsData = [];
+            const partsData = [];
 
             rows.forEach(row => {
                 const qtyInput = row.querySelector("input[id^='quantity-']");
                 const totalInput = row.querySelector("input[id^='totalValue-']");
                 const typeit = row.querySelector("input[id^='typeit-']")?.value || null;
                 const scrapCode = row.querySelector("input[id^='ftypit-']")?.value || null;
-                const commit = row.dataset.commit || null;
+                const commitVal = (row.dataset.commit || "").toLowerCase();
+                const commit = commitVal === "true" || commitVal === "x";
 
                 let qty = parseFloat(qtyInput?.value) || 0;
-                let total = totalInput?.value.replace(/[^\d,.-]/g, "") || "0";
+                let total = totalInput?.value?.replace(/[^\d,.-]/g, "") || "0";
                 total = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
 
                 totalQty += qty;
                 totalRupiah += total;
 
-                cardsData.push({ typeit, scrapCode, commit });
+                partsData.push({
+                    value: total,
+                    code: scrapCode,  // ftypit → kolom `code` di mcc_approval_rule
+                    tcType: typeit,     // typeit → kolom `tc_type`
+                    commit: commit
+                });
             });
 
             document.getElementById("totalQty").textContent = totalQty.toFixed(2);
             document.getElementById("totalRupiah").textContent = formatRupiah(totalRupiah);
-            checkSpecialCaseKPKFromServer(
-                urlCheckSpecialCase,
-                cardsData,
-                totalRupiah,
-                (specialCases) => {
 
-                }
-            );
+            checkApprovalChain("SCRAP", partsData, {
+                documentCode: selectedScrapCode
+            });
         }
 
         document.getElementById("importExcel").addEventListener("click", function () {
+            if (!validateTCCompanionBeforeAction()) return;
             document.getElementById("excelFile").click();
         });
 
@@ -1434,6 +1568,24 @@
                 const filteredData = jsonData.filter(row =>
                     row.some(cell => cell !== null && cell !== undefined && cell.toString().trim() !== "")
                 );
+
+                // Check if TC 71 is selected and validate row count
+                if (localStorage.getItem("CompanionTc") === "71") {
+                    const dataRowCount = filteredData.length - 1; // Exclude header row
+                    if (dataRowCount > 1) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Invalid Excel Data for TC 71",
+                            html: `<p>TC 71 allows only <b>1 part number</b> per document.</p><p>Your Excel file contains <b>${dataRowCount} rows</b>.</p><p>Please use an Excel file with only 1 data row.</p>`,
+                            confirmButtonText: "OK",
+                            allowOutsideClick: false
+                        });
+
+                        e.target.value = "";
+                        return;
+                    }
+                }
+
                 if (filteredData.length <= 1) {
 
                     Swal.fire({
@@ -1596,7 +1748,7 @@
                             data: { keyword: cleanLeader },
                             success: function (res) {
 
-                                if (res.success && res.data) {
+                                if (res.success && res.data?.length > 0) {
 
                                     if (Array.isArray(res.data) && res.data.length) {
                                         leaderInput.value = res.data[0].name;
@@ -1833,6 +1985,7 @@
         }
 
         document.getElementById("submitBtnCreateScrap").addEventListener("click", async () => {
+            if (!validateTCCompanionBeforeAction()) return;
             const totalParts = document.querySelectorAll("[id^='row-']").length;
             let invalidCards = [];
 

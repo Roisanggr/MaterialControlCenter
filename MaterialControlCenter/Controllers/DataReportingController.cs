@@ -41,7 +41,7 @@ namespace MaterialControlCenter.Controllers
 
             var allScrapParts = await dbScrap.GetScrapPartsAllAsync();
 
-          
+
             var scrapIdsToUpdate4 = sourceStatus4
                 .Where(scrapId =>
                     allScrapParts.Any(p => p.IdScrap == scrapId && p.CurrentStatus == 1)
@@ -53,7 +53,7 @@ namespace MaterialControlCenter.Controllers
                 dbScrap.UpdateScrapStatusBatch(scrapIdsToUpdate4, 3);
             }
 
-           
+
             var scrapIdsToUpdate5 = sourceStatus5
                 .Where(scrapId =>
                     allScrapParts.Any(p => p.IdScrap == scrapId && p.CurrentStatus == 1)
@@ -72,10 +72,10 @@ namespace MaterialControlCenter.Controllers
 
         public async Task<int> UpdateSourceDataStatusFromPartsAsync()
         {
-           
+
             var allScrapParts = await dbScrap.GetScrapPartsAllAsync();
             var scrapIdsWithAllStatus5 = allScrapParts
-                .Where(p => int.TryParse(p.IdScrap, out _)) 
+                .Where(p => int.TryParse(p.IdScrap, out _))
                 .GroupBy(p => int.Parse(p.IdScrap))
                 .Where(g => g.All(p => p.CurrentStatus == 5))
                 .Select(g => g.Key)
@@ -84,17 +84,17 @@ namespace MaterialControlCenter.Controllers
             if (!scrapIdsWithAllStatus5.Any())
                 return 0;
 
-          
+
             var allSourceData = dbCentralizedNotification.GetSourceDataSystemList();
 
-           
+
             var sourceDataToUpdate = allSourceData
                 .Where(sd => scrapIdsWithAllStatus5.Contains(sd.Centralized_SourceData_Master_ID))
                 .ToList();
 
             int updatedCount = 0;
 
-          
+
             foreach (var src in sourceDataToUpdate)
             {
                 bool updated = dbCentralizedNotification.UpdateSourceDataStatus(src.Centralized_SourceData_ID, 9);
@@ -106,14 +106,14 @@ namespace MaterialControlCenter.Controllers
 
 
 
-     
+
         [HttpGet]
         public async Task<ActionResult> GetScrapMasterWithSourceDataReporting(
       string approverKpk = null,
       string allowedStatuses = null,
       string period = null)
         {
-           
+
             if (string.IsNullOrEmpty(period))
             {
                 var cookie = Request.Cookies["scrap_period"];
@@ -192,7 +192,7 @@ namespace MaterialControlCenter.Controllers
     string allowedStatuses = null,
     string period = null)
         {
-          
+
             approverKpk = string.IsNullOrWhiteSpace(approverKpk) ? "ALL" : approverKpk.Trim();
             period = string.IsNullOrWhiteSpace(period) ? "weekly" : period.Trim().ToLower();
 
@@ -208,7 +208,7 @@ namespace MaterialControlCenter.Controllers
             string cacheKey =
                 $"SCRAP_GROUPED::{approverKpk}::{allowedStatuses}::{period}";
 
-         
+
             var rawData = await AppCache.GetOrSetAsync(
                 "SCRAP_GROUPED_RAWDATA",
                 async () =>
@@ -1660,7 +1660,7 @@ namespace MaterialControlCenter.Controllers
                     }
 
                     var grouped = data
-                        .AsParallel()                 
+                        .AsParallel()
                         .WithDegreeOfParallelism(
                             Math.Max(1, Environment.ProcessorCount - 1)
                         )
@@ -1846,7 +1846,7 @@ namespace MaterialControlCenter.Controllers
     string approverKpk = null,
     string supervisorKpk = null,
     List<int> statusList = null,
-    string period = null,   
+    string period = null,
     string scrapCode = null,
     string leaderKpk = null,
     int? monthClicked = null,
@@ -2012,7 +2012,7 @@ namespace MaterialControlCenter.Controllers
             }
             else
             {
-               
+
                 result = subordinates.Select(sub =>
                 {
                     var scrapDataForSub = joinedData
@@ -2047,14 +2047,14 @@ namespace MaterialControlCenter.Controllers
             return Json(finalResult, JsonRequestBehavior.AllowGet);
         }
 
-      
+
         public JsonResult GetScrapCodeSummaryCount()
         {
             try
             {
                 var allScrapCodes = dbScrap.GetAllScrapCodes();
 
-                
+
                 var locationCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var code in allScrapCodes)
@@ -2062,7 +2062,7 @@ namespace MaterialControlCenter.Controllers
                     if (string.IsNullOrWhiteSpace(code.Location))
                         continue;
 
-                   
+
                     var locations = code.Location.Split(',')
                         .Select(loc => loc.Trim())
                         .Where(loc => !string.IsNullOrEmpty(loc));

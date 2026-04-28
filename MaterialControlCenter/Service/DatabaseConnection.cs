@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
@@ -163,7 +163,7 @@ namespace MaterialControlCenter.Service
                 sqlconn.Open();
 
                 string query = @"
-            SELECT [kpk], [name], [email], [role_id], [hierarchy], [network_id], [facility], [is_active],[ScrapCodeResponsible]
+            SELECT [kpk], [name], [email], [role_id], [hierarchy], [network_id], [facility], [is_active],[code_responsibility]
             FROM [Scrap].[dbo].[user] where is_active=1";
 
                 using (SqlCommand cmd = new SqlCommand(query, sqlconn))
@@ -182,8 +182,8 @@ namespace MaterialControlCenter.Service
                             Facility = reader["facility"] != DBNull.Value
                                 ? reader["facility"].ToString().Split(',').Select(x => x.Trim()).ToArray()
                                 : Array.Empty<string>(),
-                            ScrapCodeResponsible = reader["ScrapCodeResponsible"] != DBNull.Value
-                                ? reader["ScrapCodeResponsible"].ToString().Split(',').Select(x => x.Trim()).ToArray()
+                            CodeResponsibility = reader["code_responsibility"] != DBNull.Value
+                                ? reader["code_responsibility"].ToString().Split(',').Select(x => x.Trim()).ToArray()
                                 : Array.Empty<string>(),
 
                             IsActive = reader["is_active"] != DBNull.Value ? (bool?)reader["is_active"] : null
@@ -205,7 +205,7 @@ namespace MaterialControlCenter.Service
 
                 string query = @"
         SELECT [kpk], [name], [email], [role_id], [hierarchy], 
-               [network_id], [facility], [is_active], [TC],[ScrapCodeResponsible]
+               [network_id], [facility], [is_active], [TC],[code_responsibility]
         FROM [Scrap].[dbo].[user]"; 
 
                 using (SqlCommand cmd = new SqlCommand(query, sqlconn))
@@ -229,10 +229,9 @@ namespace MaterialControlCenter.Service
                             TC = reader["TC"] != DBNull.Value
                                                 ? reader["TC"].ToString().Split(',').Select(x => x.Trim()).ToArray()
                                                 : Array.Empty<string>(),
-                            ScrapCodeResponsible = reader["ScrapCodeResponsible"] != DBNull.Value
-                                                ? reader["ScrapCodeResponsible"].ToString().Split(',').Select(x => x.Trim()).ToArray()
+                            CodeResponsibility = reader["code_responsibility"] != DBNull.Value
+                                                ? reader["code_responsibility"].ToString().Split(',').Select(x => x.Trim()).ToArray()
                                                 : Array.Empty<string>(),
-
                         });
                     }
                 }
@@ -327,9 +326,9 @@ namespace MaterialControlCenter.Service
                     // Insert
                     string insertQuery = @"
                         INSERT INTO [Scrap].[dbo].[user] 
-                            ([kpk], [name], [role_id], [facility], [TC], [ScrapCodeResponsible])
+                            ([kpk], [name], [role_id], [facility], [TC], [code_responsibility])
                         VALUES 
-                            (@kpk, @name, @roleId, @facility, @tc, @ScrapCodeResponsible);
+                            (@kpk, @name, @roleId, @facility, @tc, @CodeResponsibility);
                     ";
 
                     using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
@@ -340,13 +339,12 @@ namespace MaterialControlCenter.Service
                         cmd.Parameters.AddWithValue("@facility", request.Facility);
                         cmd.Parameters.AddWithValue("@tc", request.TC);
 
-                        object scrapCodeValue;
-                        if (string.IsNullOrWhiteSpace(request.ScrapCodeResponsible))
-                            scrapCodeValue = DBNull.Value;
+                        object codeRespValue;
+                        if (string.IsNullOrWhiteSpace(request.CodeResponsibility))
+                            codeRespValue = DBNull.Value;
                         else
-                            scrapCodeValue = request.ScrapCodeResponsible;
-
-                        cmd.Parameters.AddWithValue("@ScrapCodeResponsible", scrapCodeValue);
+                            codeRespValue = request.CodeResponsibility;
+                        cmd.Parameters.AddWithValue("@CodeResponsibility", codeRespValue);
 
                         int rowsAffected = await cmd.ExecuteNonQueryAsync();
                         return rowsAffected > 0;
@@ -394,12 +392,12 @@ namespace MaterialControlCenter.Service
                     updates.Add("[TC] = @tc");
                     parameters.Add(new SqlParameter("@tc", string.Join(",", request.TC)));
                 }
-                if (request.ScrapCodeResponsible != null)
+                if (request.CodeResponsibility != null)
                 {
-                    updates.Add("[ScrapCodeResponsible] = @ScrapCodeResponsible");
-                    parameters.Add(new SqlParameter("@ScrapCodeResponsible", string.Join(",", request.ScrapCodeResponsible)));
+                    updates.Add("[code_responsibility] = @CodeResponsibility");
+                    parameters.Add(new SqlParameter("@CodeResponsibility",
+                        string.Join(",", request.CodeResponsibility)));
                 }
-
                 if (!updates.Any())
                 {
                     return false; 
@@ -474,12 +472,12 @@ namespace MaterialControlCenter.Service
                     }
                 }
 
-                // USER BARU → INSERT
+                // USER BARU ? INSERT
                 string insertQuery = @"
             INSERT INTO [Scrap].[dbo].[user]
-                (kpk, name, role_id, facility, TC, ScrapCodeResponsible, is_active)
+                (kpk, name, role_id, facility, TC, code_responsibility, is_active)
             VALUES
-                (@kpk, @name, @roleId, @facility, @tc, @scrap, 1)
+                (@kpk, @name, @roleId, @facility, @tc, @codeResp, 1)
         ";
 
                 using (SqlCommand insertCmd = new SqlCommand(insertQuery, conn))
@@ -490,8 +488,8 @@ namespace MaterialControlCenter.Service
                     insertCmd.Parameters.AddWithValue("@facility", request.Facility);
                     insertCmd.Parameters.AddWithValue("@tc", request.TC);
                     insertCmd.Parameters.AddWithValue(
-                        "@scrap",
-                        (object)request.ScrapCodeResponsible ?? DBNull.Value
+                        "@codeResp",
+                        (object)request.CodeResponsibility ?? DBNull.Value
                     );
 
                     var inserted = await insertCmd.ExecuteNonQueryAsync() > 0;
@@ -1090,7 +1088,7 @@ namespace MaterialControlCenter.Service
                 {
                     await conn.OpenAsync();
                     var result = await cmd.ExecuteScalarAsync();
-                    Debug.Print($"[InsertApprovalList] Step {model.Centralized_ApprovalList_Step} — Base64 {(model.Centralized_ApprovalList_Base64?.Length ?? 0)} chars");
+                    Debug.Print($"[InsertApprovalList] Step {model.Centralized_ApprovalList_Step} � Base64 {(model.Centralized_ApprovalList_Base64?.Length ?? 0)} chars");
                     return Convert.ToInt32(result);
                 }
                 catch (Exception ex)
@@ -2017,8 +2015,8 @@ namespace MaterialControlCenter.Service
                                 ? reader["ScrapTcType"].ToString()
                                 : "All Type",
 
-                                minValue = reader["minValue"] != DBNull.Value ? Convert.ToInt32(reader["minValue"]) : 0, // ✅ default 0
-                                maxValue = reader["maxValue"] != DBNull.Value ? Convert.ToInt32(reader["maxValue"]) : 0, // ✅ default 0
+                                minValue = reader["minValue"] != DBNull.Value ? Convert.ToInt32(reader["minValue"]) : 0, // ? default 0
+                                maxValue = reader["maxValue"] != DBNull.Value ? Convert.ToInt32(reader["maxValue"]) : 0, // ? default 0
                                 commit = reader["commit"] != DBNull.Value ? reader["commit"].ToString() : "All Commit",
                                 PriorityScrapCase = reader["Priority"] != DBNull.Value ? (int)reader["Priority"] : 0
                             });
@@ -2533,6 +2531,112 @@ namespace MaterialControlCenter.Service
                 }
             }
             return result;
+        }
+
+        public List<MccApprovalRule> GetMccApprovalRules(string application)
+        {
+            var list = new List<MccApprovalRule>();
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = @"
+            SELECT  [id], [application], [code], [tc], [tc_type],
+                    [cmmit], [min_value], [max_value], [role_id],
+                    [required_approver_count], [priority], [is_active]
+            FROM    [Scrap].[dbo].[mcc_approval_rule]
+            WHERE   [application] = @application
+              AND   [is_active]   = 1
+            ORDER BY [priority] ASC, [id] ASC";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@application", application ?? "");
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            list.Add(new MccApprovalRule
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("id")),
+                                Application = reader["application"] as string,
+                                Code = reader["code"] as string,
+                                Tc = reader["tc"] as string,
+                                TcType = reader["tc_type"] as string,
+                                Cmmit = reader["cmmit"] as string,
+                                MinValue = reader["min_value"] != DBNull.Value
+                                                ? (long?)Convert.ToInt64(reader["min_value"]) : null,
+                                MaxValue = reader["max_value"] != DBNull.Value
+                                                ? (long?)Convert.ToInt64(reader["max_value"]) : null,
+                                RoleId = reader.GetInt32(reader.GetOrdinal("role_id")),
+                                RequiredApproverCount = reader.GetInt32(reader.GetOrdinal("required_approver_count")),
+                                Priority = reader["priority"] != DBNull.Value
+                                                ? (int?)reader.GetInt32(reader.GetOrdinal("priority")) : null,
+                                IsActive = reader["is_active"] != DBNull.Value
+                                                && Convert.ToBoolean(reader["is_active"])
+                            });
+                        }
+                    }
+                }
+            }
+
+            return list;
+        }
+
+
+        public UserToolRoomModel GetUserByRoleAndFacility(int roleId, string facility, string codeResponsibility = null)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = @"
+            SELECT TOP 1 [kpk], [name], [email], [role_id], [facility], [code_responsibility]
+            FROM   [Scrap].[dbo].[user]
+            WHERE  [role_id]   = @roleId
+              AND  [is_active] = 1
+              AND  (
+                    [facility] IS NULL OR [facility] = ''
+                    OR [facility] LIKE '%' + @facility + '%'
+                   )
+              AND  (
+                    @code IS NULL OR @code = ''
+                    OR [code_responsibility] IS NULL OR [code_responsibility] = ''
+                    OR [code_responsibility] LIKE '%' + @code + '%'
+                   )
+            ORDER BY [kpk]";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@roleId", roleId);
+                    cmd.Parameters.AddWithValue("@facility", facility ?? "");
+                    cmd.Parameters.AddWithValue("@code", (object)codeResponsibility ?? DBNull.Value);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new UserToolRoomModel
+                            {
+                                Kpk = reader["kpk"] as string,
+                                Name = reader["name"] as string,
+                                Email = reader["email"] as string,
+                                RoleId = reader["role_id"] != DBNull.Value
+                                             ? Convert.ToInt32(reader["role_id"]) : (int?)null,
+                                Facility = reader["facility"] != DBNull.Value
+                                             ? reader["facility"].ToString()
+                                                   .Split(',').Select(x => x.Trim()).ToArray()
+                                             : Array.Empty<string>(),
+                                CodeResponsibility = reader["code_responsibility"] != DBNull.Value
+                                             ? reader["code_responsibility"].ToString()
+                                                   .Split(',').Select(x => x.Trim()).ToArray()
+                                             : Array.Empty<string>()
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
     }

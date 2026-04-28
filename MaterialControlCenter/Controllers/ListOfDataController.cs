@@ -56,7 +56,7 @@ namespace MaterialControlCenter.Controllers
                         user.Facility,
                         user.IsActive,
                         user.TC,
-                        user.ScrapCodeResponsible
+                        CodeResponsibility = user.CodeResponsibility
                     };
                 });
 

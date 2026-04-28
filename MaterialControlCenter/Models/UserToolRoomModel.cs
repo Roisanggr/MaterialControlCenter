@@ -23,8 +23,8 @@ namespace MaterialControlCenter.Models
         public string NetworkId { get; set; }
       
         public string[] Facility { get; set; }
-        public string[] TC { get; set; } // <-- Tambahkan properti baru
-        public string[] ScrapCodeResponsible { get; set; }
+        public string[] TC { get; set; }
+        public string[] CodeResponsibility { get; set; }
     }
 
     public class ShiftModel
@@ -41,12 +41,12 @@ namespace MaterialControlCenter.Models
 
     public class UpdateUserRequest
     {
-        public string Kpk { get; set; }           // Wajib
-        public string RoleId { get; set; }        // Optional
-        public List<string> Facility { get; set; } // Optional (bisa null)
-        public bool? IsActive { get; set; }       // Optional (nullable)
-        public List<string> TC { get; set; }      // Optional
-        public List<string> ScrapCodeResponsible { get; set; }
+        public string Kpk { get; set; }           
+        public string RoleId { get; set; }        
+        public List<string> Facility { get; set; } 
+        public bool? IsActive { get; set; }      
+        public List<string> TC { get; set; }
+        public List<string> CodeResponsibility { get; set; }
     }
 
     public class UserModelInsert
@@ -56,7 +56,7 @@ namespace MaterialControlCenter.Models
         public int RoleId { get; set; }
         public string Facility { get; set; }
         public string TC { get; set; }
-        public string ScrapCodeResponsible { get; set; }
+        public string CodeResponsibility { get; set; }
     }
 
 

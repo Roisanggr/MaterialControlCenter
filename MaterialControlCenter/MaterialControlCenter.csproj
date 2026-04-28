@@ -1291,6 +1291,7 @@
     <Content Include="assets\FileAttachment\P2_AS400 Scrap Notice  v1.1.7.xlsm" />
     <Content Include="assets\FileAttachment\P1_AS400 Scrap Notice v1.2.2.xlsm" />
     <Content Include="assets\FileAttachment\P2_AS400 Scrap Notice v1.2.2.xlsm" />
+    <None Include="Models\.editorconfig" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />

@@ -113,7 +113,7 @@
             <!-- Button kiri -->
             <button id="addRowBtn"
                     class="flex items-center justify-center gap-2 px-6 py-2 bg-success text-white rounded-lg shadow hover:bg-success/[0.85] transition">
-               
+
                 <svg xmlns="http://www.w3.org/2000/svg"
                      class="w-5 h-5"
                      fill="none"
@@ -203,6 +203,18 @@
             <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded">
                 Total PIA: <span id="totalRupiah">Rp 0,00</span>
             </h2>
+        </div>
+
+        <div class="card mt-2 p-3">
+            <h2 class="text-sm font-semibold text-black dark:text-white/80 mb-2">
+                Approval Chain
+            </h2>
+            <div id="approvalBadgesContainer"
+                 class="flex flex-wrap gap-2 items-center min-h-[36px]">
+                <span class="text-xs text-muted italic">
+                    Approvers will appear here once parts are added.
+                </span>
+            </div>
         </div>
 
         <div id="buttonSubmitDraft" class="flex justify-between items-center bg-muted/20 h-36 px-4">
@@ -1465,36 +1477,34 @@
             const rows = document.querySelectorAll("#listOfPartnumber tr");
             let totalQty = 0;
             let totalRupiah = 0;
-
-            const cardsData = [];
+            const partsData = [];
 
             rows.forEach(row => {
                 const qtyInput = row.querySelector("input[id^='varianceQuantity-']");
                 const totalInput = row.querySelector("input[id^='totalValue-']");
-                const typeit = row.querySelector("input[id^='typeit-']")?.value || null;
-                const scrapCode = row.querySelector("input[id^='ftypit-']")?.value || null;
-                const commit = row.dataset.commit || null;
 
-                let qty = parseFloat(qtyInput?.value) || 0;
-                let total = totalInput?.value.replace(/[^\d,.-]/g, "") || "0";
+                // PIA tidak punya ftypit/typeit/commit per-part → kirim null
+                let total = totalInput?.value?.replace(/[^\d,.-]/g, "") || "0";
                 total = parseFloat(total.replace(/\./g, "").replace(",", ".")) || 0;
 
-                totalQty += qty;
+                totalQty += parseFloat(qtyInput?.value) || 0;
                 totalRupiah += total;
 
-                cardsData.push({ typeit, scrapCode, commit });
+                partsData.push({
+                    value: total,
+                    code: null,   // PIA tidak filter by code
+                    tcType: null,   // PIA tidak filter by tcType
+                    commit: false
+                });
             });
 
             document.getElementById("totalQty").textContent = totalQty.toFixed(2);
             document.getElementById("totalRupiah").textContent = formatRupiah(totalRupiah);
-            checkSpecialCaseKPKFromServer(
-                urlCheckSpecialCase,
-                cardsData,
-                totalRupiah,
-                (specialCases) => {
 
-                }
-            );
+            // ✅ Ganti checkPiaApprovalChain dengan fungsi generik
+         checkApprovalChain("PIA", partsData, {
+                documentCode: document.getElementById("piaCodeDropdown")?.value || ""
+            });
         }
 
         document.getElementById("importExcel").addEventListener("click", function () {
