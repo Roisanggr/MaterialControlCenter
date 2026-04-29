@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
@@ -1088,7 +1088,7 @@ namespace MaterialControlCenter.Service
                 {
                     await conn.OpenAsync();
                     var result = await cmd.ExecuteScalarAsync();
-                    Debug.Print($"[InsertApprovalList] Step {model.Centralized_ApprovalList_Step} � Base64 {(model.Centralized_ApprovalList_Base64?.Length ?? 0)} chars");
+                    Debug.Print($"[InsertApprovalList] Step {model.Centralized_ApprovalList_Step} — Base64 {(model.Centralized_ApprovalList_Base64?.Length ?? 0)} chars");
                     return Convert.ToInt32(result);
                 }
                 catch (Exception ex)
@@ -1795,7 +1795,7 @@ namespace MaterialControlCenter.Service
                         return result == 1;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     
                     return false;
@@ -2585,18 +2585,20 @@ namespace MaterialControlCenter.Service
         }
 
 
-        public UserToolRoomModel GetUserByRoleAndFacility(int roleId, string facility, string codeResponsibility = null)
+        public List<UserToolRoomModel> GetUsersByRoleAndFacility(int roleId, string facility, string code = null)
         {
+            var list = new List<UserToolRoomModel>();
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 string query = @"
-            SELECT TOP 1 [kpk], [name], [email], [role_id], [facility], [code_responsibility]
+            SELECT [kpk], [name], [email], [role_id], [facility], [code_responsibility]
             FROM   [Scrap].[dbo].[user]
             WHERE  [role_id]   = @roleId
               AND  [is_active] = 1
               AND  (
-                    [facility] IS NULL OR [facility] = ''
+                    @facility IS NULL
+                    OR [facility] IS NULL OR [facility] = ''
                     OR [facility] LIKE '%' + @facility + '%'
                    )
               AND  (
@@ -2609,34 +2611,36 @@ namespace MaterialControlCenter.Service
                 using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@roleId", roleId);
-                    cmd.Parameters.AddWithValue("@facility", facility ?? "");
-                    cmd.Parameters.AddWithValue("@code", (object)codeResponsibility ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@facility",
+                        string.IsNullOrEmpty(facility) ? (object)DBNull.Value : (object)facility);
+                    cmd.Parameters.AddWithValue("@code",
+                        string.IsNullOrEmpty(code) ? (object)DBNull.Value : (object)code);
 
                     using (var reader = cmd.ExecuteReader())
                     {
-                        if (reader.Read())
+                        while (reader.Read())
                         {
-                            return new UserToolRoomModel
+                            list.Add(new UserToolRoomModel
                             {
                                 Kpk = reader["kpk"] as string,
                                 Name = reader["name"] as string,
                                 Email = reader["email"] as string,
                                 RoleId = reader["role_id"] != DBNull.Value
-                                             ? Convert.ToInt32(reader["role_id"]) : (int?)null,
+                                            ? Convert.ToInt32(reader["role_id"]) : (int?)null,
                                 Facility = reader["facility"] != DBNull.Value
-                                             ? reader["facility"].ToString()
-                                                   .Split(',').Select(x => x.Trim()).ToArray()
-                                             : Array.Empty<string>(),
+                                            ? reader["facility"].ToString()
+                                                  .Split(',').Select(x => x.Trim()).ToArray()
+                                            : Array.Empty<string>(),
                                 CodeResponsibility = reader["code_responsibility"] != DBNull.Value
-                                             ? reader["code_responsibility"].ToString()
-                                                   .Split(',').Select(x => x.Trim()).ToArray()
-                                             : Array.Empty<string>()
-                            };
+                                            ? reader["code_responsibility"].ToString()
+                                                  .Split(',').Select(x => x.Trim()).ToArray()
+                                            : Array.Empty<string>()
+                            });
                         }
                     }
                 }
             }
-            return null;
+            return list;
         }
 
     }

@@ -1261,103 +1261,118 @@ namespace MaterialControlCenter.Controllers
 
                 Debug.Print($"[GetApprovalChain] activeRules after filter={activeRules.Count}");
 
-                // ── 5. Resolve KPK per rule ──────────────────────────────────────
-                var approvalChain = new List<object>();
+                // ── 5. Group rules by priority → tiap group = satu step ─────────────────────
+                var groupedByPriority = rulesForResolution
+                    .GroupBy(r => r.Priority ?? int.MaxValue)
+                    .OrderBy(g => g.Key)
+                    .ToList();
 
-                foreach (var rule in rulesForResolution)
+                var approvalSteps = new List<object>();  // tiap entry = satu step (bisa multi-approver)
+                var seenKpks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var group in groupedByPriority)
                 {
-                    // Nama role dari tabel [Scrap].[dbo].[role]
-                    string roleName = allRoles.FirstOrDefault(r => r.RoleId == rule.RoleId)?.Name?.ToLower().Trim()
-                                      ?? "";
+                    var approversInStep = new List<object>();
 
-                    string resolvedKpk = null;
-                    string resolvedName = null;
-                    string displayRole = allRoles.FirstOrDefault(r => r.RoleId == rule.RoleId)?.Name
-                                          ?? $"Role {rule.RoleId}";
+                    foreach (var rule in group.OrderBy(r => r.Id))
+                    {
+                        string roleName = allRoles.FirstOrDefault(r => r.RoleId == rule.RoleId)?.Name?.ToLower().Trim() ?? "";
+                        string displayRole = allRoles.FirstOrDefault(r => r.RoleId == rule.RoleId)?.Name ?? $"Role {rule.RoleId}";
 
-                    // Resolve berdasarkan nama role:
-                    //   "manager"  → supervisor langsung initiator (supChain[1])
-                    //   "director" → 2 level atas initiator (supChain[2])
-                    //   lainnya    → cari dari tabel user by role_id + facility
-                    if (roleName.Contains("manager") && !roleName.Contains("material"))
-                    {
-                        // Manager langsung initiator
-                        var mgr = supChain.ElementAtOrDefault(1);
-                        resolvedKpk = mgr?.Kpk;
-                        resolvedName = mgr?.Name ?? mgr?.Kpk;
-                    }
-                    else if (roleName.Contains("director") && !roleName.Contains("material"))
-                    {
-                        // Director langsung initiator (level ke-3 di chain)
-                        var dir = supChain.ElementAtOrDefault(2);
-                        var mgr = supChain.ElementAtOrDefault(1);
-                        if (dir != null &&
-                            !string.Equals(dir.Kpk, mgr?.Kpk, StringComparison.OrdinalIgnoreCase))
+                        List<string> resolvedKpks = new List<string>();
+                        List<string> resolvedNames = new List<string>();
+
+                        if (roleName.Contains("manager") && !roleName.Contains("material"))
                         {
-                            resolvedKpk = dir.Kpk;
-                            resolvedName = dir.Name ?? dir.Kpk;
+                            // Manager langsung initiator
+                            var mgr = supChain.ElementAtOrDefault(1);
+                            if (mgr != null) { resolvedKpks.Add(mgr.Kpk); resolvedNames.Add(mgr.Name ?? mgr.Kpk); }
                         }
-                    }
-                    else
-                    {
-                        // Material Planner, Material Manager, Material Director, PresDir, dll
-                        // → cari dari tabel user by role_id + facility
-                        var userByRole = dbScrap.GetUserByRoleAndFacility(rule.RoleId, facility);
-                        resolvedKpk = userByRole?.Kpk;
-                        resolvedName = userByRole?.Name ?? userByRole?.Kpk;
-
-                        // Fallback khusus Material Manager:
-                        // jika tidak ada di tabel user, cari supervisor dari Material Planner
-                        if (resolvedKpk == null && roleName.Contains("material manager"))
+                        else if (roleName.Contains("director") && !roleName.Contains("material"))
                         {
-                            // Cari Material Planner yang sudah diresolved sebelumnya
-                            var matPlannerEntry = approvalChain
-                                .Cast<dynamic>()
-                                .FirstOrDefault(x => ((string)x.role).ToLower().Contains("material planner"));
+                            var dir = supChain.ElementAtOrDefault(2);
+                            var mgr = supChain.ElementAtOrDefault(1);
+                            if (dir != null && !string.Equals(dir.Kpk, mgr?.Kpk, StringComparison.OrdinalIgnoreCase))
+                            { resolvedKpks.Add(dir.Kpk); resolvedNames.Add(dir.Name ?? dir.Kpk); }
+                        }
+                        else
+                        {
+                            // Lookup dari tabel user — ambil SEMUA user yang match (bukan TOP 1)
+                            var users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, facility, rule.Code);
 
-                            if (matPlannerEntry != null)
+                            // Fallback: coba tanpa filter facility jika tidak ada hasil
+                            if (!users.Any())
+                                users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, null, rule.Code);
+
+                            // Fallback: coba tanpa filter code
+                            if (!users.Any())
+                                users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, facility, null);
+
+                            // Fallback: by role_id saja
+                            if (!users.Any())
+                                users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, null, null);
+
+                            foreach (var u in users)
                             {
-                                string matPlannerKpk = (string)matPlannerEntry.kpk;
-                                var matPlannerEmp = dbSSO.GetUserByKpkSSO(matPlannerKpk);
-                                if (matPlannerEmp?.Supervisor != null)
+                                resolvedKpks.Add(u.Kpk);
+                                resolvedNames.Add(u.Name ?? u.Kpk);
+                            }
+
+                            // Fallback khusus Material Manager dari supervisor chain Material Planner
+                            if (!resolvedKpks.Any() && roleName.Contains("material manager"))
+                            {
+                                foreach (var prevStep in approvalSteps)
                                 {
-                                    var matMgr = dbSSO.GetUserByKpkSSO(matPlannerEmp.Supervisor);
-                                    resolvedKpk = matMgr?.Kpk;
-                                    resolvedName = matMgr?.Name ?? matMgr?.Kpk;
+                                    var prevApprovers = ((dynamic)prevStep).approvers as IEnumerable<dynamic>;
+                                    var matPlanner = prevApprovers?
+                                        .FirstOrDefault(a => ((string)a.role).ToLower().Contains("material planner"));
+                                    if (matPlanner != null)
+                                    {
+                                        var emp = dbSSO.GetUserByKpkSSO((string)matPlanner.kpk);
+                                        if (emp?.Supervisor != null)
+                                        {
+                                            var sup = dbSSO.GetUserByKpkSSO(emp.Supervisor);
+                                            if (sup != null) { resolvedKpks.Add(sup.Kpk); resolvedNames.Add(sup.Name ?? sup.Kpk); }
+                                        }
+                                        break;
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    // Hanya tambahkan jika KPK berhasil di-resolve
-                    if (!string.IsNullOrEmpty(resolvedKpk))
-                    {
-                        approvalChain.Add(new
+                        // Tambahkan ke step ini, skip KPK yang sudah ada di step sebelumnya
+                        for (int idx = 0; idx < resolvedKpks.Count; idx++)
                         {
-                            kpk = resolvedKpk,
-                            name = resolvedName ?? resolvedKpk,
-                            role = displayRole,
-                            roleId = rule.RoleId,
-                            priority = rule.Priority,
-                            ruleId = rule.Id
-                        });
+                            string kpk = resolvedKpks[idx];
+                            if (string.IsNullOrEmpty(kpk) || !seenKpks.Add(kpk)) continue;
+
+                            approversInStep.Add(new
+                            {
+                                kpk = kpk,
+                                name = resolvedNames[idx],
+                                role = displayRole,
+                                roleId = rule.RoleId,
+                                priority = rule.Priority,
+                                ruleId = rule.Id
+                            });
+                        }
+
+                        if (!resolvedKpks.Any())
+                            Debug.Print($"[GetApprovalChain] WARNING: No KPK resolved for rule id={rule.Id}, role={displayRole}, roleId={rule.RoleId}");
                     }
-                    else
-                    {
-                        Debug.Print($"[GetApprovalChain] WARNING: Could not resolve KPK for rule id={rule.Id}, " +
-                                    $"role={displayRole}, roleId={rule.RoleId}");
-                    }
+
+                    if (approversInStep.Any())
+                        approvalSteps.Add(new { priority = group.Key, approvers = approversInStep });
                 }
 
-                // ── 6. Deduplicate by KPK (pertahankan entry pertama / priority terkecil) ──
-                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var result = new List<object>();
-                foreach (var entry in approvalChain)
+                // Hitung step number berdasarkan index (bukan priority)
+                int stepNumber = 1;
+                var resultSteps = approvalSteps.Select(s => new
                 {
-                    string kpkVal = (string)((dynamic)entry).kpk;
-                    if (!string.IsNullOrEmpty(kpkVal) && seen.Add(kpkVal))
-                        result.Add(entry);
-                }
+                    step = stepNumber++,
+                    priority = (int)((dynamic)s).priority,
+                    approvers = (IEnumerable<object>)((dynamic)s).approvers
+                }).ToList();
 
                 return Json(new
                 {
@@ -1366,10 +1381,11 @@ namespace MaterialControlCenter.Controllers
                     scrapCode = scrapCode,
                     maxAbsValue = maxAbsValue,
                     activeRuleCount = activeRules.Count,
-                    totalSteps = result.Count,
-                    data = result
+                    totalSteps = resultSteps.Count,
+                    data = resultSteps   // ← format baru: [{step, priority, approvers:[...]}, ...]
                 }, JsonRequestBehavior.AllowGet);
             }
+
             catch (Exception ex)
             {
                 Debug.Print("[GetApprovalChain] ERROR: " + ex.ToString());

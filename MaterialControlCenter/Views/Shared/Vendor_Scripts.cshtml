@@ -578,15 +578,29 @@ $.ajax({
         partsJson    : partsJson
     },
     success: function (res) {
-        if (res.success && res.data && res.data.length > 0) {
-            detectedKPKGlobal = res.data;
-            renderApprovalBadges(res.data);
-        } else {
-            detectedKPKGlobal = [];
-            renderApprovalBadges([]);
-            console.warn("[ApprovalChain] No approvers resolved:", res?.message);
-        }
-    },
+    if (res && res.success && res.data && res.data.length > 0) {
+        // Flatten steps ke format flat [{kpk, name, role, step, priority}, ...]
+        // untuk backward compat dengan detectedKPKGlobal
+        detectedKPKGlobal = [];
+        res.data.forEach(function(stepObj) {
+            (stepObj.approvers || []).forEach(function(approver) {
+                detectedKPKGlobal.push({
+                    kpk      : approver.kpk,
+                    name     : approver.name,
+                    role     : approver.role,
+                    roleId   : approver.roleId,
+                    step     : stepObj.step,       // ← step number dari server
+                    priority : stepObj.priority
+                });
+            });
+        });
+        renderApprovalBadges(res.data);  // ← pass raw steps ke renderer
+    } else {
+        detectedKPKGlobal = [];
+        renderApprovalBadges([]);
+        console.warn("[ApprovalChain] No approvers resolved:", res?.message);
+    }
+},
     error: function (xhr, status, err) {
         detectedKPKGlobal = [];
         renderApprovalBadges([]);
@@ -595,40 +609,43 @@ $.ajax({
 });
 }
 
-    function renderApprovalBadges(approvers) {
-        const container = document.getElementById("approvalBadgesContainer");
-        if (!container) return;
-
-        if (!approvers || approvers.length === 0) {
-            container.innerHTML = `
+    function renderApprovalBadges(steps) {
+    const container = document.getElementById("approvalBadgesContainer");
+    if (!container) return;
+ 
+    if (!steps || steps.length === 0) {
+        container.innerHTML = `
             <span class="text-xs text-muted italic px-1">
                 Approvers will appear here once parts are added.
             </span>`;
-            return;
-        }
-
-        // Warna default per priority tier
-        const tierColors = {
-            1: "bg-info",
-            2: "bg-warning",
-            3: "bg-danger"
-        };
-
-        const badges = approvers.map((a, i) => {
-            const color = tierColors[a.priority] || "bg-muted";
-            return `
-            <span class="inline-flex items-center gap-1 text-white text-xs
-                         px-2 py-1 rounded-full ${color}">
-                <b>Step ${i + 1}</b>&nbsp;
-                ${a.role}&nbsp;
+        return;
+    }
+ 
+    const tierColors = { 1: "bg-info", 2: "bg-warning", 3: "bg-danger" };
+ 
+    const stepsHtml = steps.map(function(stepObj) {
+        const step      = stepObj.step;
+        const approvers = stepObj.approvers || [];
+        const priority  = stepObj.priority;
+ 
+        const badgeColor = tierColors[priority] || "bg-info";
+ 
+        // Jika >1 approver dalam step ini → tampilkan sebagai parallel (joined by "/")
+        const approverBadges = approvers.map(function(a) {
+            return `<span class="inline-flex items-center gap-1 text-white text-xs
+                         px-2 py-1 rounded-full ${badgeColor}">
+                <b>Step ${step}</b>&nbsp;${a.role}&nbsp;
                 <span class="opacity-80">(${a.kpk})</span>
             </span>`;
-        }).join("");
-
-        container.innerHTML = `
+        }).join(`<span class="text-xs text-muted mx-1 font-semibold">&amp;</span>`);
+ 
+        return approverBadges;
+    }).join("");
+ 
+    container.innerHTML = `
         <span class="text-xs font-semibold mr-1">Approval Chain:</span>
-        ${badges}`;
-    }
+        ${stepsHtml}`;
+}
 
 
     function filterApprovalsByScrapCode(approvals, selectedScrapCode) {
