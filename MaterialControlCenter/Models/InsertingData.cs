@@ -60,6 +60,9 @@ namespace MaterialControlCenter.Models
     {
         public string kpk { get; set; }
         public int? roleId { get; set; }
+        public int? step { get; set; }    // ← TAMBAH: step number dari parallel approval
+        public string name { get; set; }    // ← TAMBAH: untuk logging/debug
+        public string role { get; set; }    // ← TAMBAH: nama role untuk logging
     }
 
     public class UserUpsertRequest
@@ -93,7 +96,7 @@ namespace MaterialControlCenter.Models
     public class PiaDetailModel
     {
         public int header_id { get; set; }
-        public int part_id { get; set; }
+        public int? part_id { get; set; }
         public string part_number { get; set; }
         public string part_description { get; set; }
         public string part_proccess { get; set; }
@@ -104,11 +107,20 @@ namespace MaterialControlCenter.Models
         public int commit_qty { get; set; }
         public int measit { get; set; }
         public int baspit { get; set; }
-        public decimal physical_qty { get; set; } // Gunakan decimal untuk tipe decimal(18,2)
+        public decimal physical_qty { get; set; }
         public decimal system_qty { get; set; }
         public decimal variance_qty { get; set; }
         public decimal total_value { get; set; }
         public string status { get; set; }
+        public DateTime? keyin_at { get; set; }
+    }
+
+    public class PiaRequest
+    {
+        public PiaHeaderModel Header { get; set; }
+        public List<PiaDetailModel> Details { get; set; }
+        public List<DetectedKpkItem> detectedKPKGlobal { get; set; } = new List<DetectedKpkItem>();
+        public string PdfBase64 { get; set; }
     }
 
 

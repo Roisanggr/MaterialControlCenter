@@ -357,7 +357,8 @@ namespace MaterialControlCenter.Controllers
                 return Json(new
                 {
                     success = true,
-                    data = chain.Select(c => new {
+                    data = chain.Select(c => new
+                    {
                         c.Kpk,
                         c.Name,
                         c.Email,
@@ -370,7 +371,6 @@ namespace MaterialControlCenter.Controllers
                 return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
-
 
 
 
@@ -742,7 +742,7 @@ namespace MaterialControlCenter.Controllers
 
 
 
-        
+
 
 
 
@@ -990,7 +990,8 @@ namespace MaterialControlCenter.Controllers
                     case "PIA":
                         codes = dbScrap.GetAllPiaCodes()
                             .OrderBy(c => c.Location).ThenBy(c => c.Code)
-                            .Select(c => new {
+                            .Select(c => new
+                            {
                                 value = c.IdRemarks.ToString(),
                                 label = $"{c.Location} - {c.Code} - {c.Name}"
                             })
@@ -1000,7 +1001,8 @@ namespace MaterialControlCenter.Controllers
                     case "TPR":
                         codes = dbScrap.GetAllTprCodes()
                             .OrderBy(c => c.Location).ThenBy(c => c.Code)
-                            .Select(c => new {
+                            .Select(c => new
+                            {
                                 value = c.Code,
                                 label = $"{c.Location} - {c.Code} - {c.Name}"
                             })
@@ -1019,7 +1021,8 @@ namespace MaterialControlCenter.Controllers
 
                         codes = dbScrap.GetAllScrapCodes()
                             .OrderBy(c => c.Location).ThenBy(c => c.Code)
-                            .Select(c => {
+                            .Select(c =>
+                            {
                                 string displayLocation = locationMap.TryGetValue(c.Location ?? "", out string mapped)
                                     ? mapped
                                     : (c.Location ?? "-");
@@ -1402,6 +1405,228 @@ namespace MaterialControlCenter.Controllers
             public string TcType { get; set; }   // typeit: F/R/A/X
             public bool Commit { get; set; }   // commit flag dari part master
         }
+
+        [HttpPost]
+        [ValidateInput(false)]
+        public async Task<ActionResult> InsertPiaAsync(PiaRequest request)
+        {
+            int newHeaderId = 0;
+            int centralizedId = 0;
+
+            try
+            {
+                if (request.detectedKPKGlobal == null || !request.detectedKPKGlobal.Any())
+                {
+                    Response.StatusCode = 400;
+                    return Json(new { Error = "Approval list is empty. Please wait for the system to map approvers or check your inputs." });
+                }
+
+                string decodedPdf = null;
+                if (!string.IsNullOrEmpty(request.PdfBase64))
+                {
+                    decodedPdf = Uri.UnescapeDataString(request.PdfBase64);
+
+                    int marker = decodedPdf.IndexOf(";base64,", StringComparison.OrdinalIgnoreCase);
+                    if (marker >= 0)
+                        decodedPdf = decodedPdf.Substring(marker + ";base64,".Length);
+                }
+
+                // Validate PDF base64 is present and decodable before any DB writes
+                if (string.IsNullOrEmpty(decodedPdf))
+                {
+                    Response.StatusCode = 400;
+                    return Json(new { Error = "PDF attachment is missing. Please try again." });
+                }
+                try
+                {
+                    Convert.FromBase64String(decodedPdf);
+                }
+                catch (FormatException)
+                {
+                    Response.StatusCode = 400;
+                    return Json(new { Error = "PDF attachment is corrupted. Please try again." });
+                }
+                Debug.Print($"[InsertPia] PDF validated OK — {decodedPdf.Length} chars");
+
+                // Step 1 — Save all data to DB
+                newHeaderId = dbScrap.InsertPiaHeader(request.Header);
+                if (request.Details != null && request.Details.Any())
+                {
+                    foreach (var detail in request.Details)
+                    {
+                        detail.header_id = newHeaderId;
+                        dbScrap.InsertPiaDetail(detail);
+                    }
+                }
+
+                var centralizedData = PreparePiaCentralizedSourceData(request, newHeaderId);
+                centralizedId = dbCentralizedNotification.InsertCentralizedSourceData(centralizedData);
+                await InsertPiaInitiatorAndApprovalListAsync(centralizedId, request, newHeaderId, decodedPdf);
+
+                // Verify the PDF was actually persisted in DB before triggering email
+                string storedBase64 = await dbCentralizedNotification.GetNextPendingApprovalBase64Async(centralizedId);
+                if (string.IsNullOrEmpty(storedBase64))
+                {
+                    Debug.Print($"[InsertPia] CRITICAL — Base64 not found in DB for centralizedId={centralizedId}");
+                    await TryRollbackPiaAsync(newHeaderId, centralizedId);
+                    Response.StatusCode = 500;
+                    return Json(new { Error = "PDF attachment was not stored correctly. No data was saved. Please try again." });
+                }
+                Debug.Print($"[InsertPia] DB verification OK — stored {storedBase64.Length} chars for centralizedId={centralizedId}");
+
+                // Step 2 — Trigger email notification via Power Automate.
+                string paErrorMessage = null;
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        var payload = new { sourceDataID = centralizedId };
+                        var json = JsonConvert.SerializeObject(payload);
+                        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                        var response = await client.PostAsync(
+                            "https://default5f40b94dde924c81a62a4014455791.e6.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b0c35a87b4b147058f4418e3b01bcfde/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nx46XuilBqrku-woNjGQGFceOJDWlOguIUKEJWuLLZM",
+                            content
+                        );
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            var body = await response.Content.ReadAsStringAsync();
+                            paErrorMessage = $"Email notification service responded with HTTP {(int)response.StatusCode}. Detail: {body}";
+                        }
+                    }
+                }
+                catch (Exception paEx)
+                {
+                    paErrorMessage = $"Email notification service is unreachable: {paEx.Message}";
+                }
+
+                if (paErrorMessage != null)
+                {
+                    Debug.Print("[PowerAutomate] " + paErrorMessage);
+                    await TryRollbackPiaAsync(newHeaderId, centralizedId);
+                    Response.StatusCode = 500;
+                    return Json(new { Error = $"Email notification failed — no data was saved. Please try again.\n\nDetail: {paErrorMessage}" });
+                }
+
+                return Json(new
+                {
+                    Message = "PIA Header, Details, and Centralized data successfully saved",
+                    HeaderId = newHeaderId,
+                    DetailsCount = request.Details?.Count ?? 0,
+                    CentralizedId = centralizedId
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.ToString());
+                if (ex.InnerException != null)
+                    Debug.Print("Inner Exception: " + ex.InnerException.Message);
+
+                await TryRollbackPiaAsync(newHeaderId, centralizedId);
+                Response.StatusCode = 500;
+                return Json(new { Error = ex.Message });
+            }
+        }
+
+        private async Task TryRollbackPiaAsync(int headerId, int centralizedId)
+        {
+            if (centralizedId > 0)
+            {
+                try
+                {
+                    await dbCentralizedNotification.RollbackCentralizedDataAsync(centralizedId);
+                }
+                catch (Exception ex1)
+                {
+                    Debug.Print("[Rollback Centralized Data] Failed: " + ex1.Message);
+                }
+            }
+
+            if (headerId > 0)
+            {
+                try
+                {
+                    await dbScrap.RollbackPiaDataAsync(headerId);
+                }
+                catch (Exception ex2)
+                {
+                    Debug.Print("[Rollback PIA Data] Failed: " + ex2.Message);
+                }
+            }
+        }
+
+        private CentralizedSourceDataModel PreparePiaCentralizedSourceData(PiaRequest request, int newHeaderId)
+        {
+            decimal totalValue = request.Details?.Sum(d => d.total_value) ?? 0m;
+
+            string tcDesc = $"in TC {request.Header.TC}";
+            if (!string.IsNullOrEmpty(request.Header.TcCompanion))
+                tcDesc += $" and TC Companion {request.Header.TcCompanion}";
+
+            return new CentralizedSourceDataModel
+            {
+                Centralized_SystemList_ID = 3,
+                Centralized_SourceData_TableName = "pia_header",
+                Centralized_SourceData_Master_ID = newHeaderId,
+                Centralized_SourceData_Master_Title = $"PIA Document {newHeaderId} - PIA Code {request.Header.PiaCode}",
+                Centralized_SourceData_Master_Desc = $"This document requests approval for inventory adjustment, with a total value of Rp {totalValue:N2} {tcDesc}.",
+                Centralized_SourceData_Master_Status = 1,
+                Centralized_SourceData_Master_CreatedDate = DateTime.Now
+            };
+        }
+
+        private async Task InsertPiaInitiatorAndApprovalListAsync(
+            int centralizedId, PiaRequest request, int newHeaderId, string base64Pdf)
+        {
+            string token = Convert.ToBase64String(Encoding.UTF8.GetBytes(newHeaderId.ToString()));
+            string link = $"http://ptmi-stage/DataForms/DetailPia?token={token}";
+
+            // Insert Initiator
+            if (!string.IsNullOrEmpty(request.Header?.CreatedByKpk.ToString()))
+            {
+                dbCentralizedNotification.InsertCentralizedInitiator(new CentralizedInitiator
+                {
+                    Centralized_SourceData_ID = centralizedId,
+                    Centralized_Initiator_KPK = request.Header.CreatedByKpk.ToString()
+                });
+            }
+
+            // Insert Approval List — gunakan step dari DetectedKpkItem
+            if (request.detectedKPKGlobal != null && request.detectedKPKGlobal.Any())
+            {
+                // Group by step number, insert dengan step yang benar
+                // (step 2 parallel: 2 approver dengan Centralized_ApprovalList_Step = 2)
+                foreach (var k in request.detectedKPKGlobal)
+                {
+                    int stepNumber = k.step ?? 1;  // ← pakai step dari client, bukan counter loop
+
+                    var approval = new CentralizedApprovalListModel
+                    {
+                        Centralized_SourceData_ID = centralizedId,
+                        Centralized_ApprovalList_Step = stepNumber,   // ← BENAR
+                        Centralized_StatusList_ID = 1,
+                        Centralized_ApprovalList_Date = null,
+                        Centralized_ApprovalList_Link = link,
+                        Centralized_ApprovalList_KpkApproval = k.kpk,
+                        Centralized_ApprovalList_Base64 = base64Pdf
+                    };
+
+                    try
+                    {
+                        await dbCentralizedNotification.InsertApprovalListAsync(approval);
+                        Debug.Print($"[PIA Approval] step={stepNumber}, kpk={k.kpk}, role={k.role}");
+                    }
+                    catch (SqlException ex)
+                    {
+                        foreach (SqlError err in ex.Errors)
+                            Debug.Print($"[PIA ApprovalList] SQL Line {err.LineNumber}: {err.Message}");
+                        throw;
+                    }
+                }
+            }
+        }
+
 
     }
 }

@@ -1,4 +1,3 @@
-
 @{
     ViewBag.Title = "Forms";
     ViewBag.pTitle = "Create PIA";
@@ -1174,7 +1173,7 @@
                 `systemQuantity-${partCounter}`,
                 `varianceQuantity-${partCounter}`,
                 `totalValue-${partCounter}`,
-                `leaderKpk-${partCounter}`,
+                // `leaderKpk-${partCounter}`,
             ];
 
             if (showSpecialFields) {
@@ -1928,145 +1927,118 @@
             });
         }
 
-        document.getElementById("submitBtnCreatePia").addEventListener("click", async () => {
-            const totalParts = document.querySelectorAll("[id^='row-']").length;
-            let invalidCards = [];
-
-            if (totalParts === 0) {
-                await Swal.fire({
-                    title: "No Parts Added",
-                    text: "You must add at least one part before submitting.",
-                    icon: "warning"
-                });
-                return;
-            }
-
-            for (let i = 1; i <= totalParts; i++) {
-                const rowDiv = document.getElementById(`row-${i}`);
-
-                const showSpecialFields = (selectedTC === "22");
-
-
-                const isValid = validatePartCard(i, showSpecialFields);
-                if (!isValid) invalidCards.push(i);
-            }
-
-            if (invalidCards.length > 0) {
-                await Swal.fire({
-                    title: "Missing Fields",
-                    text: `There are missing fields in card(s): ${invalidCards.join(", ")}. Please fill them in before submitting.`,
-                    icon: "warning"
-                });
-                return;
-            }
-            const remarksValidation = validateSpecialCodeRemarks();
-
-            if (!remarksValidation.valid) {
-                await Swal.fire({
-                    title: "Missing Remarks",
-                    text: remarksValidation.message,
-                    icon: "warning"
-                });
-                return;
-            }
-            let confirmationText = "Are you sure you want to save this PIA?";
-            let useHtml = false;
-
-            if (selectedCommit) {
-                const commodityName = "X";
-                confirmationText = `
-                    This document contains Commodity
-                    <span class="text-danger font-bold">${commodityName} (TOY)</span>.
-                    Are you sure?
-                `;
-                useHtml = true;
-            }
-
-            const result = await Swal.fire({
-                title: "Submit PIA",
-                ...(useHtml
-                    ? {
-                        html: confirmationText
-                    }
-                    : {
-                        text: confirmationText
-                    }),
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonText: "Yes, Save",
-                cancelButtonText: "Cancel"
-            });
-
-
-            if (!result.isConfirmed) return;
-
-            const submitBtn = document.getElementById("submitBtnCreatePia");
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = "0.6";
-
-            const payload = buildPiaPayload();
-
-            if (!payload.detectedKPKGlobal || payload.detectedKPKGlobal.length === 0) {
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = "";
-                await Swal.fire({
-                    title: "Missing Approvers",
-                    text: "Approval list cannot be empty. Please wait for the system to detect approvers or refresh and try again.",
-                    icon: "warning"
-                });
-                return;
-            }
-
-            const pdfBase64 = await generatePiaPDFBase64();
-            payload.PdfBase64 = encodeURIComponent(pdfBase64);
-            Swal.fire({
-                title: "Submitting...",
-                html: "<b>Step 1:</b> Sending email notification...<br><b>Step 2:</b> Saving data to database.<br><br>Please wait, this may take a few seconds.",
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+                document.getElementById("submitBtnCreatePia").addEventListener("click", async () => {
             try {
-                const data = await insertPia(payload);
-
-                Swal.close();
-
-                if (data.Error) {
+                const totalParts = document.querySelectorAll("[id^='row-']").length;
+                let invalidCards = [];
+ 
+                if (totalParts === 0) {
+                    await Swal.fire({ title: "No Parts Added", text: "You must add at least one part before submitting.", icon: "warning" });
+                    return;
+                }
+ 
+                for (let i = 1; i <= totalParts; i++) {
+                    const showSpecialFields = (selectedTC === "22");
+                    try {
+                        const isValid = validatePartCard(i, showSpecialFields);
+                        if (!isValid) invalidCards.push(i);
+                    } catch(validErr) {
+                        console.error("[Submit] validatePartCard error at row", i, validErr);
+                        invalidCards.push(i);
+                    }
+                }
+ 
+                if (invalidCards.length > 0) {
+                    await Swal.fire({ title: "Missing Fields", text: `Missing fields in card(s): ${invalidCards.join(", ")}.`, icon: "warning" });
+                    return;
+                }
+ 
+                const remarksValidation = validateSpecialCodeRemarks();
+                if (!remarksValidation.valid) {
+                    await Swal.fire({ title: "Missing Remarks", text: remarksValidation.message, icon: "warning" });
+                    return;
+                }
+ 
+                // ── DEBUG: log state sebelum confirm ──
+                console.log("[Submit] detectedKPKGlobal at submit time:", JSON.stringify(detectedKPKGlobal));
+                console.log("[Submit] selectedPiaCode:", selectedPiaCode);
+ 
+                let confirmationText = "Are you sure you want to save this PIA?";
+                let useHtml = false;
+                if (selectedCommit) {
+                    confirmationText = `This document contains Commit flag. Are you sure?`;
+                    useHtml = false;
+                }
+ 
+                const result = await Swal.fire({
+                    title: "Submit PIA",
+                    ...(useHtml ? { html: confirmationText } : { text: confirmationText }),
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes, Save",
+                    cancelButtonText: "Cancel"
+                });
+ 
+                if (!result.isConfirmed) return;
+ 
+                const submitBtn = document.getElementById("submitBtnCreatePia");
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = "0.6";
+ 
+                const payload = buildPiaPayload();
+ 
+                // ── DEBUG: log payload ──
+                console.log("[Submit] payload.detectedKPKGlobal:", payload.detectedKPKGlobal);
+                console.log("[Submit] payload.Header:", payload.Header);
+ 
+                if (!payload.detectedKPKGlobal || payload.detectedKPKGlobal.length === 0) {
                     submitBtn.disabled = false;
                     submitBtn.style.opacity = "";
-                    Swal.fire({
-                        title: "❌ Failed",
-                        text: data.Error,
-                        icon: "error"
+                    await Swal.fire({
+                        title: "Missing Approvers",
+                        text: "Approval list is empty. Please wait for system to detect approvers.",
+                        icon: "warning"
                     });
-                } else {
-                    Swal.fire({
-                        title: "Success",
-                        html: `PIA ID: <b>${data.IdPia}</b><br>Parts Count: <b>${data.PartsCount || 0}</b>`,
-                        icon: "success"
-                    }).then(() => {
-                        window.location.reload();
-                    });
+                    return;
                 }
-            } catch (err) {
-                Swal.close();
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = "";
-                console.error("Error submitting PIA:", err);
-                if (err.isServerError) {
-                    Swal.fire({
-                        title: "Submission Failed",
-                        text: err.message,
-                        icon: "error"
-                    });
-                } else {
-                    Swal.fire({
-                        title: "Connection Error",
-                        text: "Failed to reach the server. Please check your connection and try again.",
-                        icon: "error"
-                    });
+ 
+                const pdfBase64 = await generatePiaPDFBase64();
+                payload.PdfBase64 = encodeURIComponent(pdfBase64);
+ 
+                Swal.fire({
+                    title: "Submitting...",
+                    html: "<b>Step 1:</b> Sending email notification...<br><b>Step 2:</b> Saving data.<br><br>Please wait.",
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+ 
+                try {
+                    const data = await insertPia(payload);
+                    Swal.close();
+ 
+                    if (data.Error) {
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = "";
+                        Swal.fire({ title: "❌ Failed", text: data.Error, icon: "error" });
+                    } else {
+                        Swal.fire({
+                            title: "Success",
+                            html: `PIA submitted successfully.`,
+                            icon: "success"
+                        }).then(() => { window.location.reload(); });
+                    }
+                } catch (err) {
+                    Swal.close();
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = "";
+                    console.error("[Submit] insertPia error:", err);
+                    Swal.fire({ title: "Submission Failed", text: err.message, icon: "error" });
                 }
+ 
+            } catch(outerErr) {
+                // Catch semua error yang mungkin silent sebelumnya
+                console.error("[Submit] Outer error caught:", outerErr);
+                Swal.fire({ title: "Error", text: "Unexpected error: " + outerErr.message, icon: "error" });
             }
         });
 
@@ -2075,82 +2047,55 @@
         });
 
         function buildPiaPayload() {
-            const masterData = {
-                Facility: document.getElementById("facilityInitiator")?.value || null,
-                TC: document.getElementById("tcDropdown")?.value || null,
-                PiaCode: document.getElementById("piaCodeDropdown")?.value || null,
-                WC: document.getElementById("wcDropdown")?.value || null,
-                InitiatorKpk: typeof kpk !== "undefined" ? kpk : null,
-                Type_ID: document.getElementById("typeOfPiaDropdown")?.value || null,
-                SpecialCodeRemarks: localStorage.getItem("specialCodeRemarks") || null,
-                SpecialCodeTcCompanion: localStorage.getItem("CompanionTc") || null,
+            const headerData = {
+                Type        : document.getElementById("typeOfPiaDropdown")?.value || "Reguler",
+                Facility    : document.getElementById("facilityInitiator")?.value || null,
+                TC          : document.getElementById("tcDropdown")?.value || null,
+                PiaCode     : parseInt(document.getElementById("piaCodeDropdown")?.value) || 0,  
+                WC          : document.getElementById("wcDropdown")?.value || null,
+                TcCompanion : localStorage.getItem("CompanionTc") || null,
+                Remarks     : localStorage.getItem("specialCodeRemarks") || null,
+                CreatedByKpk  : parseInt(typeof kpk !== "undefined" ? kpk : "0") || 0,  
+                CreatedByName : typeof name !== "undefined" ? name : null              
             };
             const rows = document.querySelectorAll("#listOfPartnumber tr");
-            const partDataList = [];
+            const detailList = [];
+ 
             rows.forEach((row) => {
-
-                const partNum = row
-                    .querySelector('input[id^="partNumber-"]')
-                    ?.value
-                    ?.trim() || null;
+                const partNum = row.querySelector('input[id^="partNumber-"]')?.value?.trim() || null;
                 if (!partNum) return;
-                const specialRemarksParts =
-                    specialRemarksCache[partNum]?.remark || "";
-
-                let rawBase =
-                    row.querySelector('input[id^="baseValue-"]')?.value || "0";
-
-                rawBase = rawBase.replace(/[^\d,.-]/g, "");
-                rawBase = rawBase.replace(/\./g, "");
-                rawBase = rawBase.replace(",", ".");
-                const baseValue = parseFloat(rawBase) || 0;
-
-                const physicalQty = Number(row.querySelector('input[id^="physicalQuantity-"]')?.value || "0");
-                const systemQty = Number(row.querySelector('input[id^="systemQuantity-"]')?.value || "0");
-                const varianceQty = Number(row.querySelector('input[id^="varianceQuantity-"]')?.value || "0");
-
-                let rawTotalValue = row.querySelector('input[id^="totalValue-"]')?.value || "0";
-                rawTotalValue = rawTotalValue.replace(/[^\d,.-]/g, "");
-                rawTotalValue = rawTotalValue.replace(/\./g, "");
-                rawTotalValue = rawTotalValue.replace(",", ".");
-                const totalValue = parseFloat(rawTotalValue) || 0;
-
-                const part = {
-                    PartNum: partNum,
-                    Description: row.querySelector('input[id^="description-"]')?.value || null,
-                    PhysicalQty: physicalQty,
-                    SystemQty: systemQty,
-                    VarianceQty: varianceQty,
-                    Qty: varianceQty,
-                    Value: totalValue,
-                    Remarks: row.querySelector('select[id^="remarks-"]')?.value || null,
-                    RemarksText:
-                        row.querySelector('select[id^="remarks-"] option:checked')?.textContent || null,
-                    SpecialcodeRemarksParts: specialRemarksParts,
-
-                    ProcessPoint: row.querySelector('input[id^="processPoint-"]')?.value || null,
-                    Ftypit: row.querySelector('input[id^="ftypit-"]')?.value || null,
-                    Typeit: row.querySelector('input[id^="typeit-"]')?.value || null,
-                    LeaderKPK: row.querySelector('input[id^="leaderKpk-"]')?.value || null,
-                    RnNumber: row.querySelector('input[id^="rn-"]')?.value || null,
-                    Measit: row.querySelector('input[id^="unit-"]')?.value || null,
-                    Planit: row.querySelector('input[id^="planit-"]')?.value || null,
-                    Cmidit: row.querySelector('input[id^="cmidit-"]')?.value || null,
-                    Commit: row.querySelector('input[id^="commit-"]')?.value || null,
-                    BasePrice: baseValue,
-                    RespCode: row.querySelector('input[id^="respCode-"]')?.value || null
-                };
-
-                partDataList.push(part);
+ 
+                let rawBase = row.querySelector('input[id^="baseValue-"]')?.value || "0";
+                rawBase     = parseFloat(rawBase.replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".")) || 0;
+ 
+                let rawTotal = row.querySelector('input[id^="totalValue-"]')?.value || "0";
+                rawTotal     = parseFloat(rawTotal.replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".")) || 0;
+ 
+                detailList.push({
+                    header_id        : 0,                                                                     
+                    part_id          : 0,                                                                 
+                    part_number      : partNum,
+                    part_description : row.querySelector('input[id^="description-"]')?.value || null,
+                    part_proccess    : row.querySelector('input[id^="processPoint-"]')?.value || null,
+                    ftypit           : row.querySelector('input[id^="ftypit-"]')?.value || null,
+                    typeit           : row.querySelector('input[id^="typeit-"]')?.value || null,
+                    planit           : parseInt(row.querySelector('input[id^="planit-"]')?.value) || 0,
+                    cmidit           : parseInt(row.querySelector('input[id^="cmidit-"]')?.value) || 0,
+                    commit_qty       : parseInt(row.querySelector('input[id^="commit-"]')?.value) || 0,
+                    measit           : parseInt(row.querySelector('input[id^="unit-"]')?.value) || 0,
+                    baspit           : rawBase,
+                    physical_qty     : parseFloat(row.querySelector('input[id^="physicalQuantity-"]')?.value) || 0,
+                    system_qty       : parseFloat(row.querySelector('input[id^="systemQuantity-"]')?.value)   || 0,
+                    variance_qty     : parseFloat(row.querySelector('input[id^="varianceQuantity-"]')?.value) || 0,
+                    total_value      : rawTotal,
+                    status           : "active"
+                });
             });
-
+ 
             return {
-                Master: masterData,
-                Parts: partDataList,
-                detectedKPKGlobal:
-                    typeof detectedKPKGlobal !== "undefined"
-                        ? detectedKPKGlobal
-                        : []
+                Header           : headerData,      // ← "Header" bukan "Master"
+                Details          : detailList,      // ← "Details" bukan "Parts"
+                detectedKPKGlobal: typeof detectedKPKGlobal !== "undefined" ? detectedKPKGlobal : []
             };
         }
 
@@ -2163,33 +2108,26 @@
             });
 
             const payload = buildPiaPayload();
-            const master = payload.Master;
-            const parts = payload.Parts;
-            const totalQty = parts.reduce((sum, p) => sum + (parseFloat(p.Qty) || 0), 0);
-            const totalValue = parts.reduce((sum, p) => sum + (parseFloat(p.Value) || 0), 0);
+            const header = payload.Header;
+            const details = payload.Details;
+            const totalQty = details.reduce((sum, d) => sum + (parseFloat(d.physical_qty) || 0), 0);
+            const totalValue = details.reduce((sum, d) => sum + (parseFloat(d.total_value) || 0), 0);
             const logoUrl = '@Url.Content("~/assets/images/mattel-logo.png")';
             const logoImg = new Image();
             logoImg.src = logoUrl;
             await new Promise(resolve => (logoImg.onload = resolve));
-            const typeLabel =
-                parseInt(master.Type_ID) === 1 ? "REGULAR" :
-                    parseInt(master.Type_ID) === 2 ? "RAP" :
-                        master.Type_ID || "-";
-
-            const rnValue = (parts || []).map(p => p.RnNumber).filter(Boolean)[0] || "N/A";
 
             const masterEntries = [
-                ["Facility", master.Facility || "-"],
-                ["TC", master.TC || "-"],
-                ["TC Companion", master.SpecialCodeTcCompanion || "N/A"],
-                ["PIA Code", master.PiaCode || "-"],
-                ["WC", master.WC || "-"],
-                ["RN", rnValue],
-                ["Initiator KPK", master.InitiatorKpk || "-"],
-                ["Type", typeLabel]
+                ["Facility", (header.Facility || "-").toString()],
+                ["TC", (header.TC || "-").toString()],
+                ["TC Companion", (header.TcCompanion || "N/A").toString()],
+                ["PIA Code", (header.PiaCode || "-").toString()],
+                ["WC", (header.WC || "-").toString()],
+                ["Initiator KPK", "N/A"],
+                ["Type", (header.Type || "-").toString()]
             ];
 
-            const header = (doc, pageNumber, totalPages) => {
+            const headerFn = (doc, pageNumber, totalPages) => {
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const logoMaxWidth = 8;
                 const logoAspect = logoImg.width / logoImg.height;
@@ -2238,7 +2176,7 @@
                 doc.setFont("helvetica", "bold");
                 doc.text("Total Qty:", leftX, leftY);
                 doc.setFont("helvetica", "normal");
-                doc.text(totalQty.toLocaleString(), leftX + 28, leftY);
+                doc.text((totalQty || 0).toLocaleString(), leftX + 28, leftY);
 
                 rightY += 3;
                 doc.setFont("helvetica", "bold");
@@ -2253,25 +2191,24 @@
             };
 
             const MAX_ROWS = 200;
-            const tableData = (parts || [])
+            const tableData = (details || [])
                 .slice(0, MAX_ROWS)
-                .map(p => [
-                    p.PartNum || "-",
-                    p.Description || "-",
-                    (p.PhysicalQty !== undefined ? p.PhysicalQty : p.Qty) || 0,
-                    (p.SystemQty !== undefined ? p.SystemQty : "-") || "-",
-                    (p.VarianceQty !== undefined ? p.VarianceQty : p.Qty) || 0,
-                    (p.Value || 0).toFixed(2),
-                    p.ProcessPoint || "-",
-                    p.LeaderKPK || "-",
-                    p.RemarksText || "-",
-                    p.SpecialcodeRemarksParts || "N/A"
+                .map(d => [
+                    (d.part_number || "-").toString(),
+                    (d.part_description || "-").toString(),
+                    (d.physical_qty || 0).toString(),
+                    (d.system_qty || 0).toString(),
+                    (d.variance_qty || 0).toString(),
+                    ((d.total_value || 0).toFixed(2)).toString(),
+                    (d.part_proccess || "-").toString(),
+                    "N/A",
+                    "-"
                 ]);
 
             doc.autoTable({
                 startY: 65,
                 margin: { top: 65 },
-                head: [["Part Number", "Description", "Physical Qty", "System Qty", "Variance Qty", "Value", "Process Point", "Leader KPK", "Remarks", "Special Remarks"]],
+                head: [["Part Number", "Description", "Physical Qty", "System Qty", "Variance Qty", "Value", "Process Point", "Leader KPK", "Remarks"]],
                 body: tableData,
                 theme: "grid",
                 styles: { fontSize: 8, cellPadding: 1, lineWidth: 0.1 },
@@ -2282,7 +2219,7 @@
                 },
                 didDrawPage: (data) => {
                     const pageCount = doc.internal.getNumberOfPages();
-                    header(doc, data.pageNumber, pageCount);
+                    headerFn(doc, data.pageNumber, pageCount);
                 }
             });
             const pdfBase64 = doc.output("datauristring", { compress: true });
@@ -2410,7 +2347,7 @@
         function showSpecialCodeToast(message, type = "error") {
             const toastHtml = `
                 <div class="px-4 py-2 rounded text-sm font-medium
-                    ${type === "error" ? "bg-danger border success" : ""}
+                    ${type === "error" ? "bg-danger border danger" : ""}
                     ${type === "success" ? "bg-success border-success" : ""}
                 ">
                     ${message}

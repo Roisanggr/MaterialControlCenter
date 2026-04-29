@@ -2643,6 +2643,125 @@ namespace MaterialControlCenter.Service
             return list;
         }
 
+        public int InsertPiaHeader(PiaHeaderModel model)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string insertQuery = @"
+                INSERT INTO Scrap.dbo.pia_header
+                (type, facility, tc, pia_code, wc, tc_companion, remarks, status, created_by_kpk, created_by_name, created_at, is_deleted)
+                OUTPUT INSERTED.id
+                VALUES
+                (@type, @facility, @tc, @pia_code, @wc, @tc_companion, @remarks, @status, @created_by_kpk, @created_by_name, @created_at, @is_deleted)";
+
+                using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@type", model.Type ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@facility", model.Facility ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@tc", model.TC ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@pia_code", model.PiaCode);
+                    cmd.Parameters.AddWithValue("@wc", model.WC ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@tc_companion", model.TcCompanion ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@remarks", model.Remarks ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@status", 1);
+                    cmd.Parameters.AddWithValue("@created_by_kpk", model.CreatedByKpk);
+                    cmd.Parameters.AddWithValue("@created_by_name", model.CreatedByName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@created_at", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@is_deleted", 0);
+
+                    return Convert.ToInt32(cmd.ExecuteScalar());
+                }
+            }
+        }
+
+        public void InsertPiaDetail(PiaDetailModel model)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+
+                string insertQuery = @"
+        INSERT INTO Scrap.dbo.pia_detail
+        (header_id, part_id, part_number, part_description, part_proccess, ftypit, typeit, planit, cmidit, commit_qty, measit, baspit, physical_qty, system_qty, variance_qty, total_value, status, keyin_at, created_at, is_deleted)
+        VALUES
+        (@header_id, @part_id, @part_number, @part_description, @part_proccess, @ftypit, @typeit, @planit, @cmidit, @commit_qty, @measit, @baspit, @physical_qty, @system_qty, @variance_qty, @total_value, @status, @keyin_at, @created_at, @is_deleted)";
+
+                using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@header_id", model.header_id);
+
+                    // FIX: part_id bukan nullable
+                    cmd.Parameters.AddWithValue("@part_id", model.part_id);
+
+                    cmd.Parameters.AddWithValue("@part_number", model.part_number ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@part_description", model.part_description ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@part_proccess", model.part_proccess ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ftypit", model.ftypit ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@typeit", model.typeit ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@planit", model.planit);
+                    cmd.Parameters.AddWithValue("@cmidit", model.cmidit);
+                    cmd.Parameters.AddWithValue("@commit_qty", model.commit_qty);
+                    cmd.Parameters.AddWithValue("@measit", model.measit);
+                    cmd.Parameters.AddWithValue("@baspit", model.baspit);
+                    cmd.Parameters.AddWithValue("@physical_qty", model.physical_qty);
+                    cmd.Parameters.AddWithValue("@system_qty", model.system_qty);
+                    cmd.Parameters.AddWithValue("@variance_qty", model.variance_qty);
+                    cmd.Parameters.AddWithValue("@total_value", model.total_value);
+                    cmd.Parameters.AddWithValue("@status", 1);
+
+                    // FIX: keyin_at ga ada di model → pake sekarang aja atau buang dari query
+                    cmd.Parameters.AddWithValue("@keyin_at", DateTime.Now);
+
+                    cmd.Parameters.AddWithValue("@created_at", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@is_deleted", 0);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public async Task<bool> RollbackPiaDataAsync(int headerId)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                await conn.OpenAsync();
+                using (SqlTransaction transaction = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        // Delete detail records first (FK constraint)
+                        string deleteDetailsQuery = "DELETE FROM Scrap.dbo.pia_detail WHERE header_id = @header_id";
+                        using (SqlCommand cmd = new SqlCommand(deleteDetailsQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@header_id", headerId);
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+
+                        // Delete header record
+                        string deleteHeaderQuery = "DELETE FROM Scrap.dbo.pia_header WHERE id = @id";
+                        using (SqlCommand cmd = new SqlCommand(deleteHeaderQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@id", headerId);
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+
+                        transaction.Commit();
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        try
+                        {
+                            transaction.Rollback();
+                        }
+                        catch { }
+                        throw;
+                    }
+                }
+            }
+        }
+
     }
 
 }
