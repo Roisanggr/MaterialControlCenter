@@ -82,21 +82,27 @@ namespace MaterialControlCenter.Models
 
     public class PiaHeaderModel
     {
+        public long Id { get; set; }  
         public string Type { get; set; }
         public string Facility { get; set; }
         public string TC { get; set; }
-        public int PiaCode { get; set; } // Harus int sesuai FK ke pia_code.id
+        public int PiaCode { get; set; }
         public string WC { get; set; }
         public string TcCompanion { get; set; }
         public string Remarks { get; set; }
-        public string CreatedByName { get; set; }
+        public int Status { get; set; }
         public int CreatedByKpk { get; set; }
+        public string CreatedByName { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 
     public class PiaDetailModel
     {
+        public int Id { get; set; } 
         public int header_id { get; set; }
-        public int? part_id { get; set; }
+        public int part_id { get; set; }
         public string part_number { get; set; }
         public string part_description { get; set; }
         public string part_proccess { get; set; }
@@ -105,7 +111,7 @@ namespace MaterialControlCenter.Models
         public int planit { get; set; }
         public int cmidit { get; set; }
         public int commit_qty { get; set; }
-        public int measit { get; set; }
+        public string measit { get; set; }
         public int baspit { get; set; }
         public decimal physical_qty { get; set; }
         public decimal system_qty { get; set; }
@@ -113,6 +119,9 @@ namespace MaterialControlCenter.Models
         public decimal total_value { get; set; }
         public string status { get; set; }
         public DateTime? keyin_at { get; set; }
+        public DateTime? created_at { get; set; }
+        public bool is_deleted { get; set; }
+        public DateTime? deleted_at { get; set; }
     }
 
     public class PiaRequest
@@ -122,6 +131,7 @@ namespace MaterialControlCenter.Models
         public List<DetectedKpkItem> detectedKPKGlobal { get; set; } = new List<DetectedKpkItem>();
         public string PdfBase64 { get; set; }
     }
+
 
 
 }

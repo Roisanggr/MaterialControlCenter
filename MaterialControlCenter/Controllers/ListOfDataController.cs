@@ -400,6 +400,345 @@ namespace MaterialControlCenter.Controllers
         }
 
         [HttpGet]
+        public async Task<JsonResult> GetAllRecords(
+    string appType = null,   // "SCRAP" | "PIA" | null = keduanya
+    string initiatorKpk = null,
+    string approverKpk = null,
+    string approverKpkPdf = null,
+    List<int> statusList = null,
+    string documentId = null,
+    string scrapCode = null,   // hanya berlaku jika appType=SCRAP
+    string piaCode = null,   // hanya berlaku jika appType=PIA
+    decimal? totalFrom = null,
+    decimal? totalTo = null,
+    string facility = null,
+    DateTime? createdDateFrom = null,
+    DateTime? createdDateTo = null,
+    string tc = null,
+    bool includeDelegates = false,
+    int pageNumber = 1,
+    int pageSize = 10)
+        {
+            // ── Normalisasi appType ──────────────────────────────────────────────────
+            bool includeScrap = string.IsNullOrWhiteSpace(appType) ||
+                                appType.Equals("SCRAP", StringComparison.OrdinalIgnoreCase);
+            bool includePia = string.IsNullOrWhiteSpace(appType) ||
+                                appType.Equals("PIA", StringComparison.OrdinalIgnoreCase);
+
+            // ── 1. Parallel fetch semua data yang dibutuhkan ─────────────────────────
+            var sourceDataTask = Task.Run(() => dbCentralizedNotification.GetSourceDataSystemList());
+            var employeeTask = Task.Run(() => dbCentralizedNotification.GetEmployeeMasterSSO());
+            var approvalTask = dbCentralizedNotification.GetApprovalListAsync();
+            var delegateTask = dbScrap.GetUserDelegatesAsync();
+
+            // Data Scrap
+            var scrapTask = includeScrap ? dbScrap.GetScrapMasterAsync() : Task.FromResult(new List<FetchingScrapMasterModel>());
+            var scrapPartsTask = includeScrap ? dbScrap.GetScrapPartsAllAsync() : Task.FromResult(new List<ScrapPartModel>());
+
+            // Data PIA
+            var piaHeaderTask = includePia ? dbScrap.GetPiaHeaderAsync() : Task.FromResult(new List<PiaHeaderModel>());
+            var piaDetailTask = includePia ? dbScrap.GetPiaDetailSummaryAsync() : Task.FromResult(new List<PiaDetailSummaryModel>());
+
+            await Task.WhenAll(
+                sourceDataTask, employeeTask, approvalTask, delegateTask,
+                scrapTask, scrapPartsTask,
+                piaHeaderTask, piaDetailTask
+            );
+
+            var sourceDataList = sourceDataTask.Result;
+            var employees = employeeTask.Result;
+            var approvalList = approvalTask.Result;
+            var allDelegates = delegateTask.Result;
+            var scrapList = scrapTask.Result;
+            var allScrapParts = scrapPartsTask.Result;
+            var piaHeaders = piaHeaderTask.Result;
+            var piaDetailSums = piaDetailTask.Result;
+
+            // ── 2. Dictionaries ──────────────────────────────────────────────────────
+            var employeeDict = employees
+                .Where(e => !string.IsNullOrEmpty(e.Kpk))
+                .GroupBy(e => e.Kpk.Trim())
+                .ToDictionary(g => g.Key, g => g.First().Name);
+
+            var approvalLookup = approvalList
+                .GroupBy(a => a.Centralized_SourceData_ID)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderBy(x => x.Centralized_ApprovalList_Step)
+                          .Select(a => new ApprovalDtoV2Fastest
+                          {
+                              Centralized_ApprovalList_ID = a.Centralized_ApprovalList_ID,
+                              Centralized_SourceData_ID = a.Centralized_SourceData_ID,
+                              Centralized_ApprovalList_Step = a.Centralized_ApprovalList_Step,
+                              Centralized_StatusList_ID = a.Centralized_StatusList_ID,
+                              Centralized_ApprovalList_Date = a.Centralized_ApprovalList_Date,
+                              Kpk = a.Centralized_ApprovalList_KpkApproval,
+                              ApproverName = employeeDict.TryGetValue(
+                                                 a.Centralized_ApprovalList_KpkApproval,
+                                                 out var apName) ? apName : "Unknown"
+                          })
+                          .ToList()
+                );
+
+            // Lookup agregasi Scrap: IdScrap → {TotalQty, TotalValue}
+            var scrapAggLookup = allScrapParts
+                .GroupBy(p => p.IdScrap)
+                .ToDictionary(g => g.Key, g => new
+                {
+                    TotalQty = g.Sum(x => x.Qty),
+                    TotalValue = g.Sum(x => x.Value)
+                });
+
+            // Lookup agregasi PIA: header_id → PiaDetailSummaryModel
+            var piaAggLookup = piaDetailSums
+                .ToDictionary(s => s.HeaderId, s => s);
+
+            // ── 3. Build unified list ────────────────────────────────────────────────
+
+            // Karena Scrap  → Centralized_SourceData_Master_ID_Str (string)  = IdScrap
+            //       PIA     → Centralized_SourceData_Master_ID     (int)      = pia_header.Id
+            // Dan keduanya share SystemList_ID = 4 (sesuai DataFormsController),
+            // kita perlu membedakan berdasarkan apakah ID-nya ada di scrap_master atau pia_header.
+
+            var scrapIdSet = new HashSet<string>(
+                scrapList.Select(s => s.IdScrap),
+                StringComparer.OrdinalIgnoreCase
+            );
+            var piaIdSet = new HashSet<int>(piaHeaders.Select(h => (int)h.Id));
+
+            // Tipe record:
+            //   - Jika Centralized_SourceData_Master_ID_Str ada di scrapIdSet → SCRAP
+            //   - Jika Centralized_SourceData_Master_ID (int) ada di piaIdSet  → PIA
+            // Prioritas scrap dulu (karena IdScrap bisa berupa angka yang tumpang tindih dengan int PIA)
+
+            var unified = new List<dynamic>();
+
+            foreach (var src in sourceDataList)
+            {
+                var approvals = approvalLookup.TryGetValue(src.Centralized_SourceData_ID, out var apps)
+                    ? apps
+                    : new List<ApprovalDtoV2Fastest>();
+
+                // ── Coba cocokkan ke Scrap ──
+                if (includeScrap && !string.IsNullOrEmpty(src.Centralized_SourceData_Master_ID_Str))
+                {
+                    var scr = scrapList.FirstOrDefault(s => s.IdScrap == src.Centralized_SourceData_Master_ID_Str);
+                    if (scr != null)
+                    {
+                        var agg = scrapAggLookup.TryGetValue(scr.IdScrap, out var sa) ? sa : null;
+                        unified.Add(new
+                        {
+                            AppType = "SCRAP",
+                            src.Centralized_SourceData_ID,
+                            src.Centralized_SourceData_Master_Status,
+                            src.Centralized_SourceData_Master_CreatedDate,
+                            DocumentId = scr.IdScrap,
+
+                            scr.Facility,
+                            scr.TC,
+                            InitiatorKpk = scr.InitiatorKpk,
+                            InitiatorName = employeeDict.TryGetValue(scr.InitiatorKpk ?? "", out var sName)
+                                            ? sName : "Unknown",
+                            Code = scr.ScrapCode,
+                            CreatedDate = scr.CreatedDate,
+                            CurrentStatus = scr.CurrentStatus,
+                            scr.WC,
+                            TcCompanion = scr.SpecialCodeTcCompanion,
+                            scr.DeletedAt,
+
+                            TotalQty = agg?.TotalQty ?? 0m,
+                            TotalValue = agg?.TotalValue ?? 0m,
+                            // PIA-specific fields → null untuk Scrap
+                            TotalPhysicalQty = (decimal?)null,
+                            TotalSystemQty = (decimal?)null,
+                            TotalVarianceQty = (decimal?)null,
+
+                            Approvals = approvals
+                        });
+                        continue; // sudah cocok, lanjut ke src berikutnya
+                    }
+                }
+
+                // ── Coba cocokkan ke PIA ──
+                if (includePia)
+                {
+                    var pia = piaHeaders.FirstOrDefault(h => (int)h.Id == src.Centralized_SourceData_Master_ID);
+                    if (pia != null)
+                    {
+                        var agg = piaAggLookup.TryGetValue((int)pia.Id, out var pa) ? pa : null;
+                        unified.Add(new
+                        {
+                            AppType = "PIA",
+                            src.Centralized_SourceData_ID,
+                            src.Centralized_SourceData_Master_Status,
+                            src.Centralized_SourceData_Master_CreatedDate,
+                            DocumentId = pia.Id.ToString(),
+
+                            pia.Facility,
+                            pia.TC,
+                            InitiatorKpk = pia.CreatedByKpk.ToString(),
+                            InitiatorName = employeeDict.TryGetValue(pia.CreatedByKpk.ToString(), out var pName)
+                                            ? pName : "Unknown",
+                            Code = pia.PiaCode.ToString(),
+                            CreatedDate = pia.CreatedAt,
+                            CurrentStatus = pia.Status,
+                            pia.WC,
+                            TcCompanion = pia.TcCompanion,
+                            DeletedAt = pia.DeletedAt,
+
+                            TotalQty = agg?.TotalPhysicalQty ?? 0m, // physical_qty sebagai "qty" PIA
+                            TotalValue = agg?.TotalValue ?? 0m,
+                            TotalPhysicalQty = agg?.TotalPhysicalQty ?? 0m,
+                            TotalSystemQty = agg?.TotalSystemQty ?? 0m,
+                            TotalVarianceQty = agg?.TotalVarianceQty ?? 0m,
+
+                            Approvals = approvals
+                        });
+                    }
+                }
+            }
+
+            // ── 4. Filter ────────────────────────────────────────────────────────────
+
+            IEnumerable<dynamic> result = unified;
+
+            // Filter documentId (partial match ke DocumentId)
+            if (!string.IsNullOrEmpty(documentId))
+            {
+                var docId = documentId.Trim();
+                result = result.Where(x => ((string)x.DocumentId).Contains(docId));
+            }
+
+            // Filter initiatorKpk
+            if (!string.IsNullOrEmpty(initiatorKpk))
+                result = result.Where(x => (string)x.InitiatorKpk == initiatorKpk);
+
+            // Filter approverKpk (pending di step-nya)
+            if (!string.IsNullOrEmpty(approverKpk))
+            {
+                HashSet<string> effectiveApprovers = includeDelegates
+                    ? GetEffectiveApproverKpks(approverKpk, allDelegates)
+                    : new HashSet<string>(new[] { approverKpk.Trim() }, StringComparer.OrdinalIgnoreCase);
+
+                result = result.Where(x =>
+                {
+                    if ((int)x.Centralized_SourceData_Master_Status != 1) return false;
+
+                    var appr = (List<ApprovalDtoV2Fastest>)x.Approvals;
+                    for (int i = 0; i < appr.Count; i++)
+                    {
+                        var cur = appr[i];
+                        if (effectiveApprovers.Contains(cur.Kpk))
+                        {
+                            if (cur.Centralized_StatusList_ID != 1) return false;
+                            return appr.Take(i).All(p => p.Centralized_StatusList_ID != 1);
+                        }
+                    }
+                    return false;
+                });
+            }
+
+            // Filter statusList
+            if (statusList != null && statusList.Any())
+                result = result.Where(x => statusList.Contains((int)x.Centralized_SourceData_Master_Status));
+
+            // Filter scrapCode (hanya Scrap)
+            if (!string.IsNullOrEmpty(scrapCode))
+            {
+                var code = scrapCode.Trim().ToLower();
+                result = result.Where(x =>
+                    (string)x.AppType == "SCRAP" &&
+                    !string.IsNullOrEmpty((string)x.Code) &&
+                    ((string)x.Code).ToLower().Contains(code));
+            }
+
+            // Filter piaCode (hanya PIA)
+            if (!string.IsNullOrEmpty(piaCode))
+            {
+                var code = piaCode.Trim().ToLower();
+                result = result.Where(x =>
+                    (string)x.AppType == "PIA" &&
+                    !string.IsNullOrEmpty((string)x.Code) &&
+                    ((string)x.Code).ToLower().Contains(code));
+            }
+
+            // Filter totalValue range
+            if (totalFrom.HasValue)
+                result = result.Where(x => (decimal)x.TotalValue >= totalFrom.Value);
+
+            if (totalTo.HasValue)
+                result = result.Where(x => (decimal)x.TotalValue <= totalTo.Value);
+
+            // Filter facility
+            if (!string.IsNullOrEmpty(facility))
+                result = result.Where(x =>
+                    !string.IsNullOrEmpty((string)x.Facility) &&
+                    ((string)x.Facility).Contains(facility));
+
+            // Filter createdDate range
+            if (createdDateFrom.HasValue)
+                result = result.Where(x =>
+                    ((DateTime?)x.CreatedDate).HasValue &&
+                    ((DateTime)x.CreatedDate).Date >= createdDateFrom.Value.Date);
+
+            if (createdDateTo.HasValue)
+                result = result.Where(x =>
+                    ((DateTime?)x.CreatedDate).HasValue &&
+                    ((DateTime)x.CreatedDate).Date <= createdDateTo.Value.Date);
+
+            // Filter TC
+            if (!string.IsNullOrEmpty(tc))
+                result = result.Where(x =>
+                    !string.IsNullOrEmpty((string)x.TC) &&
+                    ((string)x.TC).Contains(tc));
+
+            // Filter approverKpkPdf (hanya 1 pending step tersisa, dan itu milik approver ini)
+            if (!string.IsNullOrWhiteSpace(approverKpkPdf))
+            {
+                result = result.Where(x =>
+                {
+                    if ((int)x.Centralized_SourceData_Master_Status != 1) return false;
+
+                    var appr = ((List<ApprovalDtoV2Fastest>)x.Approvals)
+                        .OrderBy(a => a.Centralized_ApprovalList_Step).ToList();
+                    if (!appr.Any()) return false;
+
+                    if (!appr.Any(a => a.Kpk == approverKpkPdf)) return false;
+
+                    var pendingSteps = appr
+                        .Where(a => a.Centralized_StatusList_ID == 1)
+                        .OrderBy(a => a.Centralized_ApprovalList_Step).ToList();
+
+                    if (pendingSteps.Count != 1) return false;
+
+                    var pending = pendingSteps[0];
+                    return appr
+                        .Where(a => a.Centralized_ApprovalList_Step < pending.Centralized_ApprovalList_Step)
+                        .All(a => a.Centralized_StatusList_ID == 2);
+                });
+            }
+
+            // ── 5. Pagination ─────────────────────────────────────────────────────────
+            var finalList = result.ToList();
+            var totalCount = finalList.Count;
+
+            var pagedData = finalList
+                .OrderByDescending(x => (DateTime)x.Centralized_SourceData_Master_CreatedDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return Json(new
+            {
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Data = pagedData
+            }, JsonRequestBehavior.AllowGet);
+        }
+
+
+        [HttpGet]
         public async Task<JsonResult> GetJoinedSourceDataScrap(
     string initiatorKpk = null,
     string approverKpk = null,

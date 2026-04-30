@@ -1171,7 +1171,7 @@ namespace MaterialControlCenter.Service
                     [Centralized_SourceData_Master_Status],
                     [Centralized_SourceData_Master_CreatedDate]
                 FROM [CentralizedNotification].[dbo].[Centralized_SourceData]
-                WHERE [Centralized_SystemList_ID] = 2
+                WHERE [Centralized_SystemList_ID] = 4
                 ORDER BY [Centralized_SourceData_ID] DESC
             ";
 
@@ -1399,6 +1399,266 @@ namespace MaterialControlCenter.Service
             return result;
         }
 
+        public async Task<List<PiaHeaderModel>> GetPiaHeaderAsync()
+        {
+            var list = new List<PiaHeaderModel>();
+
+            string query = @"
+        SELECT 
+            [id],
+            [type],
+            [facility],
+            [tc],
+            [pia_code],
+            [wc],
+            [tc_companion],
+            [remarks],
+            [status],
+            [created_by_kpk],
+            [created_by_name],
+            [created_at],
+            [is_deleted],
+            [deleted_at]
+        FROM [Scrap].[dbo].[pia_header]
+        WHERE ISNULL([is_deleted], 0) = 0
+        ORDER BY [id] DESC
+    ";
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                await conn.OpenAsync();
+
+                using (var cmd = new SqlCommand(query, conn))
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var model = new PiaHeaderModel
+                        {
+                            Type = reader["type"] as string,
+                            Facility = reader["facility"] as string,
+                            TC = reader["tc"] as string,
+                            PiaCode = reader["pia_code"] != DBNull.Value ? Convert.ToInt32(reader["pia_code"]) : 0,
+                            WC = reader["wc"] as string,
+                            TcCompanion = reader["tc_companion"] as string,
+                            Remarks = reader["remarks"] as string,
+                            Status = reader["status"] != DBNull.Value ? Convert.ToInt32(reader["status"]) : 0,
+                            CreatedByKpk = reader["created_by_kpk"] != DBNull.Value ? Convert.ToInt32(reader["created_by_kpk"]) : 0,
+                            CreatedByName = reader["created_by_name"] as string,
+                            CreatedAt = reader["created_at"] != DBNull.Value ? (DateTime?)reader["created_at"] : null,
+                            IsDeleted = reader["is_deleted"] != DBNull.Value && Convert.ToBoolean(reader["is_deleted"]),
+                            DeletedAt = reader["deleted_at"] != DBNull.Value ? (DateTime?)reader["deleted_at"] : null
+                        };
+
+                        // Set Id setelah object dibuat (jika property read-only)
+                        var idValue = reader["id"] != DBNull.Value ? Convert.ToInt64(reader["id"]) : 0;
+                        // Gunakan reflection jika Id benar-benar read-only
+                        var idProperty = typeof(PiaHeaderModel).GetProperty("Id");
+                        if (idProperty != null && idProperty.CanWrite)
+                        {
+                            model.Id = idValue;
+                        }
+
+                        list.Add(model);
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        public async Task<List<PiaDetailModel>> GetPiaDetailAsync()
+        {
+            var result = new List<PiaDetailModel>();
+
+            string query = @"
+        SELECT 
+            [id],
+            [header_id],
+            [part_id],
+            [part_number],
+            [part_description],
+            [part_proccess],
+            [ftypit],
+            [typeit],
+            [planit],
+            [cmidit],
+            [commit_qty],
+            [measit],
+            [baspit],
+            [physical_qty],
+            [system_qty],
+            [variance_qty],
+            [total_value],
+            [status],
+            [keyin_at],
+            [created_at],
+            [is_deleted],
+            [deleted_at]
+        FROM [Scrap].[dbo].[pia_detail]
+        WHERE ISNULL([is_deleted], 0) = 0
+    ";
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                await conn.OpenAsync();
+
+                using (var cmd = new SqlCommand(query, conn))
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var model = new PiaDetailModel
+                        {
+                            header_id = reader["header_id"] != DBNull.Value ? Convert.ToInt32(reader["header_id"]) : 0,
+                            part_id = reader["part_id"] != DBNull.Value ? Convert.ToInt32(reader["part_id"]) : 0,
+                            part_number = reader["part_number"] as string,
+                            part_description = reader["part_description"] as string,
+                            part_proccess = reader["part_proccess"] as string,
+                            ftypit = reader["ftypit"] as string,
+                            typeit = reader["typeit"] as string,
+                            planit = reader["planit"] != DBNull.Value ? Convert.ToInt32(reader["planit"]) : 0,
+                            cmidit = reader["cmidit"] != DBNull.Value ? Convert.ToInt32(reader["cmidit"]) : 0,
+                            commit_qty = reader["commit_qty"] != DBNull.Value ? Convert.ToInt32(reader["commit_qty"]) : 0,
+                            measit = reader["measit"] as string,
+                            baspit = reader["baspit"] != DBNull.Value ? Convert.ToInt32(reader["baspit"]) : 0,
+                            physical_qty = reader["physical_qty"] != DBNull.Value ? Convert.ToDecimal(reader["physical_qty"]) : 0,
+                            system_qty = reader["system_qty"] != DBNull.Value ? Convert.ToDecimal(reader["system_qty"]) : 0,
+                            variance_qty = reader["variance_qty"] != DBNull.Value ? Convert.ToDecimal(reader["variance_qty"]) : 0,
+                            total_value = reader["total_value"] != DBNull.Value ? Convert.ToDecimal(reader["total_value"]) : 0,
+                            status = reader["status"] as string,
+                            keyin_at = reader["keyin_at"] != DBNull.Value ? (DateTime?)reader["keyin_at"] : null,
+                            created_at = reader["created_at"] != DBNull.Value ? (DateTime?)reader["created_at"] : null,
+                            is_deleted = reader["is_deleted"] != DBNull.Value && Convert.ToBoolean(reader["is_deleted"]),
+                            deleted_at = reader["deleted_at"] != DBNull.Value ? (DateTime?)reader["deleted_at"] : null
+                        };
+
+                        result.Add(model);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public async Task<List<PiaDetailModel>> GetPiaDetailByPiaIdAsync(int headerId)
+        {
+            var result = new List<PiaDetailModel>();
+
+            string query = @"
+        SELECT 
+            [id],
+            [header_id],
+            [part_id],
+            [part_number],
+            [part_description],
+            [part_proccess],
+            [ftypit],
+            [typeit],
+            [planit],
+            [cmidit],
+            [commit_qty],
+            [measit],
+            [baspit],
+            [physical_qty],
+            [system_qty],
+            [variance_qty],
+            [total_value],
+            [status],
+            [keyin_at],
+            [created_at],
+            [is_deleted],
+            [deleted_at]
+        FROM [Scrap].[dbo].[pia_detail]
+        WHERE header_id = @headerId AND ISNULL([is_deleted], 0) = 0
+    ";
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                await conn.OpenAsync();
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@headerId", headerId);
+
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var model = new PiaDetailModel
+                            {
+                                header_id = reader["header_id"] != DBNull.Value ? Convert.ToInt32(reader["header_id"]) : 0,
+                                part_id = reader["part_id"] != DBNull.Value ? Convert.ToInt32(reader["part_id"]) : 0,
+                                part_number = reader["part_number"] as string,
+                                part_description = reader["part_description"] as string,
+                                part_proccess = reader["part_proccess"] as string,
+                                ftypit = reader["ftypit"] as string,
+                                typeit = reader["typeit"] as string,
+                                planit = reader["planit"] != DBNull.Value ? Convert.ToInt32(reader["planit"]) : 0,
+                                cmidit = reader["cmidit"] != DBNull.Value ? Convert.ToInt32(reader["cmidit"]) : 0,
+                                commit_qty = reader["commit_qty"] != DBNull.Value ? Convert.ToInt32(reader["commit_qty"]) : 0,
+                                measit = reader["measit"] as string,
+                                baspit = reader["baspit"] != DBNull.Value ? Convert.ToInt32(reader["baspit"]) : 0,
+                                physical_qty = reader["physical_qty"] != DBNull.Value ? Convert.ToDecimal(reader["physical_qty"]) : 0,
+                                system_qty = reader["system_qty"] != DBNull.Value ? Convert.ToDecimal(reader["system_qty"]) : 0,
+                                variance_qty = reader["variance_qty"] != DBNull.Value ? Convert.ToDecimal(reader["variance_qty"]) : 0,
+                                total_value = reader["total_value"] != DBNull.Value ? Convert.ToDecimal(reader["total_value"]) : 0,
+                                status = reader["status"] as string,
+                                keyin_at = reader["keyin_at"] != DBNull.Value ? (DateTime?)reader["keyin_at"] : null,
+                                created_at = reader["created_at"] != DBNull.Value ? (DateTime?)reader["created_at"] : null,
+                                is_deleted = reader["is_deleted"] != DBNull.Value && Convert.ToBoolean(reader["is_deleted"]),
+                                deleted_at = reader["deleted_at"] != DBNull.Value ? (DateTime?)reader["deleted_at"] : null
+                            };
+
+                            result.Add(model);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public async Task<List<PiaDetailSummaryModel>> GetPiaDetailSummaryAsync()
+        {
+            var result = new List<PiaDetailSummaryModel>();
+
+            string query = @"
+        SELECT 
+            header_id,
+            SUM(physical_qty) AS TotalPhysicalQty,
+            SUM(system_qty) AS TotalSystemQty,
+            SUM(variance_qty) AS TotalVarianceQty,
+            SUM(total_value) AS TotalValue,
+            COUNT(*) AS TotalItems
+        FROM [Scrap].[dbo].[pia_detail]
+        WHERE ISNULL([is_deleted], 0) = 0
+        GROUP BY header_id
+    ";
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                await conn.OpenAsync();
+
+                using (var cmd = new SqlCommand(query, conn))
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        result.Add(new PiaDetailSummaryModel
+                        {
+                            HeaderId = reader["header_id"] != DBNull.Value ? Convert.ToInt32(reader["header_id"]) : 0,
+                            TotalPhysicalQty = reader["TotalPhysicalQty"] != DBNull.Value ? Convert.ToDecimal(reader["TotalPhysicalQty"]) : 0,
+                            TotalSystemQty = reader["TotalSystemQty"] != DBNull.Value ? Convert.ToDecimal(reader["TotalSystemQty"]) : 0,
+                            TotalVarianceQty = reader["TotalVarianceQty"] != DBNull.Value ? Convert.ToDecimal(reader["TotalVarianceQty"]) : 0,
+                            TotalValue = reader["TotalValue"] != DBNull.Value ? Convert.ToDecimal(reader["TotalValue"]) : 0
+                        });
+                    }
+                }
+            }
+
+            return result;
+        }
 
         public async Task<List<ScrapPartModel>> GetScrapPartsByScrapIdAsync(string idScrap)
         {

@@ -107,6 +107,16 @@ namespace MaterialControlCenter.Models
         public decimal TotalQty { get; set; }
         public decimal TotalValue { get; set; }
     }
+
+    public class PiaDetailSummaryModel
+    {
+        public int HeaderId { get; set; }
+        public decimal TotalPhysicalQty { get; set; }
+        public decimal TotalSystemQty { get; set; }
+        public decimal TotalVarianceQty { get; set; }
+        public decimal TotalValue { get; set; }
+    }
+
     public class ScrapDisposalModel
     {
         public int Scrap_Disposal_ID { get; set; }

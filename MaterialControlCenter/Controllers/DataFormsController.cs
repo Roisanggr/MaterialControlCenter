@@ -542,7 +542,7 @@ namespace MaterialControlCenter.Controllers
 
             return new CentralizedSourceDataModel
             {
-                Centralized_SystemList_ID = 2,
+                Centralized_SystemList_ID = 4,
                 Centralized_SourceData_TableName = "scrap_master",
                 Centralized_SourceData_Master_ID = Convert.ToInt32(newIdScrap),
                 Centralized_SourceData_Master_Title = $"Document {newIdScrap} - Scrap Code {request.Master.ScrapCode}",
@@ -1566,7 +1566,7 @@ namespace MaterialControlCenter.Controllers
 
             return new CentralizedSourceDataModel
             {
-                Centralized_SystemList_ID = 3,
+                Centralized_SystemList_ID = 4,
                 Centralized_SourceData_TableName = "pia_header",
                 Centralized_SourceData_Master_ID = newHeaderId,
                 Centralized_SourceData_Master_Title = $"PIA Document {newHeaderId} - PIA Code {request.Header.PiaCode}",
