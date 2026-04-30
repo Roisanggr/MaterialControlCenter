@@ -206,65 +206,6 @@
                 </div>
             </div>
         </div>
-        <div class="flex items-start justify-between gap-6 p-5 bg-white border rounded border-black/10">
-            <div>
-                <p class="text-base font-medium text-gray-600">TPR Request</p>
-                <h4 id="totalQtyAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black">
-                    <span class="skeleton w-16 h-8 bg-gray-200 animate-pulse rounded"></span>
-                </h4>
-                <p class="text-sm text-gray-400 mt-1">Document</p>
-            </div>
-
-            <!-- Icon Info & Tooltip Container -->
-            <div style="position: relative; display: inline-block;" class="tooltip-wrapper">
-                <!-- Icon -->
-                <div style="cursor: pointer; color: #2563eb;" class="tooltip-trigger">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                         fill="none" stroke="currentColor" stroke-width="2"
-                         stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="16" x2="12" y2="12"></line>
-                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                    </svg>
-                </div>
-
-                <!-- Tooltip -->
-                <div class="tooltip-box"
-                     style="
-                     visibility: hidden;
-                     opacity: 0;
-                     position: absolute;
-                     bottom: calc(100% + 8px);
-                     right: 0;
-                     width: 140px;
-                     padding: 10px 12px;
-                     background-color: #6b7280;
-                     color: white;
-                     font-size: 12px;
-                     border-radius: 10px;
-                     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                     transition: opacity 0.2s ease, visibility 0.2s ease;
-                     z-index: 50;
-                     white-space: nowrap;">
-                    <ul style="list-style: none; margin: 0; padding: 0; line-height: 1.8;">
-                        <li>• Waiting = 3</li>
-                        <li>• Approved = 1</li>
-                        <li>• Finish = 11</li>
-                    </ul>
-                    <!-- Arrow -->
-                    <div style="
-                         position: absolute;
-                         top: 100%;
-                         right: 12px;
-                         width: 0;
-                         height: 0;
-                         border-left: 8px solid transparent;
-                         border-right: 8px solid transparent;
-                         border-top: 8px solid #6b7280;">
-                    </div>
-                </div>
-            </div>
-        </div>
         <style>
             .tooltip-wrapper:hover .tooltip-box {
                 visibility: visible !important;
@@ -289,6 +230,8 @@
                                 <option value="">All</option>
                                 <option value="SCRAP">Scrap</option>
                                 <option value="PIA">PIA</option>
+                                <option value="TPR">TPR</option>
+
                             </select>
                         </div>
                     </form>
@@ -748,12 +691,23 @@
                     const label   = document.getElementById("codeFilterLabel");
                     const input   = document.getElementById("scrapCodeFilter");
                     if (appType === "PIA") {
-                        label.textContent  = "PIA Code";
-                        input.placeholder  = "Input PIA Code";
+                        label.textContent = "PIA Code";
+                        input.placeholder = "Input PIA Code";
+                        input.disabled = false;
+                    } else if (appType === "SCRAP") {
+                        label.textContent = "Scrap Code";
+                        input.placeholder = "Input Scrap Code";
+                        input.disabled = false;
+                    } else if (appType === "TPR") {
+                        label.textContent = "TPR Code";
+                        input.placeholder = "Input TPR Code";
+                        input.disabled = false;
                     } else {
-                        label.textContent  = "Code";
-                        input.placeholder  = "Input Code";
+                        label.textContent = "Code";
+                        input.placeholder = "Input Code";
+                        input.disabled = true; // Selain kondisi di atas, input dimatikan
                     }
+
                 });
             });
 
