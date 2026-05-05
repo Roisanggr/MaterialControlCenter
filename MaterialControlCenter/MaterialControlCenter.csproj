@@ -1291,6 +1291,7 @@
     <Content Include="assets\FileAttachment\P2_AS400 Scrap Notice  v1.1.7.xlsm" />
     <Content Include="assets\FileAttachment\P1_AS400 Scrap Notice v1.2.2.xlsm" />
     <Content Include="assets\FileAttachment\P2_AS400 Scrap Notice v1.2.2.xlsm" />
+    <Content Include="ENDPOINT_MIGRATION_GUIDE.md" />
     <None Include="Models\.editorconfig" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
@@ -1354,6 +1355,7 @@
     <Content Include="Views\Approval\Delegates.cshtml" />
     <Content Include="Views\Forms\CreatePia.cshtml" />
     <Content Include="Views\Forms\CreateTpr.cshtml" />
+    <Content Include="Views\ScrapRecords\DetailPia.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

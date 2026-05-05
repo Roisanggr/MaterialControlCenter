@@ -1492,254 +1492,436 @@ namespace MaterialControlCenter.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<ActionResult> GetDetailDocuments(
+            string documentType, string documentId, int page = 1, int pageSize = 10,
+            string sortBy = "Value", string sortOrder = "desc",
+            string partNumber = "", string leader = "", string remarks = "", 
+            string process = "",
+            decimal? totalFrom = null, decimal? totalTo = null)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(documentType) || string.IsNullOrEmpty(documentId))
+                    return Json(new { Data = new List<object>(), TotalPartsAll = 0 }, JsonRequestBehavior.AllowGet);
+
+                var documentTypeUpper = documentType.ToUpper();
+
+                // ===== SCRAP DOCUMENT =====
+                if (documentTypeUpper == "SCRAP")
+                {
+                    var scrapParts = await dbScrap.GetScrapPartsByScrapIdAsync(documentId);
+                    var remarksList = dbScrap.GetScrapCodeRemarks();
+                    var employees = dbScrap.GetEmployeeMasterSSO();
+
+                    var scrapPartsWithNames = scrapParts.Select(p =>
+                    {
+                        int idRemarks;
+                        bool isValid = int.TryParse(p.Remarks, out idRemarks);
+                        var remarkName = isValid
+                            ? remarksList.FirstOrDefault(r => r.IdRemarks == idRemarks)?.Remarks
+                            : null;
+
+                        var leaderName = !string.IsNullOrEmpty(p.LeaderKPK)
+                            ? employees.FirstOrDefault(e => e.Kpk == p.LeaderKPK)?.Name
+                            : null;
+
+                        return new
+                        {
+                            p.IdScrap,
+                            p.PartNum,
+                            p.Description,
+                            Qty = Math.Round(p.Qty, 2),
+                            p.Value,
+                            p.Commit,
+                            p.Measit,
+                            p.Planit,
+                            p.RnNumber,
+                            Remarks = remarkName ?? "N/A",
+                            p.CurrentStatus,
+                            p.LeaderKPK,
+                            LeaderName = (leaderName ?? "N/A").Trim()
+                        };
+                    });
+
+                    // 🔍 Apply filters
+                    if (!string.IsNullOrEmpty(partNumber))
+                        scrapPartsWithNames = scrapPartsWithNames
+                            .Where(p => p.PartNum != null && p.PartNum.ToLower().Contains(partNumber.ToLower()));
+
+                    if (!string.IsNullOrEmpty(leader))
+                        scrapPartsWithNames = scrapPartsWithNames
+                            .Where(p => p.LeaderName != null && p.LeaderName.ToLower().Contains(leader.ToLower()));
+
+                    if (!string.IsNullOrEmpty(remarks))
+                        scrapPartsWithNames = scrapPartsWithNames
+                            .Where(p => p.Remarks != null && p.Remarks.ToLower().Contains(remarks.ToLower()));
+
+                    if (totalFrom.HasValue)
+                        scrapPartsWithNames = scrapPartsWithNames.Where(p => p.Value >= totalFrom.Value);
+
+                    if (totalTo.HasValue)
+                        scrapPartsWithNames = scrapPartsWithNames.Where(p => p.Value <= totalTo.Value);
+
+                    var totalPartsAll = scrapPartsWithNames.Count();
+
+                    // Sorting
+                    var sortedParts = (sortOrder == "desc")
+                        ? scrapPartsWithNames.OrderByDescending(x => sortBy == "Qty" ? x.Qty : x.Value)
+                        : scrapPartsWithNames.OrderBy(x => sortBy == "Qty" ? x.Qty : x.Value);
+
+                    // Pagination
+                    var pagedParts = sortedParts
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+
+                    return Json(new { Data = pagedParts, TotalPartsAll = totalPartsAll }, JsonRequestBehavior.AllowGet);
+                }
+
+                // ===== PIA DOCUMENT =====
+                else if (documentTypeUpper == "PIA")
+                {
+                    if (!int.TryParse(documentId, out int piasHeaderId))
+                        return Json(new { Data = new List<object>(), TotalPartsAll = 0 }, JsonRequestBehavior.AllowGet);
+
+                    var piaDetails = await dbScrap.GetPiaDetailByPiaIdAsync(piasHeaderId);
+
+                    // Apply filters
+                    if (!string.IsNullOrEmpty(partNumber))
+                        piaDetails = piaDetails
+                            .Where(p => p.part_number != null && p.part_number.Contains(partNumber))
+                            .ToList();
+
+                    if (!string.IsNullOrEmpty(process))
+                        piaDetails = piaDetails
+                            .Where(p => p.part_proccess != null && p.part_proccess.Contains(process))
+                            .ToList();
+
+                    var totalParts = piaDetails.Count();
+
+                    // Pagination
+                    var pagedParts = piaDetails
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .Select(p => new
+                        {
+                            p.Id,
+                            p.header_id,
+                            PartNumber = p.part_number,
+                            PartDescription = p.part_description,
+                            PartProcess = p.part_proccess,
+                            p.ftypit,
+                            p.typeit,
+                            p.planit,
+                            p.cmidit,
+                            p.commit_qty,
+                            Unit = p.measit,
+                            p.baspit,
+                            PhysicalQty = p.physical_qty,
+                            SystemQty = p.system_qty,
+                            VarianceQty = p.variance_qty,
+                            TotalValue = p.total_value,
+                            Status = p.status
+                        })
+                        .ToList();
+
+                    return Json(new { Data = pagedParts, TotalPartsAll = totalParts }, JsonRequestBehavior.AllowGet);
+                }
+
+                // ===== TPR DOCUMENT (Future) =====
+                // TODO: Implement TPR logic similar to SCRAP and PIA
+
+                return Json(new { Data = new List<object>(), TotalPartsAll = 0 }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // ===== DEPRECATED: Use GetDetailDocuments instead =====
+        [Obsolete("Use GetDetailDocuments instead")]
         public async Task<ActionResult> GetScrapPartsPaged(
     string idScrap, int page = 1, int pageSize = 10,
     string sortBy = "Value", string sortOrder = "desc",
     string partNumber = "", string leader = "", string remarks = "",
     decimal? totalFrom = null, decimal? totalTo = null)
         {
-            var scrapParts = await dbScrap.GetScrapPartsByScrapIdAsync(idScrap);
-            var remarksList = dbScrap.GetScrapCodeRemarks();
-            var employees = dbScrap.GetEmployeeMasterSSO();
-
-            var scrapPartsWithNames = scrapParts.Select(p =>
-            {
-                int idRemarks;
-                bool isValid = int.TryParse(p.Remarks, out idRemarks);
-                var remarkName = isValid
-                    ? remarksList.FirstOrDefault(r => r.IdRemarks == idRemarks)?.Remarks
-                    : null;
-
-                var leaderName = !string.IsNullOrEmpty(p.LeaderKPK)
-                    ? employees.FirstOrDefault(e => e.Kpk == p.LeaderKPK)?.Name
-                    : null;
-
-                return new
-                {
-                    p.IdScrap,
-                    p.PartNum,
-                    p.Description,
-                    Qty = Math.Round(p.Qty, 2),
-                    p.Value,
-                    p.Commit,
-                    p.Measit,
-                    p.Planit,
-                    p.RnNumber,
-                    Remarks = remarkName ?? "N/A",
-                    p.CurrentStatus,
-                    p.LeaderKPK,
-                    LeaderName = (leaderName ?? "N/A").Trim()
-                };
-            });
-
-
-            // 🔍 Apply filters
-            if (!string.IsNullOrEmpty(partNumber))
-                scrapPartsWithNames = scrapPartsWithNames
-                    .Where(p => p.PartNum != null && p.PartNum.ToLower().Contains(partNumber.ToLower()));
-
-            if (!string.IsNullOrEmpty(leader))
-                scrapPartsWithNames = scrapPartsWithNames
-                    .Where(p => p.LeaderName != null && p.LeaderName.ToLower().Contains(leader.ToLower()));
-
-            if (!string.IsNullOrEmpty(remarks))
-                scrapPartsWithNames = scrapPartsWithNames
-                    .Where(p => p.Remarks != null && p.Remarks.ToLower().Contains(remarks.ToLower()));
-
-            if (totalFrom.HasValue)
-                scrapPartsWithNames = scrapPartsWithNames.Where(p => p.Value >= totalFrom.Value);
-
-            if (totalTo.HasValue)
-                scrapPartsWithNames = scrapPartsWithNames.Where(p => p.Value <= totalTo.Value);
-
-            var totalPartsAll = scrapPartsWithNames.Count();
-
-            // Sorting
-            var sortedParts = (sortOrder == "desc")
-                ? scrapPartsWithNames.OrderByDescending(x => sortBy == "Qty" ? x.Qty : x.Value)
-                : scrapPartsWithNames.OrderBy(x => sortBy == "Qty" ? x.Qty : x.Value);
-
-            // Pagination
-            var pagedParts = sortedParts
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            return Json(new { Data = pagedParts, TotalPartsAll = totalPartsAll }, JsonRequestBehavior.AllowGet);
-        }
-
-
-        public async Task<ActionResult> GetScrapSummaryPerLeader(string idScrap)
-        {
-
-            var scrapMasterList = await dbScrap.GetScrapMasterAsync();
-            var scrapMaster = scrapMasterList.FirstOrDefault(s => s.IdScrap == idScrap);
-            if (scrapMaster == null)
-                return Json(new { error = "Scrap not found" }, JsonRequestBehavior.AllowGet);
-            var employees = dbScrap.GetEmployeeMasterSSO();
-            var initiatorName = !string.IsNullOrEmpty(scrapMaster.InitiatorKpk)
-                ? employees.FirstOrDefault(e => e.Kpk == scrapMaster.InitiatorKpk)?.Name ?? "N/A"
-                : "N/A";
-            var scrapParts = await dbScrap.GetScrapPartsByScrapIdAsync(idScrap);
-            var remarksList = dbScrap.GetScrapCodeRemarks();
-            var scrapPartsWithNames = scrapParts.Select(p =>
-            {
-                int idRemarks;
-                bool isValid = int.TryParse(p.Remarks, out idRemarks);
-                var remarkName = isValid
-                    ? remarksList.FirstOrDefault(r => r.IdRemarks == idRemarks)?.Remarks
-                    : null;
-
-                var leaderName = !string.IsNullOrEmpty(p.LeaderKPK)
-                    ? employees.FirstOrDefault(e => e.Kpk == p.LeaderKPK)?.Name
-                    : null;
-
-                return new
-                {
-                    p.IdScrap,
-                    p.PartNum,
-                    p.Description,
-                    p.Qty,
-                    p.Value,
-                    Remarks = remarkName ?? "N/A",
-                    p.CurrentStatus,
-                    p.LeaderKPK,
-                    LeaderName = (leaderName ?? "N/A").Trim()
-                };
-            }).ToList();
-
-            var totalQtyOverall = scrapPartsWithNames.Sum(p => p.Qty);
-            var totalValueOverall = scrapPartsWithNames.Sum(p => p.Value);
-            var groupedByLeader = scrapPartsWithNames
-                .GroupBy(p => p.LeaderKPK)
-                .Select(g => new
-                {
-                    LeaderKPK = g.Key,
-                    LeaderName = g.FirstOrDefault()?.LeaderName ?? "N/A",
-                    TotalQty = g.Sum(x => x.Qty),
-                    TotalValue = g.Sum(x => x.Value)
-                })
-                .ToList();
-
-            var rnNumber = scrapParts.FirstOrDefault(p => !string.IsNullOrEmpty(p.RnNumber))?.RnNumber;
-
-            return Json(new
-            {
-                SpecialCodeTcCompanion = scrapMaster.SpecialCodeTcCompanion,
-                AreaCode = scrapMaster.ScrapCode,
-                Facility = scrapMaster.Facility,
-                TC = scrapMaster.TC,
-                CreatedDate = scrapMaster.CreatedDate,
-                WC = scrapMaster.WC,
-                RnNumber = rnNumber,
-                InitiatorKpk = scrapMaster.InitiatorKpk,
-                InitiatorName = initiatorName,
-                DeletedAt = scrapMaster.DeletedAt,
-                CurrentStatus = scrapMaster.CurrentStatus,
-                Data = groupedByLeader,
-                TotalQtyOverall = totalQtyOverall,
-                TotalValueOverall = totalValueOverall
-            }, JsonRequestBehavior.AllowGet);
+            return await GetDetailDocuments("SCRAP", idScrap, page, pageSize, sortBy, sortOrder, partNumber, leader, remarks, "", totalFrom, totalTo);
         }
 
 
         [HttpGet]
-        public async Task<JsonResult> GetScrapSourceApprovals(string scrapId)
+        public async Task<ActionResult> GetHeaderDocuments(string documentType, string documentId)
         {
-            if (string.IsNullOrEmpty(scrapId))
+            try
+            {
+                if (string.IsNullOrEmpty(documentType) || string.IsNullOrEmpty(documentId))
+                    return Json(new { error = "Document Type and Document ID are required" }, JsonRequestBehavior.AllowGet);
+
+                var documentTypeUpper = documentType.ToUpper();
+                var employees = dbScrap.GetEmployeeMasterSSO();
+                var employeeDict = employees
+                    .GroupBy(e => e.Kpk)
+                    .ToDictionary(g => g.Key, g => g.First().Name);
+
+                // ===== SCRAP DOCUMENT =====
+                if (documentTypeUpper == "SCRAP")
+                {
+                    var scrapMasterList = await dbScrap.GetScrapMasterAsync();
+                    var scrapMaster = scrapMasterList.FirstOrDefault(s => s.IdScrap == documentId);
+                    if (scrapMaster == null)
+                        return Json(new { error = "Scrap not found" }, JsonRequestBehavior.AllowGet);
+
+                    var scrapParts = await dbScrap.GetScrapPartsByScrapIdAsync(documentId);
+                    var remarksList = dbScrap.GetScrapCodeRemarks();
+
+                    var scrapPartsWithNames = scrapParts.Select(p =>
+                    {
+                        int idRemarks;
+                        bool isValid = int.TryParse(p.Remarks, out idRemarks);
+                        var remarkName = isValid
+                            ? remarksList.FirstOrDefault(r => r.IdRemarks == idRemarks)?.Remarks
+                            : null;
+
+                        var leaderName = !string.IsNullOrEmpty(p.LeaderKPK)
+                            ? employees.FirstOrDefault(e => e.Kpk == p.LeaderKPK)?.Name
+                            : null;
+
+                        return new
+                        {
+                            p.IdScrap,
+                            p.PartNum,
+                            p.Description,
+                            p.Qty,
+                            p.Value,
+                            Remarks = remarkName ?? "N/A",
+                            p.CurrentStatus,
+                            p.LeaderKPK,
+                            LeaderName = (leaderName ?? "N/A").Trim()
+                        };
+                    }).ToList();
+
+                    var rnNumber = scrapParts.FirstOrDefault(p => !string.IsNullOrEmpty(p.RnNumber))?.RnNumber;
+
+                    var totalQtyOverall = scrapPartsWithNames.Sum(p => p.Qty);
+                    var totalValueOverall = scrapPartsWithNames.Sum(p => p.Value);
+
+                    var groupedByLeader = scrapPartsWithNames
+                        .GroupBy(p => p.LeaderKPK)
+                        .Select(g => new
+                        {
+                            LeaderKPK = g.Key,
+                            LeaderName = g.FirstOrDefault()?.LeaderName ?? "N/A",
+                            TotalQty = g.Sum(x => x.Qty),
+                            TotalValue = g.Sum(x => x.Value)
+                        })
+                        .ToList();
+
+                    var initiatorName = !string.IsNullOrEmpty(scrapMaster.InitiatorKpk) 
+                        && employeeDict.ContainsKey(scrapMaster.InitiatorKpk)
+                        ? employeeDict[scrapMaster.InitiatorKpk]
+                        : "Unknown";
+
+                    return Json(new
+                    {
+                        SpecialCodeTcCompanion = scrapMaster.SpecialCodeTcCompanion,
+                        AreaCode = scrapMaster.ScrapCode,
+                        Facility = scrapMaster.Facility,
+                        TC = scrapMaster.TC,
+                        CreatedDate = scrapMaster.CreatedDate,
+                        WC = scrapMaster.WC,
+                        RnNumber = rnNumber,
+                        InitiatorKpk = scrapMaster.InitiatorKpk,
+                        InitiatorName = initiatorName,
+                        DeletedAt = scrapMaster.DeletedAt,
+                        CurrentStatus = scrapMaster.CurrentStatus,
+                        Data = groupedByLeader,
+                        TotalQtyOverall = totalQtyOverall,
+                        TotalValueOverall = totalValueOverall
+                    }, JsonRequestBehavior.AllowGet);
+                }
+
+                // ===== PIA DOCUMENT =====
+                else if (documentTypeUpper == "PIA")
+                {
+                    if (!int.TryParse(documentId, out int piasHeaderId))
+                        return Json(new { error = "Invalid PIA Document ID" }, JsonRequestBehavior.AllowGet);
+
+                    var piaHeaderList = await dbScrap.GetPiaHeaderAsync();
+                    var piaHeader = piaHeaderList.FirstOrDefault(p => p.Id == piasHeaderId);
+
+                    if (piaHeader == null)
+                        return Json(new { error = "PIA Header not found" }, JsonRequestBehavior.AllowGet);
+
+                    var piaDetails = await dbScrap.GetPiaDetailByPiaIdAsync(piasHeaderId);
+
+                    var totalVarianceQty = piaDetails.Sum(p => p.variance_qty);
+                    var totalValue = piaDetails.Sum(p => p.total_value);
+
+                    return Json(new
+                    {
+                        Facility = piaHeader.Facility,
+                        TC = piaHeader.TC,
+                        PiaCode = piaHeader.PiaCode,
+                        Type = piaHeader.Type,
+                        WC = piaHeader.WC,
+                        Status = piaHeader.Status,
+                        TcCompanion = piaHeader.TcCompanion,
+                        CreatedByName = piaHeader.CreatedByName,
+                        CreatedAt = piaHeader.CreatedAt,
+                        TotalValue = totalValue,
+                        TotalVarianceQty = totalVarianceQty
+                    }, JsonRequestBehavior.AllowGet);
+                }
+
+                // ===== TPR DOCUMENT (Future) =====
+                // TODO: Implement TPR logic
+
+                return Json(new { error = "Document Type not supported" }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // ===== DEPRECATED: Use GetHeaderDocuments instead =====
+        [Obsolete("Use GetHeaderDocuments instead")]
+        public async Task<ActionResult> GetScrapSummaryPerLeader(string idScrap)
+        {
+            return await GetHeaderDocuments("SCRAP", idScrap);
+        }
+
+        // ===== DEPRECATED: Use GetHeaderDocuments instead =====
+        [Obsolete("Use GetHeaderDocuments instead")]
+        public async Task<ActionResult> GetPiaSummaryPerLeader(int piasHeaderId)
+        {
+            return await GetHeaderDocuments("PIA", piasHeaderId.ToString());
+        }
+
+
+        [HttpGet]
+        public async Task<JsonResult> GetDetailsApprovals(string documentType, string documentId)
+        {
+            if (string.IsNullOrEmpty(documentType) || string.IsNullOrEmpty(documentId))
                 return Json(new { Data = new List<object>(), Count = 0 }, JsonRequestBehavior.AllowGet);
 
-            var sourceDataList = dbCentralizedNotification.GetSourceDataSystemList();
-            var scrapList = await dbScrap.GetScrapMasterAsync();
-            var approvalList = await dbCentralizedNotification.GetApprovalListAsync();
-            var employees = dbCentralizedNotification.GetEmployeeMasterSSO();
-            var employeeDict = employees
-                .GroupBy(e => e.Kpk)
-                .ToDictionary(g => g.Key, g => g.First().Name);
-            var delegateInfos = await dbScrap.GetDelegateApprovalInfosAsync();
-            var userDelegates = await dbScrap.GetUserDelegatesAsync();
-            var userDelegateDict = userDelegates
-                .GroupBy(d => d.UserKpk)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(x => new
-                    {
-                        x.DelegateKpk,
-                        DelegateName = employeeDict.ContainsKey(x.DelegateKpk)
-                            ? employeeDict[x.DelegateKpk]
-                            : "Unknown",
-                        x.DelegateTime
-                    }).ToList()
-                );
-            var matched = sourceDataList
-                .Where(src => src.Centralized_SourceData_Master_ID_Str == scrapId)
-                .Select(src =>
-                {
-                    var scrapMaster = scrapList.FirstOrDefault(s => s.IdScrap == scrapId);
+            var documentTypeUpper = documentType.ToUpper();
 
-                    return new
-                    {
-                        src.Centralized_SourceData_ID,
-                        src.Centralized_SourceData_Master_ID_Str,
-                        src.Centralized_SourceData_Master_Status,
-
-                        InitiatorKpk = scrapMaster?.InitiatorKpk,
-                        InitiatorName = scrapMaster != null && !string.IsNullOrEmpty(scrapMaster.InitiatorKpk)
-                            && employeeDict.ContainsKey(scrapMaster.InitiatorKpk)
-                            ? employeeDict[scrapMaster.InitiatorKpk]
-                            : "Unknown",
-                        CurrentStatus = src.Centralized_SourceData_Master_Status,
-                        DeletedAt = scrapMaster?.DeletedAt,
-
-                        // approvals
-                        Approvals = approvalList
-                            .Where(a => a.Centralized_SourceData_ID == src.Centralized_SourceData_ID)
-                            .OrderBy(a => a.Centralized_ApprovalList_Step)
-                            .Select(a =>
-                            {
-
-                                var delegateKpks = delegateInfos
-                                    .Where(d => d.Centralized_ApprovalList_ID == a.Centralized_ApprovalList_ID)
-                                    .Select(d => d.Delegate_ApprovalList_KpkApproval)
-                                    .ToList();
-
-
-                                var userDelegatesForThisApprover = userDelegateDict.ContainsKey(a.Centralized_ApprovalList_KpkApproval)
-                                      ? userDelegateDict[a.Centralized_ApprovalList_KpkApproval]
-                                          .Select(d => (object)new { d.DelegateKpk, d.DelegateName, d.DelegateTime })
-                                          .ToList()
-                                      : new List<object>();
-
-
-                                return new
-                                {
-                                    a.Centralized_ApprovalList_ID,
-                                    a.Centralized_SourceData_ID,
-                                    a.Centralized_ApprovalList_Step,
-                                    a.Centralized_StatusList_ID,
-                                    a.Centralized_ApprovalList_Date,
-                                    OriginalKpkApproval = a.Centralized_ApprovalList_KpkApproval,
-                                    ApproverName = employeeDict.ContainsKey(a.Centralized_ApprovalList_KpkApproval)
-                                        ? employeeDict[a.Centralized_ApprovalList_KpkApproval]
-                                        : "Unknown",
-
-                                    DelegateKpks = delegateKpks,
-                                    DelegateNames = delegateKpks
-                                        .Select(k => employeeDict.ContainsKey(k) ? employeeDict[k] : "Unknown")
-                                        .ToList(),
-                                    UserDelegateList = userDelegatesForThisApprover
-                                };
-                            })
-                            .ToList()
-                    };
-                })
-                .ToList();
-
-            return Json(new
+            // ===== SCRAP DOCUMENT =====
+            if (documentTypeUpper == "SCRAP")
             {
-                Data = matched,
-                Count = matched.Count
-            }, JsonRequestBehavior.AllowGet);
+                var sourceDataList = dbCentralizedNotification.GetSourceDataSystemList();
+                var scrapList = await dbScrap.GetScrapMasterAsync();
+                var approvalList = await dbCentralizedNotification.GetApprovalListAsync();
+                var employees = dbCentralizedNotification.GetEmployeeMasterSSO();
+                var employeeDict = employees
+                    .GroupBy(e => e.Kpk)
+                    .ToDictionary(g => g.Key, g => g.First().Name);
+                var delegateInfos = await dbScrap.GetDelegateApprovalInfosAsync();
+                var userDelegates = await dbScrap.GetUserDelegatesAsync();
+                var userDelegateDict = userDelegates
+                    .GroupBy(d => d.UserKpk)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(x => new
+                        {
+                            x.DelegateKpk,
+                            DelegateName = employeeDict.ContainsKey(x.DelegateKpk)
+                                ? employeeDict[x.DelegateKpk]
+                                : "Unknown",
+                            x.DelegateTime
+                        }).ToList()
+                    );
+                var matched = sourceDataList
+                    .Where(src => src.Centralized_SourceData_Master_ID_Str == documentId)
+                    .Select(src =>
+                    {
+                        var scrapMaster = scrapList.FirstOrDefault(s => s.IdScrap == documentId);
+
+                        return new
+                        {
+                            src.Centralized_SourceData_ID,
+                            src.Centralized_SourceData_Master_ID_Str,
+                            src.Centralized_SourceData_Master_Status,
+
+                            InitiatorKpk = scrapMaster?.InitiatorKpk,
+                            InitiatorName = scrapMaster != null && !string.IsNullOrEmpty(scrapMaster.InitiatorKpk)
+                                && employeeDict.ContainsKey(scrapMaster.InitiatorKpk)
+                                ? employeeDict[scrapMaster.InitiatorKpk]
+                                : "Unknown",
+                            CurrentStatus = src.Centralized_SourceData_Master_Status,
+                            DeletedAt = scrapMaster?.DeletedAt,
+
+                            // approvals
+                            Approvals = approvalList
+                                .Where(a => a.Centralized_SourceData_ID == src.Centralized_SourceData_ID)
+                                .OrderBy(a => a.Centralized_ApprovalList_Step)
+                                .Select(a =>
+                                {
+                                    var delegateKpks = delegateInfos
+                                        .Where(d => d.Centralized_ApprovalList_ID == a.Centralized_ApprovalList_ID)
+                                        .Select(d => d.Delegate_ApprovalList_KpkApproval)
+                                        .ToList();
+
+                                    var userDelegatesForThisApprover = userDelegateDict.ContainsKey(a.Centralized_ApprovalList_KpkApproval)
+                                          ? userDelegateDict[a.Centralized_ApprovalList_KpkApproval]
+                                              .Select(d => (object)new { d.DelegateKpk, d.DelegateName, d.DelegateTime })
+                                              .ToList()
+                                          : new List<object>();
+
+                                    return new
+                                    {
+                                        a.Centralized_ApprovalList_ID,
+                                        a.Centralized_SourceData_ID,
+                                        a.Centralized_ApprovalList_Step,
+                                        a.Centralized_StatusList_ID,
+                                        a.Centralized_ApprovalList_Date,
+                                        OriginalKpkApproval = a.Centralized_ApprovalList_KpkApproval,
+                                        ApproverName = employeeDict.ContainsKey(a.Centralized_ApprovalList_KpkApproval)
+                                            ? employeeDict[a.Centralized_ApprovalList_KpkApproval]
+                                            : "Unknown",
+
+                                        DelegateKpks = delegateKpks,
+                                        DelegateNames = delegateKpks
+                                            .Select(k => employeeDict.ContainsKey(k) ? employeeDict[k] : "Unknown")
+                                            .ToList(),
+                                        UserDelegateList = userDelegatesForThisApprover
+                                    };
+                                })
+                                .ToList()
+                        };
+                    })
+                    .ToList();
+
+                return Json(new
+                {
+                    Data = matched,
+                    Count = matched.Count
+                }, JsonRequestBehavior.AllowGet);
+            }
+
+            // ===== PIA DOCUMENT (if applicable) =====
+            else if (documentTypeUpper == "PIA")
+            {
+                // TODO: Implement PIA approvals if needed
+                // For now, return empty list as PIA may not have approval flow like SCRAP
+                return Json(new { Data = new List<object>(), Count = 0 }, JsonRequestBehavior.AllowGet);
+            }
+
+            // ===== TPR DOCUMENT (Future) =====
+            // TODO: Implement TPR logic
+
+            return Json(new { Data = new List<object>(), Count = 0 }, JsonRequestBehavior.AllowGet);
+        }
+
+        // ===== DEPRECATED: Use GetDetailsApprovals instead =====
+        [Obsolete("Use GetDetailsApprovals instead")]
+        public async Task<JsonResult> GetScrapSourceApprovals(string scrapId)
+        {
+            return await GetDetailsApprovals("SCRAP", scrapId);
         }
 
 
@@ -1784,7 +1966,13 @@ namespace MaterialControlCenter.Controllers
             }
         }
 
-
+        // ===== DEPRECATED: Use GetDetailDocuments instead =====
+        [Obsolete("Use GetDetailDocuments instead")]
+        public async Task<ActionResult> GetPiaDetailsPaged(int piasHeaderId, int page = 1, int pageSize = 10, 
+            string partNumber = "", string process = "")
+        {
+            return await GetDetailDocuments("PIA", piasHeaderId.ToString(), page, pageSize, "", "", partNumber, "", "", process);
+        }
 
     }
 }

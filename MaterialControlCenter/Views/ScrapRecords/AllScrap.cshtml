@@ -839,10 +839,14 @@
                     // ── Document ID & detail URL ───────────────────────────
                     // GetAllRecords mengembalikan field "DocumentId" (unified)
                     const docId = item.DocumentId || item.Centralized_SourceData_ID || "";
+
+                    // Encode docId to base64 for token
+                    const encodedToken = btoa(docId);
+
                     const detailUrls = {
-                        "SCRAP": `/DataForms/DetailScrap?id=${docId}`,
-                        "PIA":   `/DataForms/DetailPia?id=${docId}`,
-                        "TPR":   `/DataForms/DetailTpr?id=${docId}`
+                        "SCRAP": `/ScrapRecords/DetailScrap?token=${encodedToken}`,
+                        "PIA":   `/ScrapRecords/DetailPia?token=${encodedToken}`,
+                        "TPR":   `/ScrapRecords/DetailTpr?token=${encodedToken}`
                     };
                     const detailUrl = detailUrls[app] || "#";
 

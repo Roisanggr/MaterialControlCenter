@@ -27,6 +27,20 @@ namespace MaterialControlCenter.Controllers
             return View();
         }
 
+        public ActionResult DetailPia(string token)
+        {
+            try
+            {
+                string docId = Encoding.UTF8.GetString(Convert.FromBase64String(token));
+                ViewBag.DocumentID = docId;
+                return View();
+            }
+            catch (Exception ex)
+            {
+                return View("Error", new HandleErrorInfo(ex, "ScrapRecords", "DetailPia"));
+            }
+        }
+
 
 
 
