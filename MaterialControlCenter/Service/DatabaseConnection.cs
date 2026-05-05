@@ -1167,6 +1167,7 @@ namespace MaterialControlCenter.Service
                 SELECT 
                     [Centralized_SourceData_ID],
                     [Centralized_SystemList_ID],
+                    [Centralized_SourceData_TableName],
                     [Centralized_SourceData_Master_ID],
                     [Centralized_SourceData_Master_Status],
                     [Centralized_SourceData_Master_CreatedDate]
@@ -1187,6 +1188,9 @@ namespace MaterialControlCenter.Service
                         {
                             Centralized_SourceData_ID = reader.GetInt32(reader.GetOrdinal("Centralized_SourceData_ID")),
                             Centralized_SystemList_ID = reader.GetInt32(reader.GetOrdinal("Centralized_SystemList_ID")),
+                            Centralized_SourceData_TableName = reader.IsDBNull(reader.GetOrdinal("Centralized_SourceData_TableName"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("Centralized_SourceData_TableName")),
                             Centralized_SourceData_Master_ID = reader.GetInt32(reader.GetOrdinal("Centralized_SourceData_Master_ID")),
                             Centralized_SourceData_Master_Status = reader.GetInt32(reader.GetOrdinal("Centralized_SourceData_Master_Status")),
                             Centralized_SourceData_Master_CreatedDate = reader.GetDateTime(reader.GetOrdinal("Centralized_SourceData_Master_CreatedDate"))
@@ -3025,5 +3029,3 @@ namespace MaterialControlCenter.Service
     }
 
 }
-
-

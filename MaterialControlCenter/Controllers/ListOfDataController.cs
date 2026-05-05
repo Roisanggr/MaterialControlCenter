@@ -20,7 +20,7 @@ namespace MaterialControlCenter.Controllers
 {
     public class ListOfDataController : BaseController
     {
-       
+
         [HttpGet]
         public JsonResult GetSourceDataSystemList()
         {
@@ -520,12 +520,28 @@ namespace MaterialControlCenter.Controllers
                     : new List<ApprovalDtoV2Fastest>();
 
                 // ── Coba cocokkan ke Scrap ──
-                if (includeScrap && !string.IsNullOrEmpty(src.Centralized_SourceData_Master_ID_Str))
+                // Guard: hanya proses jika TableName eksplisit "scrap_master" ATAU
+                //        TableName kosong/null dan ID_Str ada (backward-compat)
+                bool isScrapTable = string.Equals(src.Centralized_SourceData_TableName, "scrap_master",
+                    StringComparison.OrdinalIgnoreCase);
+                if (includeScrap && isScrapTable && !string.IsNullOrEmpty(src.Centralized_SourceData_Master_ID_Str))
                 {
                     var scr = scrapList.FirstOrDefault(s => s.IdScrap == src.Centralized_SourceData_Master_ID_Str);
                     if (scr != null)
                     {
                         var agg = scrapAggLookup.TryGetValue(scr.IdScrap, out var sa) ? sa : null;
+
+                        // Gunakan CreatedDate dari scrap_master, fallback ke Centralized jika null
+                        var scrapCreatedDate = scr.CreatedDate ?? src.Centralized_SourceData_Master_CreatedDate;
+
+                        // Approver aktif: step pending (StatusList_ID=1) paling awal
+                        var activeApprovalScrap = approvals
+                            .OrderBy(a => a.Centralized_ApprovalList_Step)
+                            .FirstOrDefault(a => a.Centralized_StatusList_ID == 1);
+                        var currentApprovalScrap = activeApprovalScrap != null
+                            ? $"Step {activeApprovalScrap.Centralized_ApprovalList_Step}: {activeApprovalScrap.ApproverName}"
+                            : "-";
+
                         unified.Add(new
                         {
                             AppType = "SCRAP",
@@ -540,7 +556,7 @@ namespace MaterialControlCenter.Controllers
                             InitiatorName = employeeDict.TryGetValue(scr.InitiatorKpk ?? "", out var sName)
                                             ? sName : "Unknown",
                             Code = scr.ScrapCode,
-                            CreatedDate = scr.CreatedDate,
+                            CreatedDate = scrapCreatedDate,
                             CurrentStatus = scr.CurrentStatus,
                             scr.WC,
                             TcCompanion = scr.SpecialCodeTcCompanion,
@@ -548,11 +564,11 @@ namespace MaterialControlCenter.Controllers
 
                             TotalQty = agg?.TotalQty ?? 0m,
                             TotalValue = agg?.TotalValue ?? 0m,
-                            // PIA-specific fields → null untuk Scrap
                             TotalPhysicalQty = (decimal?)null,
                             TotalSystemQty = (decimal?)null,
                             TotalVarianceQty = (decimal?)null,
 
+                            CurrentApproval = currentApprovalScrap,
                             Approvals = approvals
                         });
                         continue; // sudah cocok, lanjut ke src berikutnya
@@ -560,12 +576,27 @@ namespace MaterialControlCenter.Controllers
                 }
 
                 // ── Coba cocokkan ke PIA ──
-                if (includePia)
+                // Guard: hanya proses jika TableName eksplisit "pia_header"
+                bool isPiaTable = string.Equals(src.Centralized_SourceData_TableName, "pia_header",
+                    StringComparison.OrdinalIgnoreCase);
+                if (includePia && isPiaTable)
                 {
                     var pia = piaHeaders.FirstOrDefault(h => (int)h.Id == src.Centralized_SourceData_Master_ID);
                     if (pia != null)
                     {
                         var agg = piaAggLookup.TryGetValue((int)pia.Id, out var pa) ? pa : null;
+
+                        // Gunakan CreatedAt dari pia_header, fallback ke Centralized jika null
+                        var piaCreatedDate = pia.CreatedAt ?? (DateTime?)src.Centralized_SourceData_Master_CreatedDate;
+
+                        // Approver aktif: step pending (StatusList_ID=1) paling awal
+                        var activeApprovalPia = approvals
+                            .OrderBy(a => a.Centralized_ApprovalList_Step)
+                            .FirstOrDefault(a => a.Centralized_StatusList_ID == 1);
+                        var currentApprovalPia = activeApprovalPia != null
+                            ? $"Step {activeApprovalPia.Centralized_ApprovalList_Step}: {activeApprovalPia.ApproverName}"
+                            : "-";
+
                         unified.Add(new
                         {
                             AppType = "PIA",
@@ -580,18 +611,19 @@ namespace MaterialControlCenter.Controllers
                             InitiatorName = employeeDict.TryGetValue(pia.CreatedByKpk.ToString(), out var pName)
                                             ? pName : "Unknown",
                             Code = pia.PiaCode.ToString(),
-                            CreatedDate = pia.CreatedAt,
+                            CreatedDate = piaCreatedDate,
                             CurrentStatus = pia.Status,
                             pia.WC,
                             TcCompanion = pia.TcCompanion,
                             DeletedAt = pia.DeletedAt,
 
-                            TotalQty = agg?.TotalPhysicalQty ?? 0m, // physical_qty sebagai "qty" PIA
+                            TotalQty = agg?.TotalPhysicalQty ?? 0m,
                             TotalValue = agg?.TotalValue ?? 0m,
                             TotalPhysicalQty = agg?.TotalPhysicalQty ?? 0m,
                             TotalSystemQty = agg?.TotalSystemQty ?? 0m,
                             TotalVarianceQty = agg?.TotalVarianceQty ?? 0m,
 
+                            CurrentApproval = currentApprovalPia,
                             Approvals = approvals
                         });
                     }
@@ -1199,6 +1231,267 @@ namespace MaterialControlCenter.Controllers
             }, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpGet]
+        public async Task<JsonResult> GetScrapRecords()
+        {
+            try
+            {
+                // ================= FETCH DATA =================
+                var sourceTask = Task.Run(() =>
+                    dbCentralizedNotification.GetSourceDataSystemList());
+
+                await sourceTask;
+
+                var sourceDataList = sourceTask.Result;
+
+                // ================= FILTER =================
+                // Filter: Centralized_SystemList_ID = 4 (SCRAP) & Centralized_SourceData_TableName = 'scrap_master'
+                var scrapRecords = sourceDataList
+                    .Where(x => x.Centralized_SystemList_ID == 4 && 
+                                x.Centralized_SourceData_TableName == "scrap_master")
+                    .ToList();
+
+                // ================= COUNT =================
+                int totalScrapDocuments = scrapRecords.Count;
+
+                return Json(new
+                {
+                    success = true,
+                    totalScrapDocuments = totalScrapDocuments,
+                    totalCount = totalScrapDocuments
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message,
+                    totalScrapDocuments = 0
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetScrapRecordsStatusCount()
+        {
+            try
+            {
+                // ================= FETCH DATA =================
+                var sourceTask = Task.Run(() =>
+                    dbCentralizedNotification.GetSourceDataSystemList());
+
+                await sourceTask;
+
+                var sourceDataList = sourceTask.Result;
+
+                // ================= FILTER =================
+                // Filter: Centralized_SystemList_ID = 4 (SCRAP) & Centralized_SourceData_TableName = 'scrap_master'
+                var scrapRecords = sourceDataList
+                    .Where(x => x.Centralized_SystemList_ID == 4 && 
+                                x.Centralized_SourceData_TableName == "scrap_master")
+                    .ToList();
+
+                // ================= COUNT BY STATUS =================
+                // Status: Waiting(1), Approved(4), Rejected(5), Finish(9), Draft(16)
+                int waitingCount = scrapRecords.Count(x => x.Centralized_SourceData_Master_Status == 1);
+                int approvedCount = scrapRecords.Count(x => x.Centralized_SourceData_Master_Status == 4);
+                int rejectedCount = scrapRecords.Count(x => x.Centralized_SourceData_Master_Status == 5);
+                int finishCount = scrapRecords.Count(x => x.Centralized_SourceData_Master_Status == 9);
+                int draftCount = scrapRecords.Count(x => x.Centralized_SourceData_Master_Status == 16);
+
+                return Json(new
+                {
+                    success = true,
+                    waiting = waitingCount,
+                    approved = approvedCount,
+                    rejected = rejectedCount,
+                    finish = finishCount,
+                    draft = draftCount,
+                    total = scrapRecords.Count
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message,
+                    waiting = 0,
+                    approved = 0,
+                    rejected = 0,
+                    finish = 0,
+                    draft = 0,
+                    total = 0
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetPiaRecords()
+        {
+            try
+            {
+                // ================= FETCH DATA =================
+                var sourceTask = Task.Run(() =>
+                    dbCentralizedNotification.GetSourceDataSystemList());
+
+                await sourceTask;
+
+                var sourceDataList = sourceTask.Result;
+
+                // ================= FILTER =================
+                // Filter: Centralized_SystemList_ID = 4 (PIA) & Centralized_SourceData_TableName = 'pia_header'
+                var piaRecords = sourceDataList
+                    .Where(x => x.Centralized_SystemList_ID == 4 && 
+                                x.Centralized_SourceData_TableName == "pia_header")
+                    .ToList();
+
+                // ================= COUNT =================
+                int totalPiaDocuments = piaRecords.Count;
+
+                return Json(new
+                {
+                    success = true,
+                    totalPiaDocuments = totalPiaDocuments,
+                    totalCount = totalPiaDocuments
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message,
+                    totalPiaDocuments = 0
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetPiaRecordsStatusCount()
+        {
+            try
+            {
+                // ================= FETCH DATA =================
+                var sourceTask = Task.Run(() =>
+                    dbCentralizedNotification.GetSourceDataSystemList());
+
+                await sourceTask;
+
+                var sourceDataList = sourceTask.Result;
+
+                // ================= FILTER =================
+                // Filter: Centralized_SystemList_ID = 4 (PIA) & Centralized_SourceData_TableName = 'pia_header'
+                var piaRecords = sourceDataList
+                    .Where(x => x.Centralized_SystemList_ID == 4 && 
+                                x.Centralized_SourceData_TableName == "pia_header")
+                    .ToList();
+
+                // ================= COUNT BY STATUS =================
+                // Status: Waiting(1), Approved(4), Rejected(5), Finish(9), Draft(16)
+                int waitingCount = piaRecords.Count(x => x.Centralized_SourceData_Master_Status == 1);
+                int approvedCount = piaRecords.Count(x => x.Centralized_SourceData_Master_Status == 4);
+                int rejectedCount = piaRecords.Count(x => x.Centralized_SourceData_Master_Status == 5);
+                int finishCount = piaRecords.Count(x => x.Centralized_SourceData_Master_Status == 9);
+                int draftCount = piaRecords.Count(x => x.Centralized_SourceData_Master_Status == 16);
+
+                return Json(new
+                {
+                    success = true,
+                    waiting = waitingCount,
+                    approved = approvedCount,
+                    rejected = rejectedCount,
+                    finish = finishCount,
+                    draft = draftCount,
+                    total = piaRecords.Count
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message,
+                    waiting = 0,
+                    approved = 0,
+                    rejected = 0,
+                    finish = 0,
+                    draft = 0,
+                    total = 0
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetAllRecordsTotal()
+        {
+            try
+            {
+                // ================= FETCH DATA =================
+                var sourceTask = Task.Run(() =>
+                    dbCentralizedNotification.GetSourceDataSystemList());
+                var scrapPartsTask = dbScrap.GetScrapPartsAllAsync();
+
+                await Task.WhenAll(sourceTask, scrapPartsTask);
+
+                var sourceDataList = sourceTask.Result;
+                var allScrapParts = scrapPartsTask.Result;
+
+                // ================= AGGREGATE PARTS =================
+                var scrapAggLookup = allScrapParts
+                    .GroupBy(p => p.IdScrap)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => new
+                        {
+                            Qty = g.Sum(x => x.Qty),
+                            Value = g.Sum(x => x.Value)
+                        });
+
+                // ================= FILTER & CALCULATE =================
+                // Filter: Centralized_SystemList_ID = 4 (mencakup SCRAP dan PIA)
+                // Hitung semua dokumen SCRAP + PIA dengan semua status
+                var allRecords = sourceDataList
+                    .Where(x => x.Centralized_SystemList_ID == 4)
+                    .Where(x => (x.Centralized_SourceData_TableName == "scrap_master" || 
+                                 x.Centralized_SourceData_TableName == "pia_header"))
+                    .ToList();
+
+                // Calculate total value
+                decimal totalValueAll = 0;
+                foreach (var record in allRecords)
+                {
+                    var recordId = record.Centralized_SourceData_Master_ID_Str;
+                    if (scrapAggLookup.TryGetValue(recordId, out var agg))
+                    {
+                        totalValueAll += agg.Value;
+                    }
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    totalValueAll = totalValueAll,
+                    totalScrapDocuments = allRecords.Count(x => x.Centralized_SourceData_TableName == "scrap_master"),
+                    totalPiaDocuments = allRecords.Count(x => x.Centralized_SourceData_TableName == "pia_header"),
+                    totalAllDocuments = allRecords.Count
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message,
+                    totalValueAll = 0,
+                    totalScrapDocuments = 0,
+                    totalPiaDocuments = 0,
+                    totalAllDocuments = 0
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         public async Task<ActionResult> GetScrapPartsPaged(
     string idScrap, int page = 1, int pageSize = 10,
     string sortBy = "Value", string sortOrder = "desc",
@@ -1278,7 +1571,7 @@ namespace MaterialControlCenter.Controllers
 
         public async Task<ActionResult> GetScrapSummaryPerLeader(string idScrap)
         {
-            
+
             var scrapMasterList = await dbScrap.GetScrapMasterAsync();
             var scrapMaster = scrapMasterList.FirstOrDefault(s => s.IdScrap == idScrap);
             if (scrapMaster == null)
@@ -1336,7 +1629,7 @@ namespace MaterialControlCenter.Controllers
                 AreaCode = scrapMaster.ScrapCode,
                 Facility = scrapMaster.Facility,
                 TC = scrapMaster.TC,
-                CreatedDate=scrapMaster.CreatedDate,
+                CreatedDate = scrapMaster.CreatedDate,
                 WC = scrapMaster.WC,
                 RnNumber = rnNumber,
                 InitiatorKpk = scrapMaster.InitiatorKpk,
@@ -1404,16 +1697,16 @@ namespace MaterialControlCenter.Controllers
                             .OrderBy(a => a.Centralized_ApprovalList_Step)
                             .Select(a =>
                             {
-                               
+
                                 var delegateKpks = delegateInfos
                                     .Where(d => d.Centralized_ApprovalList_ID == a.Centralized_ApprovalList_ID)
                                     .Select(d => d.Delegate_ApprovalList_KpkApproval)
                                     .ToList();
 
-                               
+
                                 var userDelegatesForThisApprover = userDelegateDict.ContainsKey(a.Centralized_ApprovalList_KpkApproval)
                                       ? userDelegateDict[a.Centralized_ApprovalList_KpkApproval]
-                                          .Select(d => (object)new { d.DelegateKpk, d.DelegateName, d.DelegateTime})
+                                          .Select(d => (object)new { d.DelegateKpk, d.DelegateName, d.DelegateTime })
                                           .ToList()
                                       : new List<object>();
 

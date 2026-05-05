@@ -16,7 +16,7 @@
                 <h4 id="totalValueAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
                     <span class="skeleton w-12 h-6 bg-white/20 animate-pulse rounded"></span>
                 </h4>
-                <p class="text-white/60">Overall Total</p>
+                <p class="text-white/60">Overall Total Value</p>
             </div>
             <div>
                 <div id="chart" dir="ltr"></div>
@@ -25,7 +25,7 @@
         <div class="flex items-start justify-between gap-6 p-5 bg-white border rounded border-black/10">
             <div>
                 <p class="text-base font-medium text-gray-600">Scrap Request</p>
-                <h4 id="totalQtyAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black">
+                <h4 id="scrapRequestCount" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black">
                     <span class="skeleton w-16 h-8 bg-gray-200 animate-pulse rounded"></span>
                 </h4>
                 <p class="text-sm text-gray-400 mt-1">Document</p>
@@ -52,7 +52,7 @@
                      position: absolute;
                      bottom: calc(100% + 8px);
                      right: 0;
-                     width: 140px;
+                     width: 160px;
                      padding: 10px 12px;
                      background-color: #6b7280;
                      color: white;
@@ -62,10 +62,11 @@
                      transition: opacity 0.2s ease, visibility 0.2s ease;
                      z-index: 50;
                      white-space: nowrap;">
-                    <ul style="list-style: none; margin: 0; padding: 0; line-height: 1.8;">
-                        <li>• Waiting = 3</li>
-                        <li>• Approved = 1</li>
-                        <li>• Finish = 11</li>
+                    <ul id="scrapStatusTooltip" style="list-style: none; margin: 0; padding: 0; line-height: 1.8;">
+                        <li>• Waiting = -</li>
+                        <li>• Approved = -</li>
+                        <li>• Rejected = -</li>
+                        <li>• Finish = -</li>
                     </ul>
                     <!-- Arrow -->
                     <div style="
@@ -91,7 +92,7 @@
         <div class="flex items-start justify-between gap-6 p-5 bg-white border rounded border-black/10">
             <div>
                 <p class="text-base font-medium text-gray-600">PIA Request</p>
-                <h4 id="totalQtyAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black">
+                <h4 id="piaRequestCount" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black">
                     <span class="skeleton w-16 h-8 bg-gray-200 animate-pulse rounded"></span>
                 </h4>
                 <p class="text-sm text-gray-400 mt-1">Document</p>
@@ -118,7 +119,7 @@
                      position: absolute;
                      bottom: calc(100% + 8px);
                      right: 0;
-                     width: 140px;
+                     width: 160px;
                      padding: 10px 12px;
                      background-color: #6b7280;
                      color: white;
@@ -128,10 +129,11 @@
                      transition: opacity 0.2s ease, visibility 0.2s ease;
                      z-index: 50;
                      white-space: nowrap;">
-                    <ul style="list-style: none; margin: 0; padding: 0; line-height: 1.8;">
-                        <li>• Waiting = 3</li>
-                        <li>• Approved = 1</li>
-                        <li>• Finish = 11</li>
+                    <ul id="piaStatusTooltip" style="list-style: none; margin: 0; padding: 0; line-height: 1.8;">
+                        <li>• Waiting = -</li>
+                        <li>• Approved = -</li>
+                        <li>• Rejected = -</li>
+                        <li>• Finish = -</li>
                     </ul>
                     <!-- Arrow -->
                     <div style="
@@ -260,7 +262,7 @@
                 <!-- date range filter -->
                 <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
                     <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Date Range</h2>
-                    <div id="dateRangePicker" style="position:relative;">
+                    <div id="dateRangePicker">
                         <div style="display:flex;gap:8px;align-items:center;">
                             <input id="inputStart" readonly placeholder="Start date"
                                    class="form-input w-full text-sm p-2 cursor-pointer" />
@@ -274,22 +276,26 @@
                         <input type="hidden" id="scrapDateEnd" name="scrapDateEnd" />
 
                         <!-- Calendar Popup -->
-                        <div id="calPopup" style="display:none;position:absolute;z-index:999;margin-top:4px;
+                        <div id="calPopup" style="display:none;position:fixed;z-index:9999;top:0;left:0;
                                  background:#fff;border:1px solid #ddd;border-radius:8px;
                                  box-shadow:0 4px 20px rgba(0,0,0,0.12);width:280px;">
 
-                            <div style="display:flex;align-items:center;justify-content:space-between;
-                                      background:#4a90d9;color:#fff;padding:10px 14px;
-                                      border-radius:8px 8px 0 0;font-size:14px;font-weight:500;">
-                                <button type="button" id="prevBtn"
-                                        style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 6px;">
-                                    &lsaquo;
-                                </button>
-                                <span id="monthLabel"></span>
-                                <button type="button" id="nextBtn"
-                                        style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 6px;">
-                                    &rsaquo;
-                                </button>
+                            <div style="background:#4a90d9;color:#fff;border-radius:8px 8px 0 0;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;
+                                          padding:10px 14px;font-size:14px;font-weight:500;">
+                                    <button type="button" id="prevBtn"
+                                            style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 6px;">
+                                        &lsaquo;
+                                    </button>
+                                    <span id="monthLabel"></span>
+                                    <button type="button" id="nextBtn"
+                                            style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 6px;">
+                                        &rsaquo;
+                                    </button>
+                                </div>
+                                <div style="text-align:center;font-size:11px;padding:0 14px 8px;opacity:0.85;">
+                                    <span id="calHint">Select start date</span>
+                                </div>
                             </div>
 
                             <div style="padding:10px;" id="calGrid"></div>
@@ -348,153 +354,213 @@
 
                 <script>
                     (function () {
-                        var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
-                            'July', 'August', 'September', 'October', 'November', 'December'];
-                        var DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-                        var now = new Date();
+                        var MONTHS = ['January','February','March','April','May','June',
+                                      'July','August','September','October','November','December'];
+                        var DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+                        var now    = new Date();
                         var viewYear = now.getFullYear(), viewMonth = now.getMonth();
                         var startDate = null, endDate = null, hoverDate = null, selecting = false;
 
-                        function sameDay(a, b) {
-                            return a && b && a.getFullYear() === b.getFullYear()
-                                && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+                        /* ── helpers ── */
+                        function sameDay(a,b){
+                            return a&&b&&a.getFullYear()===b.getFullYear()
+                                &&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
                         }
-                        function fmt(d) {
-                            if (!d) return '';
-                            return ('0' + d.getDate()).slice(-2) + '/'
-                                + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + d.getFullYear();
+                        function fmt(d){
+                            if(!d)return'';
+                            return('0'+d.getDate()).slice(-2)+'/'
+                                +('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
                         }
-                        function fmtISO(d) {
-                            if (!d) return '';
-                            return d.getFullYear() + '-'
-                                + ('0' + (d.getMonth() + 1)).slice(-2) + '-'
-                                + ('0' + d.getDate()).slice(-2);
+                        function fmtISO(d){
+                            if(!d)return'';
+                            return d.getFullYear()+'-'
+                                +('0'+(d.getMonth()+1)).slice(-2)+'-'
+                                +('0'+d.getDate()).slice(-2);
                         }
-                        function getWeekNum(d) {
-                            var jan1 = new Date(d.getFullYear(), 0, 1);
-                            return Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+                        function getWeekNum(d){
+                            var j=new Date(d.getFullYear(),0,1);
+                            return Math.ceil(((d-j)/86400000+j.getDay()+1)/7);
                         }
 
-                        function render() {
-                            document.getElementById('monthLabel').textContent = MONTHS[viewMonth] + ' ' + viewYear;
+                        /* ── popup positioning (fixed) ── */
+                        function openPopup(){
+                            var popup  = document.getElementById('calPopup');
+                            var anchor = document.getElementById('dateRangePicker');
+                            popup.style.display = 'block';
+                            var rect = anchor.getBoundingClientRect();
+                            var popH = popup.offsetHeight || 320;
+                            var top  = (window.innerHeight - rect.bottom >= popH || rect.top < popH)
+                                       ? rect.bottom + window.scrollY + 4
+                                       : rect.top  + window.scrollY - popH - 4;
+                            var left = Math.min(rect.left + window.scrollX,
+                                                window.innerWidth - 288 + window.scrollX);
+                            popup.style.top  = top  + 'px';
+                            popup.style.left = left + 'px';
+                        }
+                        function closePopup(){
+                            document.getElementById('calPopup').style.display = 'none';
+                        }
+                        function isPopupOpen(){
+                            return document.getElementById('calPopup').style.display === 'block';
+                        }
+
+                        /* ── render calendar ── */
+                        function render(){
+                            document.getElementById('monthLabel').textContent =
+                                MONTHS[viewMonth]+' '+viewYear;
+
+                            var hint = document.getElementById('calHint');
+                            if(hint) hint.textContent = selecting ? 'Pilih tanggal akhir' : 'Pilih tanggal awal';
+
                             var grid = document.getElementById('calGrid');
                             grid.innerHTML = '';
 
-                            // DOW header
-                            var headerRow = document.createElement('div');
-                            headerRow.style.cssText = 'display:grid;grid-template-columns:28px repeat(7,1fr);gap:2px;margin-bottom:4px;';
-                            var wkHead = document.createElement('div');
-                            headerRow.appendChild(wkHead);
-                            DAYS.forEach(function (d) {
-                                var el = document.createElement('div');
-                                el.style.cssText = 'font-size:11px;color:#888;text-align:center;padding:3px 0;font-weight:500;';
-                                el.textContent = d;
-                                headerRow.appendChild(el);
+                            /* header hari */
+                            var hRow = document.createElement('div');
+                            hRow.style.cssText='display:grid;grid-template-columns:28px repeat(7,1fr);gap:2px;margin-bottom:4px;';
+                            hRow.appendChild(document.createElement('div'));
+                            DAYS.forEach(function(d){
+                                var el=document.createElement('div');
+                                el.style.cssText='font-size:11px;color:#888;text-align:center;padding:3px 0;font-weight:500;';
+                                el.textContent=d;
+                                hRow.appendChild(el);
                             });
-                            grid.appendChild(headerRow);
+                            grid.appendChild(hRow);
 
-                            var first = new Date(viewYear, viewMonth, 1);
-                            var startDow = first.getDay();
-                            var daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+                            var first   = new Date(viewYear,viewMonth,1);
+                            var startDow= first.getDay();
+                            var dim     = new Date(viewYear,viewMonth+1,0).getDate();
 
-                            var effEnd = endDate || (selecting && hoverDate ? hoverDate : null);
-                            var rStart = startDate && effEnd ? (startDate <= effEnd ? startDate : effEnd) : startDate;
-                            var rEnd = startDate && effEnd ? (startDate <= effEnd ? effEnd : startDate) : null;
+                            var effEnd  = endDate||(selecting&&hoverDate?hoverDate:null);
+                            var rStart  = startDate&&effEnd?(startDate<=effEnd?startDate:effEnd):startDate;
+                            var rEnd    = startDate&&effEnd?(startDate<=effEnd?effEnd:startDate):null;
 
-                            var row = null; var col = 0;
-                            function newRow(date) {
-                                row = document.createElement('div');
-                                row.style.cssText = 'display:grid;grid-template-columns:28px repeat(7,1fr);gap:2px;margin-bottom:2px;';
-                                var wk = document.createElement('div');
-                                wk.style.cssText = 'font-size:10px;color:#bbb;display:flex;align-items:center;justify-content:center;';
-                                if (date) wk.textContent = getWeekNum(date);
-                                row.appendChild(wk); grid.appendChild(row); col = 0;
+                            var row=null, col=0;
+                            function newRow(date){
+                                row=document.createElement('div');
+                                row.style.cssText='display:grid;grid-template-columns:28px repeat(7,1fr);gap:2px;margin-bottom:2px;';
+                                var wk=document.createElement('div');
+                                wk.style.cssText='font-size:10px;color:#bbb;display:flex;align-items:center;justify-content:center;';
+                                if(date)wk.textContent=getWeekNum(date);
+                                row.appendChild(wk); grid.appendChild(row); col=0;
                             }
                             newRow(first);
 
-                            for (var i = 0; i < startDow; i++) {
-                                var e = document.createElement('div');
-                                e.className = 'dr-day empty'; row.appendChild(e); col++;
+                            for(var i=0;i<startDow;i++){
+                                var emp=document.createElement('div');
+                                emp.className='dr-day empty'; row.appendChild(emp); col++;
                             }
-
-                            for (var d = 1; d <= daysInMonth; d++) {
-                                if (col > 0 && col % 7 === 0) newRow(new Date(viewYear, viewMonth, d));
-                                var dt = new Date(viewYear, viewMonth, d);
-                                var el = document.createElement('div');
-                                el.className = 'dr-day';
-                                el.textContent = d;
-                                el.dataset.date = dt.toISOString();
-
-                                var isStart = rStart && sameDay(dt, rStart);
-                                var isEnd = rEnd && sameDay(dt, rEnd);
-                                var inRange = rStart && rEnd && dt > rStart && dt < rEnd;
-
-                                if (isStart && isEnd) { el.classList.add('start', 'end'); }
-                                else {
-                                    if (isStart) { el.classList.add('start'); if (rEnd) el.classList.add('has-end'); }
-                                    if (isEnd) { el.classList.add('end'); if (rStart) el.classList.add('has-start'); }
-                                    if (inRange) el.classList.add('in-range');
+                            for(var d=1;d<=dim;d++){
+                                if(col>0&&col%7===0) newRow(new Date(viewYear,viewMonth,d));
+                                var dt=new Date(viewYear,viewMonth,d);
+                                var el=document.createElement('div');
+                                el.className='dr-day';
+                                el.textContent=d;
+                                el.dataset.date=dt.toISOString();
+                                var isS=rStart&&sameDay(dt,rStart);
+                                var isE=rEnd  &&sameDay(dt,rEnd);
+                                var inR=rStart&&rEnd&&dt>rStart&&dt<rEnd;
+                                if(isS&&isE){el.classList.add('start','end');}
+                                else{
+                                    if(isS){el.classList.add('start'); if(rEnd)  el.classList.add('has-end');}
+                                    if(isE){el.classList.add('end');   if(rStart)el.classList.add('has-start');}
+                                    if(inR) el.classList.add('in-range');
                                 }
-                                if (sameDay(dt, now) && !isStart && !isEnd) el.classList.add('today');
+                                if(sameDay(dt,now)&&!isS&&!isE) el.classList.add('today');
                                 row.appendChild(el); col++;
                             }
 
-                            document.getElementById('inputStart').value = startDate ? fmt(startDate) : '';
-                            document.getElementById('inputEnd').value = endDate ? fmt(endDate) : '';
+                            document.getElementById('inputStart').value   = startDate ? fmt(startDate)    : '';
+                            document.getElementById('inputEnd').value     = endDate   ? fmt(endDate)      : '';
                             document.getElementById('scrapDateStart').value = startDate ? fmtISO(startDate) : '';
-                            document.getElementById('scrapDateEnd').value = endDate ? fmtISO(endDate) : '';
+                            document.getElementById('scrapDateEnd').value   = endDate   ? fmtISO(endDate)   : '';
                         }
 
-                        var calGrid = document.getElementById('calGrid');
-
-                        calGrid.addEventListener('mouseover', function (e) {
-                            var el = e.target.closest ? e.target.closest('.dr-day:not(.empty)') : null;
-                            if (!el) return;
-                            if (selecting) { hoverDate = new Date(el.dataset.date); render(); }
+                        /* ── event: klik hari di kalender ──
+                           Dipasang di calGrid (bukan calPopup) dan TIDAK pakai stopPropagation
+                           supaya tidak konflik dengan listener lain.
+                           Document listener kita pasang di bubble phase (bukan capture)
+                           dan kita cek apakah klik ada di dalam popup. */
+                        document.getElementById('calGrid').addEventListener('mouseover',function(e){
+                            var el=e.target.closest&&e.target.closest('.dr-day:not(.empty)');
+                            if(!el||!selecting)return;
+                            hoverDate=new Date(el.dataset.date); render();
                         });
-                        calGrid.addEventListener('mouseleave', function () {
-                            if (selecting) { hoverDate = null; render(); }
+                        document.getElementById('calGrid').addEventListener('mouseleave',function(){
+                            if(selecting){hoverDate=null; render();}
                         });
-                        calGrid.addEventListener('click', function (e) {
-                            var el = e.target.closest ? e.target.closest('.dr-day:not(.empty)') : null;
-                            if (!el || !el.dataset.date) return;
-                            var clicked = new Date(el.dataset.date);
-                            if (!selecting || !startDate) {
-                                startDate = clicked; endDate = null; selecting = true; hoverDate = null;
+                        document.getElementById('calGrid').addEventListener('click',function(e){
+                            var el=e.target.closest&&e.target.closest('.dr-day:not(.empty)');
+                            if(!el||!el.dataset.date)return;
+                            var clicked=new Date(el.dataset.date);
+                            if(!selecting){
+                                /* klik pertama */
+                                startDate=clicked; endDate=null; selecting=true; hoverDate=null;
+                                render();
+                                /* popup tetap terbuka — jangan panggil closePopup */
                             } else {
-                                if (clicked < startDate) { endDate = startDate; startDate = clicked; }
-                                else { endDate = clicked; }
-                                selecting = false; hoverDate = null;
-                                document.getElementById('calPopup').style.display = 'none';
+                                /* klik kedua */
+                                if(clicked<startDate){endDate=startDate; startDate=clicked;}
+                                else{endDate=clicked;}
+                                selecting=false; hoverDate=null;
+                                render();
+                                closePopup();
                             }
-                            render();
+                            /* PENTING: stop di sini agar document listener tidak ikut proses */
+                            e.stopPropagation();
                         });
 
-                        document.getElementById('prevBtn').addEventListener('click', function () {
-                            viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } render();
+                        /* navigasi bulan */
+                        document.getElementById('prevBtn').addEventListener('click',function(e){
+                            e.stopPropagation();
+                            viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--;} render();
                         });
-                        document.getElementById('nextBtn').addEventListener('click', function () {
-                            viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } render();
+                        document.getElementById('nextBtn').addEventListener('click',function(e){
+                            e.stopPropagation();
+                            viewMonth++; if(viewMonth>11){viewMonth=0;viewYear++;} render();
                         });
-                        document.getElementById('clearBtn').addEventListener('click', function () {
-                            startDate = null; endDate = null; selecting = false; hoverDate = null; render();
-                            document.getElementById('calPopup').style.display = 'none';
-                        });
-
-                        document.getElementById('inputStart').addEventListener('click', function () {
-                            var p = document.getElementById('calPopup');
-                            p.style.display = p.style.display === 'none' ? 'block' : 'none';
-                        });
-                        document.getElementById('inputEnd').addEventListener('click', function () {
-                            if (startDate && !endDate) { selecting = true; }
-                            document.getElementById('calPopup').style.display = 'block';
+                        document.getElementById('clearBtn').addEventListener('click',function(e){
+                            e.stopPropagation();
+                            startDate=null; endDate=null; selecting=false; hoverDate=null;
+                            render(); closePopup();
                         });
 
-                        document.addEventListener('click', function (e) {
-                            if (!document.getElementById('dateRangePicker').contains(e.target)) {
-                                document.getElementById('calPopup').style.display = 'none';
+                        /* input start */
+                        document.getElementById('inputStart').addEventListener('click',function(e){
+                            e.stopPropagation();
+                            if(isPopupOpen()){
+                                closePopup();
+                            } else {
+                                startDate=null; endDate=null; selecting=false; hoverDate=null;
+                                render(); openPopup();
                             }
                         });
+
+                        /* input end */
+                        document.getElementById('inputEnd').addEventListener('click',function(e){
+                            e.stopPropagation();
+                            if(isPopupOpen()){
+                                /* popup sudah buka — biarkan user pilih */
+                                return;
+                            }
+                            if(startDate&&!endDate){
+                                selecting=true; render();
+                            } else {
+                                startDate=null; endDate=null; selecting=false; hoverDate=null;
+                                render();
+                            }
+                            openPopup();
+                        });
+
+                        /* tutup popup jika klik di luar — BUBBLE phase, bukan capture */
+                        document.addEventListener('click',function(e){
+                            var popup  = document.getElementById('calPopup');
+                            var picker = document.getElementById('dateRangePicker');
+                            if(!popup||!picker)return;
+                            if(popup.contains(e.target)||picker.contains(e.target))return;
+                            if(selecting&&!endDate){selecting=false; hoverDate=null; render();}
+                            closePopup();
+                        }); /* false = bubble phase (default) */
 
                         render();
                     })();
@@ -610,21 +676,13 @@
             // ── Init ──────────────────────────────────────────────────────────
             $(document).ready(function () {
 
-                // Show SweetAlert loader untuk initial load
-                Swal.fire({
-                    title: "Loading Data",
-                    html: "Please wait while we fetch your data...",
-                    icon: "info",
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    didOpen: (modal) => {
-                        Swal.showLoading();
-                    }
-                });
-                
-                // Muat data pertama kali tanpa filter
+                // Muat data pertama kali tanpa filter (menggunakan skeleton shimmer)
                 loadAllScrapData(1, _pageSize, {});
                 loadAllScrapTotals();
+                loadScrapRecordsCount();
+                loadScrapStatusCount();
+                loadPiaRecordsCount();
+                loadPiaStatusCount();
                 initInitiatorAutocompleteForAllScrap();
 
                 // Toggle panel filter
@@ -652,19 +710,6 @@
                         tc:               document.getElementById("scrapTcCodeFilter").value || "",
                     };
                     _currentPage = 1;
-                    
-                    // Show SweetAlert loader
-                    Swal.fire({
-                        title: "Loading Data",
-                        html: "Please wait while we fetch your filter results...",
-                        icon: "info",
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        didOpen: (modal) => {
-                            Swal.showLoading();
-                        }
-                    });
-                    
                     loadAllScrapData(1, _pageSize, currentFilters);
                 });
 
@@ -747,12 +792,12 @@
                 }).done(function (res) {
                     renderAllScrapTable(res.Data || []);
                     renderAllScrapPagination(res.TotalCount, res.PageNumber, res.PageSize);
-                    Swal.close();
+                    if (typeof setApplyFilterLoading === "function") setApplyFilterLoading(false);
                 }).fail(function (xhr, status, error) {
                     console.error("[AllScrap] loadAllScrapData error:", error);
                     document.getElementById("listOfScrap").innerHTML =
                         '<tr><td colspan="12" class="text-center py-6 text-muted">Failed to load data.</td></tr>';
-                    Swal.close();
+                    if (typeof setApplyFilterLoading === "function") setApplyFilterLoading(false);
                 });
             }
 
@@ -807,12 +852,24 @@
                     const statusBadge = `<span class="text-xs px-2 py-0.5 rounded-full ${statusInfo.cls}">${statusInfo.label}</span>`;
 
 
+                    // ── Helper parse tanggal ASP.NET JSON format /Date(ticks)/ ──
+                    function parseNetDate(val) {
+                        if (!val) return null;
+                        if (typeof val === "string") {
+                            // Format: "/Date(1234567890000)/" atau "/Date(1234567890000+0700)/"
+                            var m = /\/Date\((-?\d+)([+-]\d+)?\)\//.exec(val);
+                            if (m) return new Date(parseInt(m[1], 10));
+                        }
+                        var d = new Date(val);
+                        return isNaN(d.getTime()) ? null : d;
+                    }
+
                     // ── Tanggal ────────────────────────────────────────────
-                    const createdDate = item.CreatedDate
-                        ? new Date(item.CreatedDate).toLocaleDateString("id-ID")
-                        : (item.Centralized_SourceData_Master_CreatedDate
-                            ? new Date(item.Centralized_SourceData_Master_CreatedDate).toLocaleDateString("id-ID")
-                            : "-");
+                    var rawDate = item.CreatedDate || item.Centralized_SourceData_Master_CreatedDate;
+                    var parsedDate = parseNetDate(rawDate);
+                    const createdDate = parsedDate
+                        ? parsedDate.toLocaleDateString("id-ID")
+                        : "-";
 
                     // ── Approval step aktif ────────────────────────────────
                     const approval = item.CurrentApproval || "-";
@@ -927,18 +984,111 @@
             // ── Summary cards ─────────────────────────────────────────────────
             async function loadAllScrapTotals() {
                 try {
-                    const data = {};
-                    [1, 4, 9].forEach((s, i) => { data[`statusList[${i}]`] = s; });
                     const res = await $.ajax({
-                        url:      urlGetScrapTotals,
+                        url:      urlGetAllRecordsTotal,
                         type:     "GET",
-                        data:     data,
                         dataType: "json"
                     });
-                    $("#totalValueAll").empty().text(formatRupiahShort(res.TotalValueAll || 0));
-                    $("[id='totalQtyAll']").eq(0).empty().text((res.TotalQtyAll || 0).toLocaleString("id-ID"));
+                    if (res.success) {
+                        const totalValue = res.totalValueAll || 0;
+                        $("#totalValueAll").empty().text(formatRupiahShort(totalValue));
+                    } else {
+                        console.error("[AllScrap] GetAllRecordsTotal error:", res.message);
+                        $("#totalValueAll").empty().text("0");
+                    }
                 } catch (err) {
                     console.error("[AllScrap] loadAllScrapTotals error:", err);
+                    $("#totalValueAll").empty().text("0");
+                }
+            }
+
+            // ── Load Scrap Records Count ──────────────────────────────────────
+            async function loadScrapRecordsCount() {
+                try {
+                    const res = await $.ajax({
+                        url:      urlGetScrapRecords,
+                        type:     "GET",
+                        dataType: "json"
+                    });
+                    if (res.success) {
+                        const count = res.totalScrapDocuments || 0;
+                        $("#scrapRequestCount").empty().text(count.toLocaleString("id-ID"));
+                    } else {
+                        console.error("[AllScrap] GetScrapRecords error:", res.message);
+                        $("#scrapRequestCount").empty().text("0");
+                    }
+                } catch (err) {
+                    console.error("[AllScrap] loadScrapRecordsCount error:", err);
+                    $("#scrapRequestCount").empty().text("0");
+                }
+            }
+
+            // ── Load Scrap Status Count for Tooltip ───────────────────────────
+            async function loadScrapStatusCount() {
+                try {
+                    const res = await $.ajax({
+                        url:      urlGetScrapRecordsStatusCount,
+                        type:     "GET",
+                        dataType: "json"
+                    });
+                    if (res.success) {
+                        const statusHtml = `
+                            <li>• Waiting = ${res.waiting || 0}</li>
+                            <li>• Approved = ${res.approved || 0}</li>
+                            <li>• Rejected = ${res.rejected || 0}</li>
+                            <li>• Finish = ${res.finish || 0}</li>
+                        `;
+                        $("#scrapStatusTooltip").html(statusHtml);
+                    } else {
+                        console.error("[AllScrap] GetScrapRecordsStatusCount error:", res.message);
+                    }
+                } catch (err) {
+                    console.error("[AllScrap] loadScrapStatusCount error:", err);
+                }
+            }
+
+            // ── Load PIA Records Count ────────────────────────────────────────
+            async function loadPiaRecordsCount() {
+                try {
+                    const res = await $.ajax({
+                        url:      urlGetPiaRecords,
+                        type:     "GET",
+                        dataType: "json"
+                    });
+                    if (res.success) {
+                        const count = res.totalPiaDocuments || 0;
+                        $("#piaRequestCount").empty().text(count.toLocaleString("id-ID"));
+                    } else {
+                        console.error("[AllScrap] GetPiaRecords error:", res.message);
+                        $("#piaRequestCount").empty().text("0");
+                    }
+                } catch (err) {
+                    console.error("[AllScrap] loadPiaRecordsCount error:", err);
+                    $("#piaRequestCount").empty().text("0");
+                }
+            }
+
+            // ── Load PIA Status Count for Tooltip ─────────────────────────────
+            async function loadPiaStatusCount() {
+                try {
+                    const res = await $.ajax({
+                        url:      urlGetPiaRecordsStatusCount,
+                        type:     "GET",
+                        dataType: "json"
+                    });
+                    if (res.success) {
+                        const statusHtml = `
+                            <li>• Waiting = ${res.waiting || 0}</li>
+                            <li>• Approved = ${res.approved || 0}</li>
+                            <li>• Rejected = ${res.rejected || 0}</li>
+                            <li>• Finish = ${res.finish || 0}</li>
+                        `;
+                        $("#piaStatusTooltip").html(statusHtml);
+                    } else {
+                        console.error("[AllScrap] GetPiaRecordsStatusCount error:", res.message);
+                    }
+                } catch (err) {
+                    console.error("[AllScrap] loadPiaStatusCount error:", err);
                 }
             }
 
