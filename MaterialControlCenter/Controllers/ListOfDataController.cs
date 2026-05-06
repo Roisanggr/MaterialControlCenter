@@ -1247,7 +1247,7 @@ namespace MaterialControlCenter.Controllers
                 // ================= FILTER =================
                 // Filter: Centralized_SystemList_ID = 4 (SCRAP) & Centralized_SourceData_TableName = 'scrap_master'
                 var scrapRecords = sourceDataList
-                    .Where(x => x.Centralized_SystemList_ID == 4 && 
+                    .Where(x => x.Centralized_SystemList_ID == 4 &&
                                 x.Centralized_SourceData_TableName == "scrap_master")
                     .ToList();
 
@@ -1288,7 +1288,7 @@ namespace MaterialControlCenter.Controllers
                 // ================= FILTER =================
                 // Filter: Centralized_SystemList_ID = 4 (SCRAP) & Centralized_SourceData_TableName = 'scrap_master'
                 var scrapRecords = sourceDataList
-                    .Where(x => x.Centralized_SystemList_ID == 4 && 
+                    .Where(x => x.Centralized_SystemList_ID == 4 &&
                                 x.Centralized_SourceData_TableName == "scrap_master")
                     .ToList();
 
@@ -1343,7 +1343,7 @@ namespace MaterialControlCenter.Controllers
                 // ================= FILTER =================
                 // Filter: Centralized_SystemList_ID = 4 (PIA) & Centralized_SourceData_TableName = 'pia_header'
                 var piaRecords = sourceDataList
-                    .Where(x => x.Centralized_SystemList_ID == 4 && 
+                    .Where(x => x.Centralized_SystemList_ID == 4 &&
                                 x.Centralized_SourceData_TableName == "pia_header")
                     .ToList();
 
@@ -1384,7 +1384,7 @@ namespace MaterialControlCenter.Controllers
                 // ================= FILTER =================
                 // Filter: Centralized_SystemList_ID = 4 (PIA) & Centralized_SourceData_TableName = 'pia_header'
                 var piaRecords = sourceDataList
-                    .Where(x => x.Centralized_SystemList_ID == 4 && 
+                    .Where(x => x.Centralized_SystemList_ID == 4 &&
                                 x.Centralized_SourceData_TableName == "pia_header")
                     .ToList();
 
@@ -1454,7 +1454,7 @@ namespace MaterialControlCenter.Controllers
                 // Hitung semua dokumen SCRAP + PIA dengan semua status
                 var allRecords = sourceDataList
                     .Where(x => x.Centralized_SystemList_ID == 4)
-                    .Where(x => (x.Centralized_SourceData_TableName == "scrap_master" || 
+                    .Where(x => (x.Centralized_SourceData_TableName == "scrap_master" ||
                                  x.Centralized_SourceData_TableName == "pia_header"))
                     .ToList();
 
@@ -1496,7 +1496,7 @@ namespace MaterialControlCenter.Controllers
         public async Task<ActionResult> GetDetailDocuments(
             string documentType, string documentId, int page = 1, int pageSize = 10,
             string sortBy = "Value", string sortOrder = "desc",
-            string partNumber = "", string leader = "", string remarks = "", 
+            string partNumber = "", string leader = "", string remarks = "",
             string process = "",
             decimal? totalFrom = null, decimal? totalTo = null)
         {
@@ -1719,7 +1719,7 @@ namespace MaterialControlCenter.Controllers
                         })
                         .ToList();
 
-                    var initiatorName = !string.IsNullOrEmpty(scrapMaster.InitiatorKpk) 
+                    var initiatorName = !string.IsNullOrEmpty(scrapMaster.InitiatorKpk)
                         && employeeDict.ContainsKey(scrapMaster.InitiatorKpk)
                         ? employeeDict[scrapMaster.InitiatorKpk]
                         : "Unknown";
@@ -1760,6 +1760,17 @@ namespace MaterialControlCenter.Controllers
                     var totalVarianceQty = piaDetails.Sum(p => p.variance_qty);
                     var totalValue = piaDetails.Sum(p => p.total_value);
 
+                    var groupedByProcess = piaDetails
+                        .GroupBy(p => string.IsNullOrEmpty(p.part_proccess) ? "N/A" : p.part_proccess)
+                        .Select(g => new
+                        {
+                            ProcessName = g.Key,
+                            TotalVarianceQty = g.Sum(x => x.variance_qty),
+                            TotalValue = g.Sum(x => x.total_value)
+                        })
+                        .OrderByDescending(g => g.TotalValue)
+                        .ToList();
+
                     return Json(new
                     {
                         Facility = piaHeader.Facility,
@@ -1772,7 +1783,8 @@ namespace MaterialControlCenter.Controllers
                         CreatedByName = piaHeader.CreatedByName,
                         CreatedAt = piaHeader.CreatedAt,
                         TotalValue = totalValue,
-                        TotalVarianceQty = totalVarianceQty
+                        TotalVarianceQty = totalVarianceQty,
+                        Data = groupedByProcess
                     }, JsonRequestBehavior.AllowGet);
                 }
 
@@ -1903,12 +1915,101 @@ namespace MaterialControlCenter.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
 
-            // ===== PIA DOCUMENT (if applicable) =====
+            // ===== PIA DOCUMENT =====
             else if (documentTypeUpper == "PIA")
             {
-                // TODO: Implement PIA approvals if needed
-                // For now, return empty list as PIA may not have approval flow like SCRAP
-                return Json(new { Data = new List<object>(), Count = 0 }, JsonRequestBehavior.AllowGet);
+                if (!int.TryParse(documentId, out int piaHeaderId))
+                    return Json(new { Data = new List<object>(), Count = 0 }, JsonRequestBehavior.AllowGet);
+
+                var sourceDataList = dbCentralizedNotification.GetSourceDataSystemList();
+                var piaHeaders = await dbScrap.GetPiaHeaderAsync();
+                var approvalList = await dbCentralizedNotification.GetApprovalListAsync();
+                var employees = dbCentralizedNotification.GetEmployeeMasterSSO();
+                var employeeDict = employees
+                    .GroupBy(e => e.Kpk)
+                    .ToDictionary(g => g.Key, g => g.First().Name);
+                var delegateInfos = await dbScrap.GetDelegateApprovalInfosAsync();
+                var userDelegates = await dbScrap.GetUserDelegatesAsync();
+                var userDelegateDict = userDelegates
+                    .GroupBy(d => d.UserKpk)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(x => new
+                        {
+                            x.DelegateKpk,
+                            DelegateName = employeeDict.ContainsKey(x.DelegateKpk)
+                                ? employeeDict[x.DelegateKpk]
+                                : "Unknown",
+                            x.DelegateTime
+                        }).ToList()
+                    );
+
+                var piaHeader = piaHeaders.FirstOrDefault(p => p.Id == piaHeaderId);
+                if (piaHeader == null)
+                    return Json(new { Data = new List<object>(), Count = 0 }, JsonRequestBehavior.AllowGet);
+
+                var matched = sourceDataList
+                    .Where(src =>
+                        string.Equals(src.Centralized_SourceData_TableName, "pia_header", StringComparison.OrdinalIgnoreCase)
+                        && src.Centralized_SourceData_Master_ID == piaHeaderId)
+                    .Select(src =>
+                    {
+                        var initiatorKpk = piaHeader.CreatedByKpk.ToString();
+                        return new
+                        {
+                            src.Centralized_SourceData_ID,
+                            DocumentId = piaHeader.Id.ToString(),
+                            InitiatorKpk = initiatorKpk,
+                            InitiatorName = !string.IsNullOrEmpty(initiatorKpk) && employeeDict.ContainsKey(initiatorKpk)
+                                ? employeeDict[initiatorKpk]
+                                : "Unknown",
+                            CurrentStatus = src.Centralized_SourceData_Master_Status,
+                            DeletedAt = piaHeader.DeletedAt,
+
+                            Approvals = approvalList
+                                .Where(a => a.Centralized_SourceData_ID == src.Centralized_SourceData_ID)
+                                .OrderBy(a => a.Centralized_ApprovalList_Step)
+                                .Select(a =>
+                                {
+                                    var delegateKpks = delegateInfos
+                                        .Where(d => d.Centralized_ApprovalList_ID == a.Centralized_ApprovalList_ID)
+                                        .Select(d => d.Delegate_ApprovalList_KpkApproval)
+                                        .ToList();
+
+                                    var userDelegatesForThisApprover = userDelegateDict.ContainsKey(a.Centralized_ApprovalList_KpkApproval)
+                                          ? userDelegateDict[a.Centralized_ApprovalList_KpkApproval]
+                                              .Select(d => (object)new { d.DelegateKpk, d.DelegateName, d.DelegateTime })
+                                              .ToList()
+                                          : new List<object>();
+
+                                    return new
+                                    {
+                                        a.Centralized_ApprovalList_ID,
+                                        a.Centralized_SourceData_ID,
+                                        a.Centralized_ApprovalList_Step,
+                                        a.Centralized_StatusList_ID,
+                                        a.Centralized_ApprovalList_Date,
+                                        OriginalKpkApproval = a.Centralized_ApprovalList_KpkApproval,
+                                        ApproverName = employeeDict.ContainsKey(a.Centralized_ApprovalList_KpkApproval)
+                                            ? employeeDict[a.Centralized_ApprovalList_KpkApproval]
+                                            : "Unknown",
+                                        DelegateKpks = delegateKpks,
+                                        DelegateNames = delegateKpks
+                                            .Select(k => employeeDict.ContainsKey(k) ? employeeDict[k] : "Unknown")
+                                            .ToList(),
+                                        UserDelegateList = userDelegatesForThisApprover
+                                    };
+                                })
+                                .ToList()
+                        };
+                    })
+                    .ToList();
+
+                return Json(new
+                {
+                    Data = matched,
+                    Count = matched.Count
+                }, JsonRequestBehavior.AllowGet);
             }
 
             // ===== TPR DOCUMENT (Future) =====
@@ -1968,7 +2069,7 @@ namespace MaterialControlCenter.Controllers
 
         // ===== DEPRECATED: Use GetDetailDocuments instead =====
         [Obsolete("Use GetDetailDocuments instead")]
-        public async Task<ActionResult> GetPiaDetailsPaged(int piasHeaderId, int page = 1, int pageSize = 10, 
+        public async Task<ActionResult> GetPiaDetailsPaged(int piasHeaderId, int page = 1, int pageSize = 10,
             string partNumber = "", string process = "")
         {
             return await GetDetailDocuments("PIA", piasHeaderId.ToString(), page, pageSize, "", "", partNumber, "", "", process);

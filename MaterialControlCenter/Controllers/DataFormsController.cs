@@ -1182,59 +1182,61 @@ namespace MaterialControlCenter.Controllers
                 var supChain = GetSupervisorChain(initiatorKpk);
 
                 Debug.Print($"[GetApprovalChain] app={application}, scrapCode={scrapCode}, maxAbsValue={maxAbsValue}, " +
-                            $"rules={rules.Count}, chainLen={supChain.Count}");
+                             $"rules={rules.Count}, chainLen={supChain.Count}");
 
-                // ── 4. Filter rules yang berlaku untuk context ini ───────────────
-                var activeRules = rules.Where(rule =>
-                {
-                    // A. Value range
-                    bool valueOk;
-                    if (rule.MinValue == null && rule.MaxValue == null)
-                        valueOk = true;
-                    else
-                    {
-                        bool minOk = rule.MinValue == null || maxAbsValue >= (decimal)rule.MinValue;
-                        bool maxOk = rule.MaxValue == null || maxAbsValue < (decimal)rule.MaxValue;
-                        valueOk = minOk && maxOk;
-                    }
-                    if (!valueOk) return false;
+                 // ── 4. Filter rules dengan logic CUMULATIVE (bukan range filter) ──────────────
+                 // Approval steps harus bertingkat: jika step N aktif, maka step N-1 juga harus aktif
+                 var activeRules = new List<MccApprovalRule>();
 
-                    // B. Code filter (priority: document header code, fallback: part code)
-                    if (!string.IsNullOrEmpty(rule.Code))
-                    {
-                        bool codeMatch = false;
+                 // Fungsi helper untuk check apakah rule applicable berdasarkan code/tcType/commit
+                 Func<MccApprovalRule, bool> isRuleApplicable = (rule) =>
+                 {
+                     // B. Code filter (priority: document header code, fallback: part code)
+                     if (!string.IsNullOrEmpty(rule.Code))
+                     {
+                         bool codeMatch = false;
+                         if (!string.IsNullOrWhiteSpace(scrapCode))
+                             codeMatch = string.Equals(rule.Code, scrapCode, StringComparison.OrdinalIgnoreCase);
+                         else
+                             codeMatch = parts.Any(p => string.Equals(p.Code, rule.Code, StringComparison.OrdinalIgnoreCase));
+                         if (!codeMatch) return false;
+                     }
 
-                        if (!string.IsNullOrWhiteSpace(scrapCode))
-                        {
-                            codeMatch = string.Equals(rule.Code, scrapCode, StringComparison.OrdinalIgnoreCase);
-                        }
-                        else
-                        {
-                            codeMatch = parts.Any(p =>
-                                string.Equals(p.Code, rule.Code, StringComparison.OrdinalIgnoreCase));
-                        }
+                     // C. TcType filter
+                     if (!string.IsNullOrEmpty(rule.TcType))
+                     {
+                         bool tcTypeMatch = parts.Any(p => string.Equals(p.TcType, rule.TcType, StringComparison.OrdinalIgnoreCase));
+                         if (!tcTypeMatch) return false;
+                     }
 
-                        if (!codeMatch) return false;
-                    }
+                     // D. Commit filter
+                     if (!string.IsNullOrEmpty(rule.Cmmit) && string.Equals(rule.Cmmit, "X", StringComparison.OrdinalIgnoreCase))
+                     {
+                         bool commitMatch = parts.Any(p => p.Commit);
+                         if (!commitMatch) return false;
+                     }
 
-                    // C. TcType filter
-                    if (!string.IsNullOrEmpty(rule.TcType))
-                    {
-                        bool tcTypeMatch = parts.Any(p =>
-                            string.Equals(p.TcType, rule.TcType, StringComparison.OrdinalIgnoreCase));
-                        if (!tcTypeMatch) return false;
-                    }
+                     return true;
+                 };
 
-                    // D. Commit filter
-                    if (!string.IsNullOrEmpty(rule.Cmmit) &&
-                        string.Equals(rule.Cmmit, "X", StringComparison.OrdinalIgnoreCase))
-                    {
-                        bool commitMatch = parts.Any(p => p.Commit);
-                        if (!commitMatch) return false;
-                    }
+                 // Group rules by MinValue threshold untuk logika cumulative
+                 var rulesByThreshold = rules.Where(isRuleApplicable)
+                     .GroupBy(r => r.MinValue ?? 0)
+                     .OrderBy(g => g.Key)
+                     .ToList();
 
-                    return true;
-                }).ToList();
+                 foreach (var thresholdGroup in rulesByThreshold)
+                 {
+                     long threshold = thresholdGroup.Key;
+
+                     // CUMULATIVE LOGIC: Jika value sudah >= threshold ini, tambahkan SEMUA rules dalam group ini
+                     // Catatan: Jangan gunakan MaxValue sebagai filter untuk cumulative system.
+                     // MaxValue hanya untuk informasi range, bukan untuk exclude rules.
+                     if (maxAbsValue >= threshold)
+                     {
+                         activeRules.AddRange(thresholdGroup);
+                     }
+                 }
 
                 var rulesForResolution = activeRules
                     .OrderBy(r => r.Priority ?? int.MaxValue)

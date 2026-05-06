@@ -1065,33 +1065,41 @@
             const systemQtyInput = document.getElementById(`systemQuantity-${partCounter}`);
             const varianceQtyInput = document.getElementById(`varianceQuantity-${partCounter}`);
 
-            // Add event listeners for automatic variance quantity calculation
-            const calculateVarianceQuantity = () => {
-                const physical = parseFloat(physicalQtyInput.value) || 0;
-                const system = parseFloat(systemQtyInput.value) || 0;
-                const variance = physical - system;
-                varianceQtyInput.value = variance;
-                calculateTotal(partCounter);
-                validateQtyInput(physicalQtyInput, partCounter);
+            // Create closure that captures the specific counter for this row
+            const createCalculateVarianceQuantity = (counter) => {
+                return () => {
+                    const physical = parseFloat(physicalQtyInput.value) || 0;
+                    const system = parseFloat(systemQtyInput.value) || 0;
+                    const variance = physical - system;
+                    varianceQtyInput.value = variance;
+                    calculateTotal(counter);
+                    validateQtyInput(physicalQtyInput, counter);
+                };
             };
 
-            physicalQtyInput.addEventListener("input", calculateVarianceQuantity);
-            systemQtyInput.addEventListener("input", calculateVarianceQuantity);
+            physicalQtyInput.addEventListener("input", createCalculateVarianceQuantity(partCounter));
+            systemQtyInput.addEventListener("input", createCalculateVarianceQuantity(partCounter));
 
             initPartAutocomplete(partCounter, selectedTC);
             filterRemarksByPiaCode(partCounter, selectedPiaCode);
             initLeaderAutocomplete(partCounter, urlGetEmployee);
+
+            // Create closure for field input events
+            const createFieldInputHandler = (field, counter) => {
+                return () => {
+                    validatePartCard(counter, showSpecialFields);
+                    // Recalculate total value when baseValue changes
+                    if (field === "baseValue") {
+                        calculateTotal(counter);
+                    }
+                };
+            };
+
             ['partNumber', 'description', 'unit', 'processPoint', 'baseValue', 'physicalQuantity', 'systemQuantity', 'varianceQuantity', 'totalValue', 'leader']
                 .forEach(field => {
                     const input = document.getElementById(`${field}-${partCounter}`);
                     if (input) {
-                        input.addEventListener('input', () => {
-                            validatePartCard(partCounter, showSpecialFields);
-                            // Recalculate total value when baseValue changes
-                            if (field === "baseValue") {
-                                calculateTotal(partCounter);
-                            }
-                        });
+                        input.addEventListener('input', createFieldInputHandler(field, partCounter));
                     }
                 });
 
@@ -1099,9 +1107,7 @@
                 ['rn'].forEach(field => {
                     const input = document.getElementById(`${field}-${partCounter}`);
                     if (input) {
-                        input.addEventListener('input', () => {
-                            validatePartCard(partCounter, showSpecialFields);
-                        });
+                        input.addEventListener('input', createFieldInputHandler(field, partCounter));
                     }
                 });
             }

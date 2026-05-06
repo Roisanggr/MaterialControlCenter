@@ -14,7 +14,7 @@ namespace MaterialControlCenter.Models
         public string TcType { get; set; }  // F/R/A/X — filter by typeit
         public string Cmmit { get; set; }  // X = commit required
         public long? MinValue { get; set; }  // batas bawah nilai (inclusive)
-        public long? MaxValue { get; set; }  // batas atas nilai (exclusive)
+        public long? MaxValue { get; set; }  // batas atas nilai (inclusive)
         public int RoleId { get; set; }  // FK ke [Scrap].[dbo].[role]
         public int RequiredApproverCount { get; set; }
         public int? Priority { get; set; }  // urutan step approval

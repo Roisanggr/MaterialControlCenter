@@ -56,8 +56,9 @@ $store.app.hasdetached = window.location.href.includes('detached.html')" :class=
                                         <div>
                                             <p class="text-base dark:text-white/80">Document ID</p>
                                             <h4 id="documentID" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
-                                                Loading
+                                             <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
                                             </h4>
+                                            <p class="text-muted"></p>
                                         </div>
                                     </div>
                                     <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
@@ -66,7 +67,7 @@ $store.app.hasdetached = window.location.href.includes('detached.html')" :class=
                                             <h4 id="overallTotal" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
                                                 <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
                                             </h4>
-                                            <p class="text-muted">Overall Total</p>
+                                            <p class="text-muted"></p>
                                         </div>
                                     </div>
                                     <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
@@ -157,8 +158,8 @@ $store.app.hasdetached = window.location.href.includes('detached.html')" :class=
                                                 </thead>
                                                 <tbody id="detailsPia">
                                                     <tr class="text-muted">
-                                                        <td colspan="4" class="py-6 text-center">
-                                                            <div class="flex justify-center items-center gap-2">
+                                                        <td colspan="9" class="py-10 text-center">
+                                                            <div class="flex justify-center items-center gap-2 w-full">
                                                                 <!-- Spinner -->
                                                                 <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
                                                                 <span>Loading...</span>
@@ -187,6 +188,7 @@ $store.app.hasdetached = window.location.href.includes('detached.html')" :class=
                             <div class="bg-muted/50 p-5 border-b mt-4 dark:border-darkborder border-black/10">
                                 <h6 class="font-semibold text-black dark:text-white/80">Approval Progress</h6>
                             </div>
+                            <div class="p-5">
                                 <div class="flex items-center mt-5 mb-3">
                                     <h6 class="text-black grow dark:text-white/80">Steps</h6>
                                     <button id="updateApproval" type="button"
@@ -317,6 +319,35 @@ $store.app.hasdetached = window.location.href.includes('detached.html')" :class=
         </div>
     </div>
 
+    <!-- Modal Update Approval Flow -->
+    <div id="modalsUpdateApproval"
+         class="fixed inset-0 bg-black/80 z-[99998] hidden overflow-y-auto dark:bg-dark/90">
+        <div class="flex items-start justify-center min-h-screen px-4" onclick="event.stopPropagation()">
+            <div class="relative w-full max-w-lg p-0 my-8 overflow-hidden bg-white border rounded-lg border-black/10 dark:bg-darklight dark:border-darkborder">
+                <div class="flex items-center justify-between px-5 py-3 bg-white border-b border-black/10 dark:bg-darklight dark:border-darkborder">
+                    <h5 class="text-lg font-semibold dark:text-white">Update Approval Flow</h5>
+                    <button type="button" class="text-muted hover:bg-danger/[0.85] text-black dark:hover:text-white"
+                            onclick="closeModal('modalsUpdateApproval')">
+                        ✕
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div id="approverList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div class="flex items-center justify-end gap-4">
+                        <button type="button"
+                                class="btn bg-danger border-danger text-white hover:bg-danger/[0.85]"
+                                onclick="closeModal('modalsUpdateApproval')">
+                            Discard
+                        </button>
+                        <button id="saveUpdateApproval" type="button" class="btn bg-purple border-purple text-white hover:bg-purple/[0.85]">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @Html.Partial("~/Views/Shared/Vendor_Scripts.cshtml")
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
@@ -325,9 +356,16 @@ $store.app.hasdetached = window.location.href.includes('detached.html')" :class=
     <script>
         const params = new URLSearchParams(window.location.search);
         const token = params.get("token");
+        let isLastApprovalStep = false;
         let docId = null;
         const urlGetPiaSummary = '@Url.Action("GetHeaderDocuments", "ListOfData")';
         const urlGetPiaDetails = '@Url.Action("GetDetailDocuments", "ListOfData")';
+        const urlGetPiaApprovals = '@Url.Action("GetDetailsApprovals", "ListOfData")';
+        let currentApproval = null;
+        let currentSourceDataID = null;
+        let currentKpkList = [];
+        let isDelegateActive = false;
+        let originalApproverKpk = null;
 
         if (token) {
             docId = atob(token);
@@ -337,6 +375,8 @@ $store.app.hasdetached = window.location.href.includes('detached.html')" :class=
             if (docId) {
                 document.getElementById("documentID").textContent = docId;
                 loadSummaryData(docId);
+                loadApprovalProgress(docId);
+                checkAndRenderApproveReject(docId);
                 loadData(1, 10);
             } else {
                 document.getElementById("detailsPia").innerHTML =
@@ -463,6 +503,18 @@ $store.app.hasdetached = window.location.href.includes('detached.html')" :class=
                     document.getElementById("typeInfo").textContent = res.Type || "-";
 
                     renderCurrentStatus(res.Status || 0);
+
+                    // Render Overview chart grouped by Process
+                    if (res.Data && res.Data.length > 0) {
+                    const labels = (res.Data || []).map(p => p.ProcessName);
+                    const values = (res.Data || []).map(p => p.TotalValue);
+
+                    if (labels.length > 0) {
+                        renderBarChart('#chartSummaryPerLeader', [{ name: 'Total Value', data: values }], labels);
+                    } else {
+                        document.getElementById("chartSummaryPerLeader").innerHTML =
+                            '<p class="text-center text-muted py-10">No overview data available.</p>';
+                    }
                 },
                 error: function (err) {
                     console.error("[DetailPia] loadSummaryData error:", err);
@@ -496,6 +548,449 @@ $store.app.hasdetached = window.location.href.includes('detached.html')" :class=
                 </div>
             `;
         }
+
+        // ── Overview Chart ─────────────────────────────────────────────────────────
+        function renderBarChart(chartId, seriesData, labelsData, chartHeight = 310) {
+            var allValues = seriesData.flatMap(s => s.data);
+            var maxVal = Math.max(...allValues);
+            if (!maxVal || maxVal <= 0) maxVal = 10;
+            var maxTicks = 6;
+            var rawStep = Math.ceil(maxVal / maxTicks);
+            function niceStep(value) {
+                var exponent = Math.floor(Math.log10(value));
+                var fraction = value / Math.pow(10, exponent);
+                let niceFraction;
+                if (fraction <= 1) niceFraction = 1;
+                else if (fraction <= 2) niceFraction = 2;
+                else if (fraction <= 5) niceFraction = 5;
+                else niceFraction = 10;
+                return niceFraction * Math.pow(10, exponent);
+            }
+            var step = niceStep(rawStep);
+            var tickAmount = Math.ceil(maxVal / step);
+            var options = {
+                series: seriesData,
+                chart: {
+                    height: chartHeight,
+                    type: 'bar',
+                    toolbar: { show: false }
+                },
+                plotOptions: {
+                    bar: { horizontal: true, barHeight: '60%' }
+                },
+                dataLabels: { enabled: false },
+                grid: { borderColor: "#e8e8e8" },
+                fill: { opacity: 0.8 },
+                xaxis: {
+                    categories: labelsData,
+                    min: 0,
+                    max: (tickAmount + 1) * step,
+                    tickAmount: tickAmount + 1,
+                    labels: { formatter: val => formatRupiah(val) },
+                    axisBorder: { color: "#e0e6ed" }
+                },
+                yaxis: { opposite: false },
+                tooltip: {
+                    y: { formatter: function (val) { return formatRupiah(val); } }
+                }
+            };
+            var chartElement = document.querySelector(chartId);
+            if (chartElement) {
+                chartElement.innerHTML = "";
+                var chart = new ApexCharts(chartElement, options);
+                chart.render();
+                return chart;
+            } else {
+                console.warn(`Chart element ${chartId} not found`);
+            }
+        }
+
+        // ── Approval Progress ──────────────────────────────────────────────────────
+        async function fetchPiaApprovals(piaId) {
+            if (!piaId) return null;
+            const url = urlGetPiaApprovals;
+            const res = await fetch(`${url}?documentType=PIA&documentId=${piaId}`);
+            const data = await res.json();
+            if (!data.Data || data.Data.length === 0) return null;
+            return {
+                approvals: data.Data[0].Approvals,
+                initiatorKpk: data.Data[0].InitiatorKpk,
+                initiatorName: data.Data[0].InitiatorName,
+                currentStatus: data.Data[0].CurrentStatus,
+                deletedAt: data.Data[0].DeletedAt
+            };
+        }
+
+        function getApprovalStatus(statusId) {
+            const map = {
+                1: { statusText: "Pending",  badgeClass: "bg-warning" },
+                2: { statusText: "Approved", badgeClass: "bg-success" },
+                3: { statusText: "Rejected", badgeClass: "bg-danger" }
+            };
+            return map[statusId] || { statusText: "Unknown", badgeClass: "bg-muted" };
+        }
+
+        function renderApprovalProgress(approvals) {
+            const ul = document.getElementById("approvalProgress");
+            ul.innerHTML = "";
+            if (!Array.isArray(approvals) || approvals.length === 0) {
+                ul.innerHTML = `<li class="text-muted">No approvals found.</li>`;
+                return;
+            }
+            let rejectEncountered = false;
+            approvals.forEach(app => {
+                let statusId = rejectEncountered ? 3 : app.Centralized_StatusList_ID;
+                const initials = (app.ApproverName || "?")
+                    .split(" ").map(n => n[0]).join("").toUpperCase();
+                const { statusText, badgeClass } = getApprovalStatus(statusId);
+                if (statusId === 3) rejectEncountered = true;
+
+                let delegateHtml = "";
+                if (app.DelegateNames && app.DelegateNames.length > 0) {
+                    const names = app.DelegateNames.join(", ");
+                    delegateHtml = `<p class="text-xs text-muted">Represented by: ${capitalizeWords(names)}</p>`;
+                }
+
+                const hasUserDelegates = app.UserDelegateList && app.UserDelegateList.length > 0;
+                let eyeIconHtml = "";
+                if (hasUserDelegates) {
+                    eyeIconHtml = `
+                <button
+                    id="listdelegate-${app.Centralized_ApprovalList_ID}"
+                    class="inline-block size-2 rounded-full absolute ltr:right-0.5 rtl:left-0.5 bottom-[1px] border border-white"
+                    data-delegates='${JSON.stringify(app.UserDelegateList)}'
+                    title="View delegate list"
+                >
+                    <i class="fa-solid fa-eye text-purple text-[3px] hover:bg-muted/[0.85] hover:border-purple/[0.85]"></i>
+                </button>`;
+                }
+
+                const li = document.createElement("li");
+                li.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="relative rounded-full shrink-0">
+                        <div class="rounded-full h-7 w-7 flex items-center justify-center text-xs font-semibold uppercase bg-purple/20 text-purple">
+                            ${initials}
+                        </div>
+                        ${eyeIconHtml}
+                    </div>
+                    <div class="grow">
+                        <h6 class="mb-1 text-black dark:text-white/80">${capitalizeWords(app.ApproverName)}</h6>
+                        ${delegateHtml}
+                        <p class="text-xs text-muted">${formatDate(app.Centralized_ApprovalList_Date)}</p>
+                    </div>
+                    <div class="relative shrink-0">
+                        <div class="inline-block px-3 py-1 ${badgeClass} text-white text-xs font-semibold rounded-full shadow-md">
+                            ${statusText}
+                        </div>
+                    </div>
+                </div>`;
+                ul.appendChild(li);
+
+                if (hasUserDelegates) {
+                    const eyeBtn = li.querySelector(`#listdelegate-${app.Centralized_ApprovalList_ID}`);
+                    eyeBtn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        const delegates = JSON.parse(e.currentTarget.dataset.delegates);
+                        showDelegatePopup(delegates);
+                    });
+                }
+            });
+        }
+
+        function showDelegatePopup(delegates) {
+            if (!delegates || delegates.length === 0) {
+                Swal.fire({ icon: "info", title: "No Delegates", text: "Tidak ada delegate yang terdaftar.", confirmButtonColor: "#DC2626" });
+                return;
+            }
+            const html = `
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm border border-muted rounded-lg">
+                        <thead>
+                            <tr class="bg-gray-100 text-left">
+                                <th class="px-3 py-1 border">KPK</th>
+                                <th class="px-3 py-1 border">Name</th>
+                                <th class="px-3 py-1 border">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${delegates.map(d => `
+                                <tr>
+                                    <td class="px-3 py-1 border">${d.DelegateKpk || "-"}</td>
+                                    <td class="px-3 py-1 border">${d.DelegateName || "-"}</td>
+                                    <td class="px-3 py-1 border">${d.DelegateTime || "-"}</td>
+                                </tr>
+                            `).join("")}
+                        </tbody>
+                    </table>
+                </div>`;
+            Swal.fire({ title: "Delegates", html: html, width: 400, confirmButtonText: "Close", confirmButtonColor: "#DC2626", background: "#fff", showCloseButton: true });
+        }
+
+        async function loadApprovalProgress(piaId) {
+            const result = await fetchPiaApprovals(piaId);
+            const approvals = result?.approvals ?? [];
+            renderApprovalProgress(approvals);
+        }
+
+        function setCurrentApproval(approvalListId, sourceDataID) {
+            currentApproval = approvalListId;
+            currentSourceDataID = sourceDataID;
+        }
+
+        async function getDelegateKpkIfAny(originalKpk) {
+            const currentDayType = getCurrentDayType();
+            originalApproverKpk = originalKpk;
+            try {
+                const res = await $.getJSON(getDelegatesUrl, { searchUserKpk: originalKpk });
+                if (!res.success) return [originalKpk];
+                const matchedDelegates = res.data.filter(d =>
+                    d.DelegateTime === currentDayType || d.DelegateTime === "Everyday"
+                );
+                if (matchedDelegates.length > 0) {
+                    const delegateKpks = matchedDelegates.map(d => d.DelegateKpk);
+                    isDelegateActive = true;
+                    return [originalKpk, ...delegateKpks];
+                } else {
+                    return [originalKpk];
+                }
+            } catch (err) {
+                console.error("Error ambil delegasi:", err);
+                return [originalKpk];
+            }
+        }
+
+        async function checkAndRenderApproveReject(piaId) {
+            const result = await fetchPiaApprovals(piaId);
+            const approveRejectField = document.getElementById("approveRejectField");
+            const updateApprovalBtn = document.getElementById("updateApproval");
+            const buttonDelete = document.getElementById("deleteButtonForInitiator");
+            approveRejectField.classList.add("hidden");
+            updateApprovalBtn.classList.add("hidden");
+            if (buttonDelete) buttonDelete.classList.add("hidden");
+
+            if (!result || !result.approvals) return;
+            renderCurrentStatus(result.currentStatus);
+
+            const approvals = result.approvals;
+            if (result.currentStatus === 16) return;
+            if (result.currentStatus === 5) return;
+
+            if (result.initiatorKpk === kpk && (result.currentStatus === 1 || result.currentStatus === 4)) {
+                if (buttonDelete) buttonDelete.classList.remove("hidden");
+                if (approvals.length > 0) {
+                    setCurrentApproval(null, approvals[0].Centralized_SourceData_ID);
+                }
+            }
+
+            approvals.sort((a, b) => a.Centralized_ApprovalList_Step - b.Centralized_ApprovalList_Step);
+            const nextStepPending = approvals.find(a => a.Centralized_StatusList_ID === 1);
+            if (!nextStepPending) return;
+            const maxStep = Math.max(...approvals.map(a => a.Centralized_ApprovalList_Step));
+            isLastApprovalStep = nextStepPending.Centralized_ApprovalList_Step === maxStep;
+            const originalKpkApproval = nextStepPending.OriginalKpkApproval;
+            const approverKpks = await getDelegateKpkIfAny(originalKpkApproval);
+
+            const stepIndex = approvals.indexOf(nextStepPending);
+            if (stepIndex > 0) {
+                const prevStep = approvals[stepIndex - 1];
+                if (prevStep.Centralized_StatusList_ID !== 2) return;
+            }
+            if (approverKpks.map(x => x.toString()).includes(kpk.toString())) {
+                approveRejectField.classList.remove("hidden");
+                updateApprovalBtn.classList.remove("hidden");
+                setCurrentApproval(nextStepPending.Centralized_ApprovalList_ID, nextStepPending.Centralized_SourceData_ID);
+            }
+        }
+
+        async function handleDecision(status) {
+            if (!currentApproval || !currentSourceDataID) return;
+            const baseUrl = isLastApprovalStep
+                ? '@Url.Action("TriggerApprovalManual", "AutomateFlow")'
+                : '@Url.Action("TriggerApproval", "AutomateFlow")';
+            const urlTrigger = baseUrl
+                + "?approvalListId=" + currentApproval
+                + "&status=" + status
+                + "&sourceDataID=" + currentSourceDataID;
+            const urlInsertDelegate = '@Url.Action("InsertDelegateApprovalRecord", "UpdateData")';
+            const result = await showDynamicSwal({
+                title: "Are you sure?",
+                text: status == 3 ? "Do you want to reject this?" : "Do you want to approve this?",
+                icon: "warning",
+                confirmText: "Yes, Continue",
+                cancelText: "Cancel"
+            });
+            if (!result.isConfirmed) return;
+            Swal.fire({
+                title: "Processing...",
+                text: "Please wait. This process usually takes a few seconds, but may take up to 1 minute during gateway delays.",
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+            try {
+                if (isDelegateActive && kpk !== originalApproverKpk) {
+                    const insertRes = await $.post(urlInsertDelegate, {
+                        approvalListId: currentApproval,
+                        statusListId: status,
+                        delegateKpk: kpk
+                    });
+                    if (!insertRes.success) {
+                        Swal.close();
+                        Swal.fire({ icon: "error", title: "Delegate Insert Failed", text: insertRes.message || "Failed to insert delegate record." });
+                        return;
+                    }
+                }
+                const response = await $.get(urlTrigger);
+                if (response.success) {
+                    Swal.close();
+                    if (response.flowStatus !== 200) {
+                        await Swal.fire({
+                            icon: "warning",
+                            title: "Email Delivery Failed – Switched to Manual Approval",
+                            text: "The system could not send the notification email to the next approver due to a gateway connection issue. The approval process is still continued using the manual approach.",
+                        });
+                    } else {
+                        await Swal.fire({ icon: "success", title: "Success", text: response.message });
+                    }
+                    await loadApprovalProgress(docId);
+                    checkAndRenderApproveReject(docId);
+                } else {
+                    Swal.close();
+                    Swal.fire({ icon: "error", title: "Error", text: response.message });
+                }
+            } catch (err) {
+                Swal.close();
+                Swal.fire({ icon: "error", title: "Request Failed", text: "Something went wrong while sending the request." });
+                console.error(err);
+            }
+        }
+
+        function UpdateApprovalOpenModals() {
+            document.getElementById("modalsUpdateApproval").classList.remove("hidden");
+            renderApprovalsUpdateButton(docId);
+        }
+
+        async function renderApprovalsUpdateButton(piaId) {
+            const result = await fetchPiaApprovals(piaId);
+            const approvals = result?.approvals ?? [];
+            const approverListDiv = document.getElementById("approverList");
+            approverListDiv.innerHTML = "";
+            if (approvals.length === 0) {
+                approverListDiv.innerHTML = `<p class="text-sm text-muted">No approvals found</p>`;
+                return;
+            }
+            approvals.sort((a, b) => a.Centralized_ApprovalList_Step - b.Centralized_ApprovalList_Step);
+            currentKpkList = approvals.map(app => app.Centralized_ApprovalList_KpkApproval);
+            approvals.forEach((app) => {
+                const approverName = capitalizeWords(app.ApproverName);
+                const approvedDate = formatDate(app.Centralized_ApprovalList_Date);
+                const step = app.Centralized_ApprovalList_Step;
+                const status = app.Centralized_StatusList_ID;
+                let nameField = "";
+                if (status === 1) {
+                    nameField = `
+                <input type="text"
+                       class="w-full border rounded p-1 text-sm dark:bg-darkbg dark:text-white"
+                       value="${approverName}"
+                       data-approvalid="${app.Centralized_ApprovalList_ID}"
+                       data-step="${step}"
+                       oninput="handleNameInput(this)"
+                       placeholder="Type name or KPK..." />
+                <div class="suggestions hidden border rounded bg-white dark:bg-darkbg text-sm mt-1 max-h-40 overflow-y-auto"></div>`;
+                } else {
+                    nameField = `<p class="mb-1 text-sm font-semibold dark:text-white">${step}. ${approverName}</p>`;
+                }
+                const { statusText: statusLabel, badgeClass: statusClass } = getApprovalStatus(status);
+                approverListDiv.innerHTML += `
+            <div class="p-5 border rounded border-black/10 dark:border-darkborder">
+                <div class="mb-2 text-sm font-bold text-purple-600">Step ${step}</div>
+                <div class="flex gap-4 mb-4">
+                    <div class="flex-1">
+                        ${nameField}
+                        <p class="text-xs text-muted dark:text-darkmuted">${approvedDate ? "Approved At: " + approvedDate : "Pending"}</p>
+                        <p class="text-xs font-semibold ${statusClass}">Status: ${statusLabel}</p>
+                    </div>
+                </div>
+            </div>`;
+            });
+        }
+
+        async function handleNameInput(inputEl) {
+            const keyword = inputEl.value.trim();
+            const container = inputEl.nextElementSibling;
+            if (!keyword || keyword.length < 2) {
+                container.classList.add("hidden");
+                container.innerHTML = "";
+                return;
+            }
+            const resp = await fetch(`${urlGetEmployee}?keyword=${encodeURIComponent(keyword)}`);
+            const data = await resp.json();
+            if (data.success && data.data.length > 0) {
+                container.classList.remove("hidden");
+                container.innerHTML = data.data.map(emp =>
+                    `<div class="p-1 hover:bg-success dark:hover:bg-darkmuted cursor-pointer"
+                      onclick="selectEmployee('${emp.kpk}', '${emp.name}', this)">
+                      ${emp.kpk} - ${emp.name}
+                 </div>`
+                ).join("");
+            } else {
+                container.classList.add("hidden");
+                container.innerHTML = "";
+            }
+        }
+
+        function selectEmployee(empKpk, name, el) {
+            const container = el.parentElement;
+            const inputEl = container.previousElementSibling;
+            inputEl.value = name;
+            container.classList.add("hidden");
+            container.innerHTML = "";
+            const step = inputEl.dataset.step;
+            currentKpkList[step - 1] = empKpk;
+        }
+
+        document.getElementById("saveUpdateApproval").addEventListener("click", async () => {
+            const inputs = document.querySelectorAll("#approverList input[data-approvalid]");
+            const updates = [];
+            inputs.forEach(input => {
+                const approvalId = parseInt(input.dataset.approvalid, 10);
+                const step = parseInt(input.dataset.step, 10);
+                const newKpk = currentKpkList[step - 1];
+                if (approvalId && newKpk) {
+                    updates.push({ ApprovalListId: approvalId, NewKpk: newKpk });
+                }
+            });
+            if (updates.length === 0) {
+                Swal.fire("Info", "No approval changes found.", "info");
+                return;
+            }
+            showDynamicSwal({ title: "Confirm Update", text: "Are you sure you want to save the changes to approvals?", icon: "question", confirmText: "Yes, Save", cancelText: "Cancel" })
+            .then(async (result) => {
+                if (!result.isConfirmed) return;
+                try {
+                    Swal.fire({ title: "Saving...", text: "Please wait while we process the data", allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                    const resp = await fetch(urlUpdateApprovals, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(updates)
+                    });
+                    const res = await resp.json();
+                    if (res.success) {
+                        Swal.fire({ title: "Success", text: "Approvals updated successfully.", icon: "success", timer: 1500, showConfirmButton: false })
+                        .then(() => {
+                            closeModal('modalsUpdateApproval');
+                            loadApprovalProgress(docId);
+                            checkAndRenderApproveReject(docId);
+                        });
+                    } else {
+                        Swal.fire("Failed", res.message || "Approval update failed.", "error");
+                    }
+                } catch (err) {
+                    console.error("Error updating approvals:", err);
+                    Swal.fire("Error", "An error occurred while updating approvals.", "error");
+                }
+            });
+        });
 
         function renderPagination(totalCount, pageNumber, size) {
             const ul = document.getElementById("buttonPagination");
@@ -706,6 +1201,10 @@ $store.app.hasdetached = window.location.href.includes('detached.html')" :class=
                 console.error("Error generating PDF:", err);
                 Swal.fire("Error", "Failed to generate PDF.", "error");
             }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
         }
     </script>
 </body>
