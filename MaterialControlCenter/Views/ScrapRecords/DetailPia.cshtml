@@ -497,20 +497,29 @@ $store.app.hasdetached = window.location.href.includes('detached.html')" :class=
                     $('#overallTotal').empty().text(formatRupiahShort(res.TotalValue || 0));
                     $('#overallQuantity').empty().text(res.TotalVarianceQty || 0);
 
-                    document.getElementById("facilityInfo").textContent = res.Facility || "-";
-                    document.getElementById("tcInfo").textContent = res.TC || "-";
-                    document.getElementById("piaCodeInfo").textContent = res.PiaCode || "-";
-                    document.getElementById("typeInfo").textContent = res.Type || "-";
+                    const setText = (id, value) => {
+                        const el = document.getElementById(id);
+                        if (el) el.textContent = value;
+                    };
+
+                    setText("facilityInfo", res.Facility || "-");
+                    setText("tcInfo", res.TC || "-");
+                    setText("piaCodeInfo", res.PiaCode || "-");
+                    setText("typeInfo", res.Type || "-");
 
                     renderCurrentStatus(res.Status || 0);
 
                     // Render Overview chart grouped by Process
                     if (res.Data && res.Data.length > 0) {
-                    const labels = (res.Data || []).map(p => p.ProcessName);
-                    const values = (res.Data || []).map(p => p.TotalValue);
+                        const labels = (res.Data || []).map(p => p.ProcessName);
+                        const values = (res.Data || []).map(p => p.TotalValue);
 
-                    if (labels.length > 0) {
-                        renderBarChart('#chartSummaryPerLeader', [{ name: 'Total Value', data: values }], labels);
+                        if (labels.length > 0) {
+                            renderBarChart('#chartSummaryPerLeader', [{ name: 'Total Value', data: values }], labels);
+                        } else {
+                            document.getElementById("chartSummaryPerLeader").innerHTML =
+                                '<p class="text-center text-muted py-10">No overview data available.</p>';
+                        }
                     } else {
                         document.getElementById("chartSummaryPerLeader").innerHTML =
                             '<p class="text-center text-muted py-10">No overview data available.</p>';

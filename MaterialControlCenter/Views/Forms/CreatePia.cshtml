@@ -45,10 +45,10 @@
 
                 <input type="hidden" id="supervisorInitiatorKpk" name="supervisorInitiatorKpk" />
                 <div class="w-full">
-                    <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Supervisor</h2>
+                    <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Manager</h2>
                     <div class="space-y-4">
 
-                        <input type="text" id="supervisorInitiatorName" name="supervisorInitiatorName" placeholder="Search Supervisor..." class="form-input w-full" autocomplete="off" />
+                        <input type="text" id="supervisorInitiatorName" name="supervisorInitiatorName" placeholder="Search Manager..." class="form-input w-full" autocomplete="off" />
                         <div id="supervisorResults" class="dropdown-results absolute w-100 bg-white border border-muted rounded mt-1 z-50 hidden" style="max-height: 200px; overflow-y: auto;"></div>
                     </div>
                 </div>
@@ -849,6 +849,8 @@
         function filterRemarksByPiaCode(partCounter, piaCode) {
             const $dropdown = document.getElementById(`remarks-${partCounter}`);
             const $hidden = document.getElementById(`remarksId-${partCounter}`);
+            // Remarks per-row tidak ada di HTML PIA — skip jika element tidak ditemukan
+            if (!$dropdown) return;
             $dropdown.innerHTML = "";
             const defaultOption = document.createElement("option");
             defaultOption.value = "";
@@ -870,7 +872,7 @@
                 $dropdown.appendChild(option);
             });
             $dropdown.addEventListener("change", function () {
-                $hidden.value = $dropdown.value;
+                if ($hidden) $hidden.value = $dropdown.value;
             });
         }
 
@@ -1051,9 +1053,9 @@
                   <td class="border border-muted hidden "><input id="cmidit-${partCounter}" type="text" class="form-input w-full"></td>
                   <td class="border border-muted hidden "><input id="commit-${partCounter}" type="text" class="form-input w-full"></td>
                   
-                  <td class="border border-muted" data-cell="leader">
-                    <input id="leader-${partCounter}" type="text" class="form-input w-full" placeholder="Leader (search)" list="leaderList-${partCounter}" autocomplete="off">
-                    <div id="leaderList-${partCounter}" class="dropdown-results absolute w-100 bg-white border border-muted rounded mt-1 z-50 hidden" style="max-height: 200px; overflow-y: auto;"></div>
+                  <td class="border border-muted" data-cell="leader" style="position: relative;">
+                    <input id="leader-${partCounter}" type="text" class="form-input w-full" placeholder="Leader (search)" autocomplete="off">
+                    <div id="leaderList-${partCounter}" class="dropdown-results bg-white border border-muted rounded mt-1 z-50 hidden" style="position: absolute; left: 0; right: 0; max-height: 200px; overflow-y: auto; z-index: 99999;"></div>
                     <input type="hidden" id="leaderKpk-${partCounter}">
                   </td>
                 `;
@@ -1082,7 +1084,7 @@
 
             initPartAutocomplete(partCounter, selectedTC);
             filterRemarksByPiaCode(partCounter, selectedPiaCode);
-            initLeaderAutocomplete(partCounter, urlGetEmployee);
+            initLeaderAutocomplete(partCounter);
 
             // Create closure for field input events
             const createFieldInputHandler = (field, counter) => {
@@ -1822,55 +1824,91 @@
             updateSelectedCommit();
         }
 
-        function initLeaderAutocomplete(counter, urlGetEmployee) {
-            const leaderInput = document.getElementById(`leader-${counter}`);
-            const leaderList = document.getElementById(`leaderList-${counter}`);
-            const leaderKpkInput = document.getElementById(`leaderKpk-${counter}`);
-            const facility = document.querySelector("#facilityInitiator")?.value.trim();
-            if (facility === "P1" && kpk) {
-                leaderKpkInput.value = kpk;
-                fetchData(urlGetEmployee, { keyword: kpk }, function (res) {
-                    if (res.success && res.data?.length > 0) { 
-                        leaderInput.value = res.data[0].name;
-                    } else {
-                        leaderInput.value = kpk;
-                    }
-                });
-                leaderInput.readOnly = true;
+        function initLeaderAutocomplete(counter) {
+            var leaderInput    = document.getElementById("leader-" + counter);
+            var leaderList     = document.getElementById("leaderList-" + counter);
+            var leaderKpkInput = document.getElementById("leaderKpk-" + counter);
+
+            if (!leaderInput || !leaderList || !leaderKpkInput) {
+                console.error("[Leader] Element not found for counter:", counter);
                 return;
             }
-            leaderInput.addEventListener("input", function () {
-                const search = this.value.trim();
-                leaderList.innerHTML = "";
-                leaderList.classList.add("hidden");
 
-                if (search.length < 3) return;
-
-                fetchData(urlGetEmployee, { keyword: search }, function (res) {
-                    leaderList.innerHTML = "";
-                    if (res.success && Array.isArray(res.data)) {
-                        res.data.forEach(emp => {
-                            const item = document.createElement("div");
-                            item.className = "px-3 py-1 hover:bg-info cursor-pointer text-sm";
-                            item.textContent = `${emp.name} (${emp.kpk})`;
-                            item.dataset.kpk = emp.kpk;
-                            item.dataset.name = emp.name;
-                            item.addEventListener("click", () => {
-                                leaderInput.value = emp.name;
-                                leaderKpkInput.value = emp.kpk;
-                                leaderList.classList.add("hidden");
-                            });
-
-                            leaderList.appendChild(item);
-                        });
-                        leaderList.classList.remove("hidden");
+            // Auto-prefill dari KPK user yang sedang login
+            if (typeof kpk !== "undefined" && kpk) {
+                leaderKpkInput.value = kpk;
+                $.ajax({
+                    url: "@Url.Action("GetEmployeeByNameOrKpk","DataForms")",
+                    type: "GET",
+                    data: { keyword: String(kpk) },
+                    success: function (res) {
+                        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+                            leaderInput.value = res.data[0].name;
+                            leaderKpkInput.value = res.data[0].kpk;
+                        } else {
+                            leaderInput.value = String(kpk);
+                        }
+                        leaderInput.readOnly = true;
+                        leaderInput.style.backgroundColor = "#f0f0f0";
+                        leaderInput.style.cursor = "not-allowed";
+                    },
+                    error: function () {
+                        leaderInput.value = String(kpk);
+                        leaderInput.readOnly = true;
+                        leaderInput.style.backgroundColor = "#f0f0f0";
+                        leaderInput.style.cursor = "not-allowed";
                     }
                 });
+                return;
+            }
+
+            // Tetap bisa dicari manual jika perlu ganti
+            var leaderDebounce = null;
+
+            leaderInput.addEventListener("input", function () {
+                var search = this.value.trim();
+                leaderList.innerHTML = "";
+                leaderList.classList.add("hidden");
+                leaderKpkInput.value = "";
+
+                if (search.length < 2) return;
+
+                clearTimeout(leaderDebounce);
+                leaderDebounce = setTimeout(function () {
+                    $.ajax({
+                        url: "@Url.Action("GetEmployeeByNameOrKpk","DataForms")",
+                        type: "GET",
+                        data: { keyword: search },
+                        success: function (res) {
+                            leaderList.innerHTML = "";
+                            if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+                                res.data.forEach(function (emp) {
+                                    var item = document.createElement("div");
+                                    item.className = "px-3 py-1 hover:bg-info cursor-pointer text-sm";
+                                    item.textContent = emp.name + " (" + emp.kpk + ")";
+                                    item.addEventListener("mousedown", function (e) {
+                                        e.preventDefault();
+                                        leaderInput.value = emp.name;
+                                        leaderKpkInput.value = emp.kpk;
+                                        leaderList.innerHTML = "";
+                                        leaderList.classList.add("hidden");
+                                    });
+                                    leaderList.appendChild(item);
+                                });
+                                leaderList.classList.remove("hidden");
+                            }
+                        },
+                        error: function (xhr, status, err) {
+                            console.error("[Leader] AJAX error:", status, err);
+                        }
+                    });
+                }, 300);
             });
-            document.addEventListener("click", (e) => {
-                if (!leaderInput.contains(e.target) && !leaderList.contains(e.target)) {
+
+            leaderInput.addEventListener("blur", function () {
+                setTimeout(function () {
                     leaderList.classList.add("hidden");
-                }
+                }, 200);
             });
         }
 
@@ -2053,6 +2091,13 @@
         });
 
         function buildPiaPayload() {
+            const selectedRemarksText = $('#remarksDropdown option:selected').text().trim();
+            const selectedRemarksValue = $('#remarksDropdown').val();
+            const specialRemarks = (localStorage.getItem("specialCodeRemarks") || "").trim();
+            const headerRemarks = specialRemarks || (selectedRemarksValue ? selectedRemarksText : "");
+            const createdByKpkValue = (typeof kpk !== "undefined" ? parseInt(kpk) : 0) || 0;
+            const createdByNameValue = (typeof userName !== "undefined" ? userName : "") || "";
+
             const headerData = {
                 Type        : document.getElementById("typeOfPiaDropdown")?.value || "Reguler",
                 Facility    : document.getElementById("facilityInitiator")?.value || null,
@@ -2060,9 +2105,9 @@
                 PiaCode     : parseInt(document.getElementById("piaCodeDropdown")?.value) || 0,  
                 WC          : document.getElementById("wcDropdown")?.value || null,
                 TcCompanion : localStorage.getItem("CompanionTc") || null,
-                Remarks     : localStorage.getItem("specialCodeRemarks") || null,
-                CreatedByKpk  : parseInt(typeof kpk !== "undefined" ? kpk : "0") || 0,  
-                CreatedByName : typeof name !== "undefined" ? name : null              
+                Remarks     : headerRemarks || null,
+                CreatedByKpk  : createdByKpkValue,  
+                CreatedByName : createdByNameValue || null              
             };
             const rows = document.querySelectorAll("#listOfPartnumber tr");
             const detailList = [];
@@ -2094,6 +2139,7 @@
                     system_qty       : parseFloat(row.querySelector('input[id^="systemQuantity-"]')?.value)   || 0,
                     variance_qty     : parseFloat(row.querySelector('input[id^="varianceQuantity-"]')?.value) || 0,
                     total_value      : rawTotal,
+                    LeaderKPK        : row.querySelector('input[id^="leaderKpk-"]')?.value || null,
                     status           : "active"
                 });
             });

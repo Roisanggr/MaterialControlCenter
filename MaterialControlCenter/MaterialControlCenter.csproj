@@ -1292,7 +1292,9 @@
     <Content Include="assets\FileAttachment\P1_AS400 Scrap Notice v1.2.2.xlsm" />
     <Content Include="assets\FileAttachment\P2_AS400 Scrap Notice v1.2.2.xlsm" />
     <Content Include="ENDPOINT_MIGRATION_GUIDE.md" />
+    <Content Include="IMPLEMENTATION_SUMMARY.md" />
     <None Include="Models\.editorconfig" />
+    <Content Include="PIA_APPROVAL_CHAIN_CHANGES.md" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />

@@ -540,8 +540,13 @@ const initiatorKpk = typeof kpk !== "undefined" ? kpk : null;
 if (!initiatorKpk) {
     detectedKPKGlobal = [];
     renderApprovalBadges([]);
+    hideApprovalChainLoader();
     return;
 }
+
+// ── FIX: Gunakan Supervisor KPK (bukan Initiator KPK) untuk approval chain ──
+// Alasan: Step 1 manager adalah supervisor dari supervisor yang dipilih user
+const supervisorKpk = document.getElementById("supervisorInitiatorKpk")?.value?.trim() || initiatorKpk;
 
 const app = String(application || "").toUpperCase();
 const defaultCodeSelectorByApp = {
@@ -573,15 +578,21 @@ const documentCode = (options.documentCode
 
 const partsJson = JSON.stringify(partsData || []);
 
+// Show loader
+showApprovalChainLoader();
+
+console.log("[checkApprovalChain] supervisorKpk:", supervisorKpk, "initiatorKpk:", initiatorKpk);
+
 $.ajax({
     url : '@Url.Action("GetApprovalChain", "DataForms")',
     type: "GET",
     data: {
         application  : application,
-        initiatorKpk : initiatorKpk,
+        initiatorKpk : supervisorKpk,
         facility     : facility,
         scrapCode    : documentCode,
-        partsJson    : partsJson
+        partsJson    : partsJson,
+        tc           : (options.tc || document.querySelector(options.tcSelector || "#tcDropdown")?.value || "")
     },
     success: function (res) {
     if (res && res.success && res.data && res.data.length > 0) {
@@ -606,13 +617,30 @@ $.ajax({
         renderApprovalBadges([]);
         console.warn("[ApprovalChain] No approvers resolved:", res?.message);
     }
+    hideApprovalChainLoader();
 },
     error: function (xhr, status, err) {
         detectedKPKGlobal = [];
         renderApprovalBadges([]);
         console.error("[ApprovalChain] Failed:", err);
+        hideApprovalChainLoader();
     }
 });
+}
+
+function showApprovalChainLoader() {
+    const container = document.getElementById("approvalBadgesContainer");
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="flex items-center gap-2">
+            <div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-info rounded-full"></div>
+            <span class="text-xs text-muted">Loading approval chain...</span>
+        </div>`;
+}
+
+function hideApprovalChainLoader() {
+    // Loader will be replaced by renderApprovalBadges, no need to hide explicitly
 }
 
     function renderApprovalBadges(steps) {

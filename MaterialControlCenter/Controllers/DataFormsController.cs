@@ -1151,6 +1151,7 @@ namespace MaterialControlCenter.Controllers
         string facility,        // facility dokumen (P1, P2, P2S3, ...)
         string scrapCode,       // selected scrap/pia code from document header
         string partsJson,       // JSON: array of { value, code, tcType, commit }
+        string tc = null,       // optional: TC code from document header
         decimal? totalValue = null) // opsional — kalau ada override total
         {
             try
@@ -1171,9 +1172,11 @@ namespace MaterialControlCenter.Controllers
                     }
                 }
 
-                // ── 2. Hitung max absolute value per-part ────────────────────────
-                decimal maxAbsValue = parts.Any()
-                    ? parts.Max(p => Math.Abs(p.Value))
+                // ── 2. Hitung total absolute value dokumen (sum of per-part absolute values)
+                // Perubahan: sebelumnya menggunakan Max per-part, sehingga aturan berbasis
+                // total dokumen (mis. >100jt) tidak selalu terpanggil. Gunakan sum sebagai trigger.
+                decimal totalAbsValue = parts.Any()
+                    ? parts.Sum(p => Math.Abs(p.Value))
                     : (totalValue ?? 0m);
 
                 // ── 3. Ambil semua rules untuk aplikasi ini ──────────────────────
@@ -1181,7 +1184,7 @@ namespace MaterialControlCenter.Controllers
                 var allRoles = dbScrap.GetAllRoles();  // List<RoleModel> { RoleId, Name }
                 var supChain = GetSupervisorChain(initiatorKpk);
 
-                Debug.Print($"[GetApprovalChain] app={application}, scrapCode={scrapCode}, maxAbsValue={maxAbsValue}, " +
+                Debug.Print($"[GetApprovalChain] app={application}, scrapCode={scrapCode}, totalAbsValue={totalAbsValue}, " +
                              $"rules={rules.Count}, chainLen={supChain.Count}");
 
                  // ── 4. Filter rules dengan logic CUMULATIVE (bukan range filter) ──────────────
@@ -1225,14 +1228,14 @@ namespace MaterialControlCenter.Controllers
                      .OrderBy(g => g.Key)
                      .ToList();
 
-                 foreach (var thresholdGroup in rulesByThreshold)
+                foreach (var thresholdGroup in rulesByThreshold)
                  {
                      long threshold = thresholdGroup.Key;
 
                      // CUMULATIVE LOGIC: Jika value sudah >= threshold ini, tambahkan SEMUA rules dalam group ini
                      // Catatan: Jangan gunakan MaxValue sebagai filter untuk cumulative system.
                      // MaxValue hanya untuk informasi range, bukan untuk exclude rules.
-                     if (maxAbsValue >= threshold)
+                    if (totalAbsValue >= threshold)
                      {
                          activeRules.AddRange(thresholdGroup);
                      }
@@ -1289,33 +1292,76 @@ namespace MaterialControlCenter.Controllers
 
                         if (roleName.Contains("manager") && !roleName.Contains("material"))
                         {
-                            // Manager langsung initiator
-                            var mgr = supChain.ElementAtOrDefault(1);
-                            if (mgr != null) { resolvedKpks.Add(mgr.Kpk); resolvedNames.Add(mgr.Name ?? mgr.Kpk); }
+                            // PIA: Manager dipilih langsung dari form (initiatorKpk = Manager KPK)
+                            // SCRAP/TPR: Manager adalah supervisor dari initiator (supChain[1])
+                            if (string.Equals(application, "PIA", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var manager = supChain.ElementAtOrDefault(0);  // Manager sendiri (initiatorKpk)
+                                if (manager != null)
+                                {
+                                    resolvedKpks.Add(manager.Kpk);
+                                    resolvedNames.Add(manager.Name ?? manager.Kpk);
+                                    Debug.Print($"[GetApprovalChain] PIA Step 1 Manager (Direct Selection): {manager.Kpk}");
+                                }
+                            }
+                            else
+                            {
+                                var mgr = supChain.ElementAtOrDefault(1);
+                                if (mgr != null)
+                                {
+                                    resolvedKpks.Add(mgr.Kpk);
+                                    resolvedNames.Add(mgr.Name ?? mgr.Kpk);
+                                    Debug.Print($"[GetApprovalChain] {application} Step 1 Manager (Supervisor Chain): {mgr.Kpk}");
+                                }
+                            }
                         }
                         else if (roleName.Contains("director") && !roleName.Contains("material"))
                         {
-                            var dir = supChain.ElementAtOrDefault(2);
-                            var mgr = supChain.ElementAtOrDefault(1);
+                            // General rule for director roles (including "material director"):
+                            // - For PIA: manager chosen by user is at supChain[0] -> director is supChain[1]
+                            // - For other apps: use a higher index (fallback to supChain[2])
+                            int directorIndex = string.Equals(application, "PIA", StringComparison.OrdinalIgnoreCase) ? 1 : 2;
+                            int managerIndex = string.Equals(application, "PIA", StringComparison.OrdinalIgnoreCase) ? 0 : 1;
+
+                            var dir = supChain.ElementAtOrDefault(directorIndex);
+                            var mgr = supChain.ElementAtOrDefault(managerIndex);
                             if (dir != null && !string.Equals(dir.Kpk, mgr?.Kpk, StringComparison.OrdinalIgnoreCase))
-                            { resolvedKpks.Add(dir.Kpk); resolvedNames.Add(dir.Name ?? dir.Kpk); }
+                            {
+                                resolvedKpks.Add(dir.Kpk);
+                                resolvedNames.Add(dir.Name ?? dir.Kpk);
+                                Debug.Print($"[GetApprovalChain] {application} Director (index {directorIndex}): {dir.Kpk}");
+                            }
+
+                            // Special-case: jika role mengandung kata 'president', ambil supervisor dari director
+                            // (president director berada di supChain[directorIndex + 1])
+                            if (roleName.Contains("president"))
+                            {
+                                var pres = supChain.ElementAtOrDefault(directorIndex + 1);
+                                if (pres != null && !string.Equals(pres.Kpk, dir?.Kpk, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    resolvedKpks.Add(pres.Kpk);
+                                    resolvedNames.Add(pres.Name ?? pres.Kpk);
+                                    Debug.Print($"[GetApprovalChain] {application} President Director (index {directorIndex + 1}): {pres.Kpk}");
+                                }
+                            }
                         }
                         else
                         {
                             // Lookup dari tabel user — ambil SEMUA user yang match (bukan TOP 1)
-                            var users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, facility, rule.Code);
+                            // Perketat: sertakan TC dokumen jika ada agar hanya user yang handle TC tersebut yang di-resolve
+                            var users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, facility, rule.Code, tc);
 
                             // Fallback: coba tanpa filter facility jika tidak ada hasil
                             if (!users.Any())
-                                users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, null, rule.Code);
+                                users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, null, rule.Code, tc);
 
                             // Fallback: coba tanpa filter code
                             if (!users.Any())
-                                users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, facility, null);
+                                users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, facility, null, tc);
 
                             // Fallback: by role_id saja
                             if (!users.Any())
-                                users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, null, null);
+                                users = dbScrap.GetUsersByRoleAndFacility(rule.RoleId, null, null, tc);
 
                             foreach (var u in users)
                             {
@@ -1370,6 +1416,42 @@ namespace MaterialControlCenter.Controllers
                         approvalSteps.Add(new { priority = group.Key, approvers = approversInStep });
                 }
 
+                // Pastikan 'Material Director' tetap berada di langkah ke-3 (step number = 3)
+                // Cari group yang mengandung approver dengan role 'material director' dan pindahkan
+                // group tersebut ke posisi index 2 (0-based). Jika group sudah di posisi yang benar,
+                // tidak ada perubahan.
+                int desiredMaterialIndex = 2; // step ke-3
+                int foundIndex = -1;
+                for (int i = 0; i < approvalSteps.Count; i++)
+                {
+                    var approvers = ((dynamic)approvalSteps[i]).approvers as IEnumerable<dynamic>;
+                    if (approvers != null && approvers.Any(a => ((string)a.role).ToLower().Contains("material director")))
+                    {
+                        foundIndex = i;
+                        break;
+                    }
+                }
+
+                if (foundIndex != -1 && foundIndex != desiredMaterialIndex)
+                {
+                    var matGroup = approvalSteps[foundIndex];
+                    approvalSteps.RemoveAt(foundIndex);
+                    // Ensure list has enough length to insert at desired index
+                    if (approvalSteps.Count >= desiredMaterialIndex)
+                    {
+                        approvalSteps.Insert(desiredMaterialIndex, matGroup);
+                    }
+                    else
+                    {
+                        // Tambah placeholder hingga mencapai index yang diinginkan
+                        while (approvalSteps.Count < desiredMaterialIndex)
+                        {
+                            approvalSteps.Add(new { priority = int.MaxValue, approvers = new List<object>() });
+                        }
+                        approvalSteps.Insert(desiredMaterialIndex, matGroup);
+                    }
+                }
+
                 // Hitung step number berdasarkan index (bukan priority)
                 int stepNumber = 1;
                 var resultSteps = approvalSteps.Select(s => new
@@ -1384,7 +1466,7 @@ namespace MaterialControlCenter.Controllers
                     success = true,
                     application = application,
                     scrapCode = scrapCode,
-                    maxAbsValue = maxAbsValue,
+                    totalAbsValue = totalAbsValue,
                     activeRuleCount = activeRules.Count,
                     totalSteps = resultSteps.Count,
                     data = resultSteps   // ← format baru: [{step, priority, approvers:[...]}, ...]
@@ -1417,6 +1499,30 @@ namespace MaterialControlCenter.Controllers
 
             try
             {
+                request = request ?? new PiaRequest();
+                request.Header = request.Header ?? new PiaHeaderModel();
+
+                if (request.Header.CreatedByKpk <= 0)
+                {
+                    var sessionKpk = Session["Kpk"]?.ToString();
+                    if (int.TryParse(sessionKpk, out var parsedKpk))
+                        request.Header.CreatedByKpk = parsedKpk;
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Header.CreatedByName))
+                {
+                    var sessionUserName = Session["UserName"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(sessionUserName) && sessionUserName != "No Name")
+                        request.Header.CreatedByName = sessionUserName;
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Header.Remarks))
+                {
+                    var specialRemarks = Session["SpecialCodeRemarks"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(specialRemarks))
+                        request.Header.Remarks = specialRemarks;
+                }
+
                 if (request.detectedKPKGlobal == null || !request.detectedKPKGlobal.Any())
                 {
                     Response.StatusCode = 400;

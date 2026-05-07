@@ -2849,15 +2849,15 @@ namespace MaterialControlCenter.Service
         }
 
 
-        public List<UserToolRoomModel> GetUsersByRoleAndFacility(int roleId, string facility, string code = null)
+        public List<UserToolRoomModel> GetUsersByRoleAndFacility(int roleId, string facility, string code = null, string tc = null)
         {
             var list = new List<UserToolRoomModel>();
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                string query = @"
-            SELECT [kpk], [name], [email], [role_id], [facility], [code_responsibility]
-            FROM   [Scrap].[dbo].[user]
+                    string query = @"
+                SELECT [kpk], [name], [email], [role_id], [facility], [tc], [code_responsibility]
+                FROM   [Scrap].[dbo].[user]
             WHERE  [role_id]   = @roleId
               AND  [is_active] = 1
               AND  (
@@ -2870,6 +2870,11 @@ namespace MaterialControlCenter.Service
                     OR [code_responsibility] IS NULL OR [code_responsibility] = ''
                     OR [code_responsibility] LIKE '%' + @code + '%'
                    )
+                  AND  (
+                      @tc IS NULL OR @tc = ''
+                      OR [tc] IS NULL OR [tc] = ''
+                      OR [tc] LIKE '%' + @tc + '%'
+                     )
             ORDER BY [kpk]";
 
                 using (var cmd = new SqlCommand(query, conn))
@@ -2879,6 +2884,8 @@ namespace MaterialControlCenter.Service
                         string.IsNullOrEmpty(facility) ? (object)DBNull.Value : (object)facility);
                     cmd.Parameters.AddWithValue("@code",
                         string.IsNullOrEmpty(code) ? (object)DBNull.Value : (object)code);
+                    cmd.Parameters.AddWithValue("@tc",
+                        string.IsNullOrEmpty(tc) ? (object)DBNull.Value : (object)tc);
 
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -2891,14 +2898,17 @@ namespace MaterialControlCenter.Service
                                 Email = reader["email"] as string,
                                 RoleId = reader["role_id"] != DBNull.Value
                                             ? Convert.ToInt32(reader["role_id"]) : (int?)null,
-                                Facility = reader["facility"] != DBNull.Value
+                                  Facility = reader["facility"] != DBNull.Value
                                             ? reader["facility"].ToString()
                                                   .Split(',').Select(x => x.Trim()).ToArray()
                                             : Array.Empty<string>(),
-                                CodeResponsibility = reader["code_responsibility"] != DBNull.Value
-                                            ? reader["code_responsibility"].ToString()
-                                                  .Split(',').Select(x => x.Trim()).ToArray()
-                                            : Array.Empty<string>()
+                                  TC = reader["tc"] != DBNull.Value
+                                          ? reader["tc"].ToString().Split(',').Select(x => x.Trim()).ToArray()
+                                          : Array.Empty<string>(),
+                                  CodeResponsibility = reader["code_responsibility"] != DBNull.Value
+                                          ? reader["code_responsibility"].ToString()
+                                              .Split(',').Select(x => x.Trim()).ToArray()
+                                          : Array.Empty<string>()
                             });
                         }
                     }
