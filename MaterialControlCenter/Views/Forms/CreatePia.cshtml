@@ -654,8 +654,8 @@
                             placeholder: '-- Select PIA Code --',
                             formatFn: (item) =>
                             (item.ShowScrapCode
-                                ? `${item.ShowScrapCode} - ${item.Name}`
-                                : `${item.Code} - ${item.Name}`)
+                                ? `${item.ShowScrapCode} - ${item.Name} (${item.Location || 'All'})`
+                                : `${item.Code} - ${item.Name} (${item.Location || 'All'})`)
                         });
                         $dropdown.off("change").on("change", function () {
                             selectedPiaCode = $(this).val();
@@ -2095,7 +2095,7 @@
             const selectedRemarksValue = $('#remarksDropdown').val();
             const specialRemarks = (localStorage.getItem("specialCodeRemarks") || "").trim();
             const headerRemarks = specialRemarks || (selectedRemarksValue ? selectedRemarksText : "");
-            const createdByKpkValue = (typeof kpk !== "undefined" ? parseInt(kpk) : 0) || 0;
+            const createdByKpkValue = (typeof kpk !== "undefined" ? kpk : "") || "";
             const createdByNameValue = (typeof userName !== "undefined" ? userName : "") || "";
 
             const headerData = {
@@ -2111,6 +2111,7 @@
             };
             const rows = document.querySelectorAll("#listOfPartnumber tr");
             const detailList = [];
+            let partIdSequence = 1;  // Sequential part_id counter
  
             rows.forEach((row) => {
                 const partNum = row.querySelector('input[id^="partNumber-"]')?.value?.trim() || null;
@@ -2124,7 +2125,7 @@
  
                 detailList.push({
                     header_id        : 0,                                                                     
-                    part_id          : 0,                                                                 
+                    part_id          : partIdSequence++,  // Auto-increment: 1, 2, 3, ...
                     part_number      : partNum,
                     part_description : row.querySelector('input[id^="description-"]')?.value || null,
                     part_proccess    : row.querySelector('input[id^="processPoint-"]')?.value || null,

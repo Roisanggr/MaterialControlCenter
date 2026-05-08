@@ -91,7 +91,7 @@ namespace MaterialControlCenter.Models
         public string TcCompanion { get; set; }
         public string Remarks { get; set; }
         public int Status { get; set; }
-        public int CreatedByKpk { get; set; }
+        public string CreatedByKpk { get; set; }
         public string CreatedByName { get; set; }
         public DateTime? CreatedAt { get; set; }
         public bool IsDeleted { get; set; }
@@ -119,6 +119,8 @@ namespace MaterialControlCenter.Models
         public decimal total_value { get; set; }
         public string status { get; set; }
         public DateTime? keyin_at { get; set; }
+        // LeaderKPK coming from client detail row (used as fallback for created-by)
+        public string LeaderKPK { get; set; }
         public DateTime? created_at { get; set; }
         public bool is_deleted { get; set; }
         public DateTime? deleted_at { get; set; }

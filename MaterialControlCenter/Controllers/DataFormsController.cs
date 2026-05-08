@@ -192,7 +192,7 @@ namespace MaterialControlCenter.Controllers
                     r.ScrapCode,
                     r.Remarks,
                     Application = "PIA",
-                    Location = allPiaCodes.FirstOrDefault(c => c.Code == r.ScrapCode)?.Location ?? "-"
+                    Location = (allPiaCodes.FirstOrDefault(c => c.Code == r.ScrapCode)?.Location) ?? "All"
                 });
 
                 // TPR remarks
@@ -744,14 +744,30 @@ namespace MaterialControlCenter.Controllers
 
 
 
-
-
+        [HttpDelete]
         [HttpPost]
         public JsonResult DeleteScrapCodeRemark(int id)
         {
             try
             {
-                bool success = dbScrap.DeleteRemark(id);
+                string jsonData = new StreamReader(Request.InputStream).ReadToEnd();
+                dynamic payload = JsonConvert.DeserializeObject(jsonData);
+                string application = (payload?.Application ?? "").ToString().Trim().ToUpper();
+
+                bool success = false;
+
+                switch (application)
+                {
+                    case "PIA":
+                        success = dbScrap.DeletePiaCodeRemark(id);
+                        break;
+                    case "TPR":
+                        success = dbScrap.DeleteTprCodeRemark(id);
+                        break;
+                    default: // Scrap
+                        success = dbScrap.DeleteRemark(id);
+                        break;
+                }
 
                 if (success)
                     return Json(new { success = true, message = "Remark successfully deleted." });
@@ -763,6 +779,47 @@ namespace MaterialControlCenter.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+        [HttpPut]
+        public JsonResult UpdateScrapCodeRemark(int id)
+        {
+            try
+            {
+                string jsonData = new StreamReader(Request.InputStream).ReadToEnd();
+                dynamic payload = JsonConvert.DeserializeObject(jsonData);
+
+                string remarks = (payload?.Remarks ?? "").ToString().Trim();
+                string application = (payload?.Application ?? "").ToString().Trim().ToUpper();
+
+                if (string.IsNullOrWhiteSpace(remarks))
+                    return Json(new { success = false, message = "Remarks is required." });
+
+                bool result = false;
+
+                switch (application)
+                {
+                    case "PIA":
+                        result = dbScrap.UpdatePiaCodeRemark(id, remarks);
+                        break;
+                    case "TPR":
+                        result = dbScrap.UpdateTprCodeRemark(id, remarks);
+                        break;
+                    default: // Scrap
+                        result = dbScrap.UpdateRemark(id, remarks);
+                        break;
+                }
+
+                if (result)
+                    return Json(new { success = true, message = "Remark updated successfully." });
+                else
+                    return Json(new { success = false, message = "No remark was updated." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+        [HttpDelete]
         [HttpPost]
         public JsonResult DeleteScrapCode(int idRemarks)
         {
@@ -772,7 +829,7 @@ namespace MaterialControlCenter.Controllers
 
                 if (isDeleted)
                 {
-                    return Json(new { success = true, message = "Scrap Code successfully deleted." }, JsonRequestBehavior.AllowGet);
+                    return Json(new { success = true, message = "Scrap/PIA Code successfully deleted." }, JsonRequestBehavior.AllowGet);
                 }
                 else
                 {
@@ -782,6 +839,59 @@ namespace MaterialControlCenter.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpPut]
+        public JsonResult UpdateScrapCode(int idRemarks)
+        {
+            try
+            {
+                var stream = Request.InputStream;
+                stream.Position = 0;
+                string jsonData = "";
+                using (var reader = new System.IO.StreamReader(stream))
+                {
+                    jsonData = reader.ReadToEnd();
+                }
+                
+                dynamic request = JsonConvert.DeserializeObject(jsonData);
+                
+                string code = request.Code;
+                string description = request.Description;
+                string location = request.Location;
+                string application = request.Application;
+
+                if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(description))
+                {
+                    return Json(new { success = false, message = "Code and Description are required." });
+                }
+
+                bool isUpdated = false;
+                
+                if (application.Equals("SCRAP", StringComparison.OrdinalIgnoreCase))
+                {
+                    isUpdated = dbScrap.UpdateScrapCode(idRemarks, code, description, location);
+                }
+                else if (application.Equals("PIA", StringComparison.OrdinalIgnoreCase))
+                {
+                    string facility = request.Facility ?? location;
+                    string area = request.Area ?? "";
+                    isUpdated = dbScrap.UpdatePiaCode(code, code, description, area, facility);
+                }
+
+                if (isUpdated)
+                {
+                    return Json(new { success = true, message = string.Format("{0} Code successfully updated.", application) });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "No record found to update." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
             }
         }
 
@@ -993,7 +1103,7 @@ namespace MaterialControlCenter.Controllers
                             .Select(c => new
                             {
                                 value = c.IdRemarks.ToString(),
-                                label = $"{c.Location} - {c.Code} - {c.Name}"
+                                label = $"{(string.IsNullOrWhiteSpace(c.Location) ? "All" : c.Location)} - {c.Code} - {c.Name}"
                             })
                             .Cast<object>().ToList();
                         break;
@@ -1004,7 +1114,7 @@ namespace MaterialControlCenter.Controllers
                             .Select(c => new
                             {
                                 value = c.Code,
-                                label = $"{c.Location} - {c.Code} - {c.Name}"
+                                label = $"{(string.IsNullOrWhiteSpace(c.Location) ? "All" : c.Location)} - {c.Code} - {c.Name}"
                             })
                             .Cast<object>().ToList();
                         break;
@@ -1123,13 +1233,16 @@ namespace MaterialControlCenter.Controllers
                     return Json(new { success = false, message = "Location is required." }, JsonRequestBehavior.AllowGet);
 
                 var piaCodes = dbScrap.GetAllPiaCodes()
-                    .Where(p => p.Location != null &&
+                    .Where(p => string.IsNullOrWhiteSpace(p.Location) || 
                                 p.Location.Equals(location, StringComparison.OrdinalIgnoreCase))
                     .OrderBy(p => p.Code)
                     .Select(p => new
                     {
                         Code = p.Code,
                         Name = p.Name,
+                        // Expose location to the client; when null in DB show as "All"
+                        Location = string.IsNullOrWhiteSpace(p.Location) ? "All" : p.Location,
+                        
                     })
                     .ToList();
 
@@ -1502,11 +1615,11 @@ namespace MaterialControlCenter.Controllers
                 request = request ?? new PiaRequest();
                 request.Header = request.Header ?? new PiaHeaderModel();
 
-                if (request.Header.CreatedByKpk <= 0)
+                if (string.IsNullOrWhiteSpace(request.Header.CreatedByKpk))
                 {
                     var sessionKpk = Session["Kpk"]?.ToString();
-                    if (int.TryParse(sessionKpk, out var parsedKpk))
-                        request.Header.CreatedByKpk = parsedKpk;
+                    if (!string.IsNullOrWhiteSpace(sessionKpk))
+                        request.Header.CreatedByKpk = sessionKpk;
                 }
 
                 if (string.IsNullOrWhiteSpace(request.Header.CreatedByName))
@@ -1521,6 +1634,25 @@ namespace MaterialControlCenter.Controllers
                     var specialRemarks = Session["SpecialCodeRemarks"]?.ToString();
                     if (!string.IsNullOrWhiteSpace(specialRemarks))
                         request.Header.Remarks = specialRemarks;
+                }
+
+                // If CreatedBy still not resolved, try to use LeaderKPK from any detail row
+                if (string.IsNullOrWhiteSpace(request.Header.CreatedByKpk) && request.Details != null && request.Details.Any())
+                {
+                    var leader = request.Details.FirstOrDefault(d => !string.IsNullOrWhiteSpace(d.LeaderKPK));
+                    if (leader != null)
+                    {
+                        request.Header.CreatedByKpk = leader.LeaderKPK;
+                        try
+                        {
+                            var emp = dbSSO.GetUserByKpkSSO(leader.LeaderKPK);
+                            if (emp != null)
+                            {
+                                request.Header.CreatedByName = emp.Name;
+                            }
+                        }
+                        catch { /* swallow lookup errors */ }
+                    }
                 }
 
                 if (request.detectedKPKGlobal == null || !request.detectedKPKGlobal.Any())
@@ -1691,12 +1823,12 @@ namespace MaterialControlCenter.Controllers
             string link = $"http://ptmi-stage/DataForms/DetailPia?token={token}";
 
             // Insert Initiator
-            if (!string.IsNullOrEmpty(request.Header?.CreatedByKpk.ToString()))
+            if (!string.IsNullOrEmpty(request.Header?.CreatedByKpk))
             {
                 dbCentralizedNotification.InsertCentralizedInitiator(new CentralizedInitiator
                 {
                     Centralized_SourceData_ID = centralizedId,
-                    Centralized_Initiator_KPK = request.Header.CreatedByKpk.ToString()
+                    Centralized_Initiator_KPK = request.Header.CreatedByKpk
                 });
             }
 

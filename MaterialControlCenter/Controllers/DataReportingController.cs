@@ -89,6 +89,7 @@ namespace MaterialControlCenter.Controllers
 
 
             var sourceDataToUpdate = allSourceData
+                .Where(sd => string.Equals(sd.Centralized_SourceData_TableName, "scrap_master", StringComparison.OrdinalIgnoreCase))
                 .Where(sd => scrapIdsWithAllStatus5.Contains(sd.Centralized_SourceData_Master_ID))
                 .ToList();
 

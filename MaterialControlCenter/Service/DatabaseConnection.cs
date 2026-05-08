@@ -769,7 +769,7 @@ namespace MaterialControlCenter.Service
                 string query = @"
                 SELECT [IdRemarks], [Remarks], [ScrapCode]
                 FROM [Scrap].[dbo].[scrap_code_remarks]
-                WHERE IsDeleted = 0";
+                WHERE ISNULL([IsDeleted], 0) = 0";
 
                 using (SqlCommand cmd = new SqlCommand(query, sqlconn))
                 {
@@ -1218,7 +1218,7 @@ namespace MaterialControlCenter.Service
             [Centralized_ApprovalList_Date],
             [Centralized_ApprovalList_KpkApproval]
         FROM [CentralizedNotification].[dbo].[Centralized_ApprovalList]
-        ORDER BY [Centralized_ApprovalList_ID] DESC
+        ORDER BY [Centralized_ApprovalList_Step] ASC, [Centralized_ApprovalList_ID] ASC
     ";
 
             using (var connection = new SqlConnection(connectionString))
@@ -1413,7 +1413,7 @@ namespace MaterialControlCenter.Service
             [type],
             [facility],
             [tc],
-            [pia_code],
+            [pia_code_id],
             [wc],
             [tc_companion],
             [remarks],
@@ -1442,12 +1442,12 @@ namespace MaterialControlCenter.Service
                             Type = reader["type"] as string,
                             Facility = reader["facility"] as string,
                             TC = reader["tc"] as string,
-                            PiaCode = reader["pia_code"] != DBNull.Value ? Convert.ToInt32(reader["pia_code"]) : 0,
+                            PiaCode = reader["pia_code_id"] != DBNull.Value ? Convert.ToInt32(reader["pia_code_id"]) : 0,
                             WC = reader["wc"] as string,
                             TcCompanion = reader["tc_companion"] as string,
                             Remarks = reader["remarks"] as string,
                             Status = reader["status"] != DBNull.Value ? Convert.ToInt32(reader["status"]) : 0,
-                            CreatedByKpk = reader["created_by_kpk"] != DBNull.Value ? Convert.ToInt32(reader["created_by_kpk"]) : 0,
+                            CreatedByKpk = reader["created_by_kpk"] as string,
                             CreatedByName = reader["created_by_name"] as string,
                             CreatedAt = reader["created_at"] != DBNull.Value ? (DateTime?)reader["created_at"] : null,
                             IsDeleted = reader["is_deleted"] != DBNull.Value && Convert.ToBoolean(reader["is_deleted"]),
@@ -2073,9 +2073,94 @@ namespace MaterialControlCenter.Service
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = "UPDATE [Scrap].[dbo].[scrap_code_remarks] SET IsDeleted = 1 WHERE IdRemarks = @Id";
+                string query = @"UPDATE [Scrap].[dbo].[scrap_code_remarks] 
+                                SET [IsDeleted] = 1, [deleted_at] = GETUTCDATE() 
+                                WHERE [IdRemarks] = @Id";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@Id", idRemarks);
+
+                conn.Open();
+                int rows = cmd.ExecuteNonQuery();
+                return rows > 0;
+            }
+        }
+
+        public bool UpdateRemark(int idRemarks, string remarks)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"UPDATE [Scrap].[dbo].[scrap_code_remarks] 
+                                SET [Remarks] = @Remarks, [updated_at] = GETUTCDATE() 
+                                WHERE [IdRemarks] = @Id";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Id", idRemarks);
+                cmd.Parameters.AddWithValue("@Remarks", remarks ?? (object)DBNull.Value);
+
+                conn.Open();
+                int rows = cmd.ExecuteNonQuery();
+                return rows > 0;
+            }
+        }
+
+        public bool DeletePiaCodeRemark(int id)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"UPDATE [Scrap].[dbo].[pia_code_remarks] 
+                                SET [is_deleted] = 1, [deleted_at] = GETUTCDATE() 
+                                WHERE [id] = @Id";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Id", id);
+
+                conn.Open();
+                int rows = cmd.ExecuteNonQuery();
+                return rows > 0;
+            }
+        }
+
+        public bool UpdatePiaCodeRemark(int id, string remarks)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"UPDATE [Scrap].[dbo].[pia_code_remarks] 
+                                SET [remarks] = @Remarks, [updated_at] = GETUTCDATE() 
+                                WHERE [id] = @Id";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Id", id);
+                cmd.Parameters.AddWithValue("@Remarks", remarks ?? (object)DBNull.Value);
+
+                conn.Open();
+                int rows = cmd.ExecuteNonQuery();
+                return rows > 0;
+            }
+        }
+
+        public bool DeleteTprCodeRemark(int id)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"UPDATE [Scrap].[dbo].[tpr_code_remarks] 
+                                SET [is_deleted] = 1, [deleted_at] = GETUTCDATE() 
+                                WHERE [id] = @Id";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Id", id);
+
+                conn.Open();
+                int rows = cmd.ExecuteNonQuery();
+                return rows > 0;
+            }
+        }
+
+        public bool UpdateTprCodeRemark(int id, string remarks)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"UPDATE [Scrap].[dbo].[tpr_code_remarks] 
+                                SET [remarks] = @Remarks, [updated_at] = GETUTCDATE() 
+                                WHERE [id] = @Id";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Id", id);
+                cmd.Parameters.AddWithValue("@Remarks", remarks ?? (object)DBNull.Value);
 
                 conn.Open();
                 int rows = cmd.ExecuteNonQuery();
@@ -2090,11 +2175,103 @@ namespace MaterialControlCenter.Service
                 {
                     sqlconn.Open();
 
-                    string query = @"DELETE FROM [Scrap].[dbo].[scrap_code] WHERE [IdRemarks] = @idRemarks";
+                    // Soft delete: set is_deleted = 1 and deleted_at = now
+                    string query = @"UPDATE [Scrap].[dbo].[scrap_code] 
+                                    SET [is_deleted] = 1, [deleted_at] = GETUTCDATE() 
+                                    WHERE [IdRemarks] = @idRemarks";
 
                     using (SqlCommand cmd = new SqlCommand(query, sqlconn))
                     {
                         cmd.Parameters.AddWithValue("@idRemarks", idRemarks);
+
+                        int result = cmd.ExecuteNonQuery();
+                        return result > 0;
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+            }
+        }
+
+        public bool DeletePiaCode(string code)
+        {
+            using (SqlConnection sqlconn = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    sqlconn.Open();
+
+                    // Soft delete: set is_deleted = 1 and deleted_at = now
+                    string query = @"UPDATE [Scrap].[dbo].[pia_code] 
+                                    SET [is_deleted] = 1, [deleted_at] = GETUTCDATE() 
+                                    WHERE [code] = @code";
+
+                    using (SqlCommand cmd = new SqlCommand(query, sqlconn))
+                    {
+                        cmd.Parameters.AddWithValue("@code", code ?? (object)DBNull.Value);
+
+                        int result = cmd.ExecuteNonQuery();
+                        return result > 0;
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+            }
+        }
+
+        public bool UpdateScrapCode(int idRemarks, string code, string name, string location)
+        {
+            using (SqlConnection sqlconn = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    sqlconn.Open();
+
+                    string query = @"UPDATE [Scrap].[dbo].[scrap_code] 
+                                    SET [Code] = @code, [Name] = @name, [Location] = @location, [updated_at] = GETUTCDATE()
+                                    WHERE [IdRemarks] = @idRemarks";
+
+                    using (SqlCommand cmd = new SqlCommand(query, sqlconn))
+                    {
+                        cmd.Parameters.AddWithValue("@idRemarks", idRemarks);
+                        cmd.Parameters.AddWithValue("@code", code ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@name", name ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@location", location ?? (object)DBNull.Value);
+
+                        int result = cmd.ExecuteNonQuery();
+                        return result > 0;
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+            }
+        }
+
+        public bool UpdatePiaCode(string code, string newCode, string description, string area, string facility)
+        {
+            using (SqlConnection sqlconn = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    sqlconn.Open();
+
+                    string query = @"UPDATE [Scrap].[dbo].[pia_code] 
+                                    SET [code] = @newCode, [description] = @description, [area] = @area, [facility] = @facility, [updated_at] = GETUTCDATE()
+                                    WHERE [code] = @code";
+
+                    using (SqlCommand cmd = new SqlCommand(query, sqlconn))
+                    {
+                        cmd.Parameters.AddWithValue("@code", code ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@newCode", newCode ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@description", description ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@area", area ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@facility", facility ?? (object)DBNull.Value);
 
                         int result = cmd.ExecuteNonQuery();
                         return result > 0;
@@ -2120,7 +2297,8 @@ namespace MaterialControlCenter.Service
 
                     string query = @"
                         SELECT [Name], [Code], [Location], [IdRemarks]
-                        FROM [Scrap].[dbo].[scrap_code]";
+                        FROM [Scrap].[dbo].[scrap_code]
+                        WHERE ISNULL([is_deleted], 0) = 0";
 
                     using (SqlCommand cmd = new SqlCommand(query, sqlconn))
                     using (SqlDataReader reader = cmd.ExecuteReader())
@@ -2711,13 +2889,13 @@ namespace MaterialControlCenter.Service
                 conn.Open();
                 string insertQuery = @"
             INSERT INTO [Scrap].[dbo].[pia_code_remarks] 
-                (pia_code, remarks, created_at) 
+                (pia_code_id, remarks, created_at) 
             VALUES 
-                (@PiaCode, @Remarks, GETDATE())";
+                (@PiaCodeId, @Remarks, GETDATE())";
 
                 using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                 {
-                    cmd.Parameters.AddWithValue("@PiaCode", piaCode);
+                    cmd.Parameters.AddWithValue("@PiaCodeId", piaCode);
                     cmd.Parameters.AddWithValue("@Remarks", remarks);
                     return cmd.ExecuteNonQuery() > 0;
                 }
@@ -2750,7 +2928,7 @@ namespace MaterialControlCenter.Service
                 string query = @"
             SELECT r.id AS IdRemarks, r.remarks, p.code AS ScrapCode
             FROM [Scrap].[dbo].[pia_code_remarks] r
-            INNER JOIN [Scrap].[dbo].[pia_code] p ON r.pia_code = p.id
+            INNER JOIN [Scrap].[dbo].[pia_code] p ON r.pia_code_id = p.id
             WHERE ISNULL(r.is_deleted, 0) = 0";
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -2924,22 +3102,22 @@ namespace MaterialControlCenter.Service
                 conn.Open();
                 string insertQuery = @"
                 INSERT INTO Scrap.dbo.pia_header
-                (type, facility, tc, pia_code, wc, tc_companion, remarks, status, created_by_kpk, created_by_name, created_at, is_deleted)
+                (type, facility, tc, pia_code_id, wc, tc_companion, remarks, status, created_by_kpk, created_by_name, created_at, is_deleted)
                 OUTPUT INSERTED.id
                 VALUES
-                (@type, @facility, @tc, @pia_code, @wc, @tc_companion, @remarks, @status, @created_by_kpk, @created_by_name, @created_at, @is_deleted)";
+                (@type, @facility, @tc, @pia_code_id, @wc, @tc_companion, @remarks, @status, @created_by_kpk, @created_by_name, @created_at, @is_deleted)";
 
                 using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                 {
                     cmd.Parameters.AddWithValue("@type", model.Type ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@facility", model.Facility ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@tc", model.TC ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@pia_code", model.PiaCode);
+                    cmd.Parameters.AddWithValue("@pia_code_id", model.PiaCode);
                     cmd.Parameters.AddWithValue("@wc", model.WC ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@tc_companion", model.TcCompanion ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@remarks", model.Remarks ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@status", 1);
-                    cmd.Parameters.AddWithValue("@created_by_kpk", model.CreatedByKpk);
+                    cmd.Parameters.AddWithValue("@created_by_kpk", model.CreatedByKpk ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@created_by_name", model.CreatedByName ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@created_at", DateTime.Now);
                     cmd.Parameters.AddWithValue("@is_deleted", 0);
@@ -2984,8 +3162,11 @@ namespace MaterialControlCenter.Service
                     cmd.Parameters.AddWithValue("@total_value", model.total_value);
                     cmd.Parameters.AddWithValue("@status", 1);
 
-                    // FIX: keyin_at ga ada di model → pake sekarang aja atau buang dari query
-                    cmd.Parameters.AddWithValue("@keyin_at", DateTime.Now);
+                    // keyin_at: insert model value when provided, otherwise NULL (initial insert should be NULL)
+                    if (model.keyin_at.HasValue)
+                        cmd.Parameters.AddWithValue("@keyin_at", model.keyin_at.Value);
+                    else
+                        cmd.Parameters.AddWithValue("@keyin_at", DBNull.Value);
 
                     cmd.Parameters.AddWithValue("@created_at", DateTime.Now);
                     cmd.Parameters.AddWithValue("@is_deleted", 0);

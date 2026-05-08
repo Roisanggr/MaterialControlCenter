@@ -110,7 +110,7 @@
                     <div class="card p-3">
                         <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Area</h2>
                         <div class="space-y-1">
-                            <input id="areaFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Enter Area Code">
+                            <input id="areaFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Enter Area Code" disabled>
                         </div>
                     </div>
                     <!-- 4. Code -->
@@ -142,6 +142,7 @@
                             <th class="px-3 py-2">Application</th>
                             <th class="px-3 py-2">Location</th>
                             <th class="px-3 py-2">Code</th>
+                            <th class="px-3 py-2 areaColumnHeader" style="display:none;">Area</th>
                             <th class="px-3 py-2">Description</th>
 
                             <th class="px-3 py-2">Action</th>
@@ -226,9 +227,7 @@
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="py-6 text-center">
-                        <div class="flex justify-center items-center gap-2">
-                            <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-purple rounded-full"></div>
+                    <td colspan="7" class="py-6 text-center">
                             <span>Loading data...</span>
                         </div>
                     </td>
@@ -250,28 +249,36 @@
                 const totalCount = result.totalCount;
 
                 if (pagedData.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 py-4">No data found.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-gray-500 py-4">No data found.</td></tr>`;
                     renderPagination(totalCount, pageNumber, pageSize);
                     return;
                 }
 
                 tbody.innerHTML = pagedData.map(r => {
                     const rowApplication = (r.Application || application || "SCRAP").toUpperCase();
-                    const actionCell = rowApplication === "SCRAP"
-                        ? `<button type="button"
-                                class="btn bg-danger border-danger text-white hover:bg-danger/[0.85] hover:border-danger/[0.85] flex items-center justify-center gap-2 px-3 py-1 rounded"
-                                onclick="deleteRemark(${r.IdRemarks ?? 0})">
+                    const actionCell = `
+                        <div class="flex items-center gap-2">
+                            <button type="button"
+                                    class="btn bg-info border-info text-white hover:bg-info/[0.85] hover:border-info/[0.85] flex items-center justify-center gap-1 px-2 py-1 rounded text-xs"
+                                    onclick="openEditCodeSwalForm(${r.IdRemarks ?? 0}, '${r.Application}', '${r.Code}', '${r.Name}', '${r.Location || ''}')"
+                                    title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button"
+                                    class="btn bg-danger border-danger text-white hover:bg-danger/[0.85] hover:border-danger/[0.85] flex items-center justify-center gap-1 px-2 py-1 rounded text-xs"
+                                    onclick="deleteRemark(${r.IdRemarks ?? 0}, '${r.Application}', '${r.Code}')"
+                                    title="Delete">
                                 <i class="fas fa-trash-alt"></i>
-                                <span>Delete</span>
-                           </button>`
-                        : `<span class="text-muted">-</span>`;
+                            </button>
+                        </div>`;
 
                     return `
                     <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
                         <td class="px-3 py-2">${r.IdRemarks ?? "-"}</td>
                         <td class="px-3 py-2">${rowApplication}</td>
-                        <td class="px-3 py-2">${r.Location ?? "-"}</td>
+                        <td class="px-3 py-2">${r.Location || "All"}</td>
                         <td class="px-3 py-2 font-semibold text-purple">${r.Code ?? "-"}</td>
+                        <td class="px-3 py-2 areaColumn" style="display:${rowApplication === 'PIA' ? 'table-cell' : 'none'};">${r.Area ?? "-"}</td>
                         <td class="px-3 py-2">${r.Name ?? "-"}</td>
                         
                         <td class="px-3 py-2">${actionCell}</td>
@@ -279,16 +286,226 @@
                 `;
                 }).join("");
 
+                // Show/hide Area column header and cells based on application filter
+                const applicationFilter = selectedFilters.application || "";
+                const areaHeaders = document.querySelectorAll(".areaColumnHeader");
+                const areaCells = document.querySelectorAll(".areaColumn");
+                
+                areaHeaders.forEach(header => {
+                    header.style.display = applicationFilter.toUpperCase() === "PIA" ? "table-cell" : "none";
+                });
+
                 renderPagination(totalCount, pageNumber, pageSize);
 
             } catch (error) {
                 console.error("Error loading scrap codes:", error);
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error loading data.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error loading data.</td></tr>`;
             }
        }
 
         const addRemarksButton = document.getElementById("addRemarksButton");
         let isSavingCode = false;
+
+        // Delete function with soft delete
+        async function deleteRemark(idRemarks, application, code) {
+            const confirmDelete = await Swal.fire({
+                title: "Delete Code?",
+                text: `Are you sure you want to delete ${application} code '${code}'? This action cannot be undone.`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Delete",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: "#dc2626"
+            });
+
+            if (!confirmDelete.isConfirmed) return;
+
+            try {
+                const res = await fetch(`@Url.Action("DeleteScrapCode", "DataForms")/${idRemarks}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" }
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Deleted!",
+                        text: "Code has been deleted successfully.",
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        loadData(currentPage, pageSize);
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Failed!",
+                        text: result.message || "Failed to delete code."
+                    });
+                }
+            } catch (err) {
+                console.error("Error deleting code:", err);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "An error occurred while deleting. Please try again."
+                });
+            }
+        }
+
+        // Edit function
+        async function openEditCodeSwalForm(idRemarks, application, code, description, location) {
+            const facilityOptions = (typeof facilities !== "undefined" && Array.isArray(facilities)) ? facilities : [];
+            const mappedLocation = location === "All" ? "" : location;
+
+            const formResult = await Swal.fire({
+                title: "Edit Code",
+                width: 720,
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "Cancel",
+                focusConfirm: false,
+                html: `
+                    <div class="text-left space-y-4 mt-2">
+                        <div>
+                            <p class="mb-2 text-sm font-semibold">Facility</p>
+                            <div id="swalFacilityContainerEdit" class="grid grid-flow-col auto-cols-max gap-4 overflow-x-auto"></div>
+                        </div>
+                        <div>
+                            <p class="mb-2 text-sm font-semibold">Application Code</p>
+                            <input id="swalInputApplicationEdit" type="text" class="swal2-input" style="margin:0; width:100%" value="${application}" disabled>
+                        </div>
+                        <div id="swalAreaContainerEdit" style="display:${application === 'PIA' ? 'block' : 'none'};">
+                            <p class="mb-2 text-sm font-semibold">Area</p>
+                            <input id="swalInputAreaEdit" type="text" class="swal2-input" style="margin:0; width:100%" placeholder="Enter New Area">
+                        </div>
+                        <div>
+                            <p class="mb-2 text-sm font-semibold">Code</p>
+                            <input id="swalInputCodeEdit" type="text" class="swal2-input" style="margin:0; width:100%" value="${code}">
+                        </div>
+                        <div>
+                            <p class="mb-2 text-sm font-semibold">Description</p>
+                            <input id="swalInputDescriptionEdit" type="text" class="swal2-input" style="margin:0; width:100%" value="${description}">
+                        </div>
+                    </div>
+                `,
+                didOpen: () => {
+                    const facilityContainer = document.getElementById("swalFacilityContainerEdit");
+                    if (facilityContainer) {
+                        facilityContainer.innerHTML = facilityOptions.map(fac => `
+                            <label class="inline-flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" value="${fac}" class="form-checkbox text-info swalFacilityCbEdit" ${mappedLocation === fac ? 'checked' : ''}>
+                                <span>${fac}</span>
+                            </label>
+                        `).join("");
+                    }
+                    document.getElementById("swalInputCodeEdit").focus();
+                },
+                preConfirm: () => {
+                    const newCode = (document.getElementById("swalInputCodeEdit")?.value || "").trim();
+                    const newDescription = (document.getElementById("swalInputDescriptionEdit")?.value || "").trim();
+                    const newArea = (document.getElementById("swalInputAreaEdit")?.value || "").trim();
+                    const checkedFacilities = Array.from(document.querySelectorAll(".swalFacilityCbEdit:checked")).map(cb => cb.value);
+
+                    if (!newCode) {
+                        Swal.showValidationMessage("Code is required.");
+                        return false;
+                    }
+
+                    if (!newDescription) {
+                        Swal.showValidationMessage("Description is required.");
+                        return false;
+                    }
+
+                    if (application === "PIA" && !newArea) {
+                        Swal.showValidationMessage("Area is required for PIA.");
+                        return false;
+                    }
+
+                    const mappedLocations = checkedFacilities.map(fac => {
+                        switch (fac) {
+                            case "P1": return "MIDC";
+                            case "P2": return "Fashion Dolls";
+                            default: return fac;
+                        }
+                    });
+
+                    return {
+                        IdRemarks: idRemarks,
+                        Application: application,
+                        Facility: checkedFacilities.join(", ") || null,
+                        Area: application === "PIA" ? newArea : "",
+                        Code: newCode,
+                        Description: newDescription,
+                        Name: newDescription,
+                        Location: checkedFacilities.length > 0 ? mappedLocations.join(", ") : null
+                    };
+                }
+            });
+
+            if (!formResult.isConfirmed || !formResult.value) return;
+
+            await submitUpdateCodePayload(formResult.value);
+        }
+
+        async function submitUpdateCodePayload(payload) {
+            if (isSavingCode) return;
+
+            try {
+                isSavingCode = true;
+
+                Swal.fire({
+                    title: "Saving Data...",
+                    text: "Please wait, data is being updated.",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const res = await fetch(`@Url.Action("UpdateScrapCode", "DataForms")/${payload.IdRemarks}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+                Swal.close();
+
+                if (result.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success!",
+                        text: `${payload.Application} Code has been updated successfully.`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        loadData(currentPage, pageSize);
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Failed!",
+                        text: result.message || "Failed to update data."
+                    });
+                }
+            } catch (err) {
+                Swal.close();
+                console.error("Error updating data:", err);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "An error occurred while updating. Please try again."
+                });
+            } finally {
+                isSavingCode = false;
+            }
+        }
 
         async function submitCodePayload(payload) {
             if (isSavingCode) return;
@@ -538,6 +755,24 @@
             filterButton.addEventListener('click', function (e) {
                 e.preventDefault();
                 filterList.classList.toggle('hidden');
+            });
+        }
+
+        // Handle Application filter change to enable/disable Area field
+        const applicationFilter = document.getElementById("applicationFilter");
+        const areaFilterInput = document.getElementById("areaFilter");
+
+        if (applicationFilter && areaFilterInput) {
+            applicationFilter.addEventListener("change", function () {
+                const selectedApp = this.value.toUpperCase();
+                if (selectedApp === "SCRAP") {
+                    areaFilterInput.disabled = true;
+                    areaFilterInput.value = "";
+                } else if (selectedApp === "PIA" || selectedApp === "TPR") {
+                    areaFilterInput.disabled = false;
+                } else {
+                    areaFilterInput.disabled = true;
+                }
             });
         }
     </script>
