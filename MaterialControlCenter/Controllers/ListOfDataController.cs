@@ -416,6 +416,7 @@ namespace MaterialControlCenter.Controllers
     DateTime? createdDateTo = null,
     string tc = null,
     bool includeDelegates = false,
+    bool delegateOnlyMode = false,
     int pageNumber = 1,
     int pageSize = 10)
         {
@@ -648,26 +649,67 @@ namespace MaterialControlCenter.Controllers
             // Filter approverKpk (pending di step-nya)
             if (!string.IsNullOrEmpty(approverKpk))
             {
-                HashSet<string> effectiveApprovers = includeDelegates
-                    ? GetEffectiveApproverKpks(approverKpk, allDelegates)
-                    : new HashSet<string>(new[] { approverKpk.Trim() }, StringComparer.OrdinalIgnoreCase);
-
-                result = result.Where(x =>
+                if (delegateOnlyMode)
                 {
-                    if ((int)x.Centralized_SourceData_Master_Status != 1) return false;
+                    // Mode delegate-only: tampilkan hanya dokumen di mana user adalah delegate
+                    // Cari semua user yang mendelegasikan ke user ini
+                    var delegatorsToCurrentUser = allDelegates
+                        .Where(d => d.DelegateKpk.Equals(approverKpk, StringComparison.OrdinalIgnoreCase))
+                        .Select(d => d.UserKpk.Trim())
+                        .Where(kpk => !string.IsNullOrWhiteSpace(kpk))
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-                    var appr = (List<ApprovalDtoV2Fastest>)x.Approvals;
-                    for (int i = 0; i < appr.Count; i++)
+                    // Jika tidak ada delegator, kembalikan empty result
+                    if (!delegatorsToCurrentUser.Any())
                     {
-                        var cur = appr[i];
-                        if (effectiveApprovers.Contains(cur.Kpk))
-                        {
-                            if (cur.Centralized_StatusList_ID != 1) return false;
-                            return appr.Take(i).All(p => p.Centralized_StatusList_ID != 1);
-                        }
+                        result = result.Where(x => false); // Return no records
                     }
-                    return false;
-                });
+                    else
+                    {
+                        // Filter: hanya dokumen di mana delegator adalah assigned approver di step pending
+                        result = result.Where(x =>
+                        {
+                            if ((int)x.Centralized_SourceData_Master_Status != 1) return false;
+
+                            var appr = (List<ApprovalDtoV2Fastest>)x.Approvals;
+                            for (int i = 0; i < appr.Count; i++)
+                            {
+                                var cur = appr[i];
+                                // Check: apakah step ini pending dan assigned ke salah satu delegator?
+                                if (cur.Centralized_StatusList_ID == 1 && delegatorsToCurrentUser.Contains(cur.Kpk))
+                                {
+                                    // Pastikan semua step sebelumnya sudah approved
+                                    return appr.Take(i).All(p => p.Centralized_StatusList_ID != 1);
+                                }
+                            }
+                            return false;
+                        });
+                    }
+                }
+                else
+                {
+                    // Mode normal: approver (termasuk effective approvers jika includeDelegates=true)
+                    HashSet<string> effectiveApprovers = includeDelegates
+                        ? GetEffectiveApproverKpks(approverKpk, allDelegates)
+                        : new HashSet<string>(new[] { approverKpk.Trim() }, StringComparer.OrdinalIgnoreCase);
+
+                    result = result.Where(x =>
+                    {
+                        if ((int)x.Centralized_SourceData_Master_Status != 1) return false;
+
+                        var appr = (List<ApprovalDtoV2Fastest>)x.Approvals;
+                        for (int i = 0; i < appr.Count; i++)
+                        {
+                            var cur = appr[i];
+                            if (effectiveApprovers.Contains(cur.Kpk))
+                            {
+                                if (cur.Centralized_StatusList_ID != 1) return false;
+                                return appr.Take(i).All(p => p.Centralized_StatusList_ID != 1);
+                            }
+                        }
+                        return false;
+                    });
+                }
             }
 
             // Filter statusList

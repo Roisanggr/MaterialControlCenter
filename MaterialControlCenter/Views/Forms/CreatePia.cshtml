@@ -329,6 +329,7 @@
         let selectedTC = null;
         let allRemarks = [];
         let selectedPiaCode = null;
+        let selectedPiaCodeString = null;
         let selectedCommit = false;
         let selectedFacilities = plant;
         let selectedFacilityInDropdown = null;
@@ -390,7 +391,8 @@
             const {
                 valueField = "id",
                 placeholder = "-- Select Data --",
-                formatFn = (item) => item.name
+                formatFn = (item) => item.name,
+                dataAttributes = {}
             } = options;
 
             dropdown.empty();
@@ -399,7 +401,15 @@
             $.each(data, function (i, item) {
                 let displayText = formatFn(item);
                 let value = item[valueField];
-                dropdown.append(`<option value="${value}">${displayText}</option>`);
+                
+                // Build data attributes string
+                let dataAttrsStr = "";
+                for (let [attrKey, attrValueKey] of Object.entries(dataAttributes)) {
+                    let attrValue = item[attrValueKey] || "";
+                    dataAttrsStr += ` data-${attrKey}="${attrValue}"`;
+                }
+                
+                dropdown.append(`<option value="${value}"${dataAttrsStr}>${displayText}</option>`);
             });
         }
 
@@ -650,8 +660,9 @@
 
                     if (response.success && response.data.length > 0) {
                         populateDropdown($dropdown, response.data, {
-                            valueField: 'Code',
+                            valueField: 'Id',
                             placeholder: '-- Select PIA Code --',
+                            dataAttributes: { code: 'Code' },
                             formatFn: (item) =>
                             (item.ShowScrapCode
                                 ? `${item.ShowScrapCode} - ${item.Name} (${item.Location || 'All'})`
@@ -659,9 +670,12 @@
                         });
                         $dropdown.off("change").on("change", function () {
                             selectedPiaCode = $(this).val();
+                            // Get Code string from selected option's data attribute
+                            const selectedOption = $(this).find('option:selected');
+                            selectedPiaCodeString = selectedOption.data('code') || "";
 
-                            handleSpecialNotes(selectedPiaCode);
-                            handleTCCompanion(selectedPiaCode);
+                            handleSpecialNotes(selectedPiaCodeString);
+                            handleTCCompanion(selectedPiaCodeString);
 
                             if (selectedPiaCode) {
                                 $('#piaCodeRemarksResultCard').removeClass('hidden');
@@ -2098,11 +2112,18 @@
             const createdByKpkValue = (typeof kpk !== "undefined" ? kpk : "") || "";
             const createdByNameValue = (typeof userName !== "undefined" ? userName : "") || "";
 
+            // Validasi PiaCode tidak boleh kosong
+            const piaCodeValue = document.getElementById("piaCodeDropdown")?.value?.trim();
+            const piaCodeInt = piaCodeValue ? parseInt(piaCodeValue) : null;
+            if (!piaCodeInt || isNaN(piaCodeInt)) {
+                throw new Error("PIA Code is required. Please select a valid PIA Code.");
+            }
+
             const headerData = {
                 Type        : document.getElementById("typeOfPiaDropdown")?.value || "Reguler",
                 Facility    : document.getElementById("facilityInitiator")?.value || null,
                 TC          : document.getElementById("tcDropdown")?.value || null,
-                PiaCode     : parseInt(document.getElementById("piaCodeDropdown")?.value) || 0,  
+                PiaCode     : piaCodeInt,
                 WC          : document.getElementById("wcDropdown")?.value || null,
                 TcCompanion : localStorage.getItem("CompanionTc") || null,
                 Remarks     : headerRemarks || null,
@@ -2420,7 +2441,7 @@
 
         function validateSpecialCodeRemarks() {
 
-            if (!piaCodesWithNotes.includes(selectedPiaCode)) {
+            if (!piaCodesWithNotes.includes(selectedPiaCodeString)) {
                 return { valid: true };
             }
 

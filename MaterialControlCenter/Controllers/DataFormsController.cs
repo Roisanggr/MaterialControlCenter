@@ -1238,11 +1238,11 @@ namespace MaterialControlCenter.Controllers
                     .OrderBy(p => p.Code)
                     .Select(p => new
                     {
+                        Id = p.IdRemarks,
                         Code = p.Code,
                         Name = p.Name,
                         // Expose location to the client; when null in DB show as "All"
                         Location = string.IsNullOrWhiteSpace(p.Location) ? "All" : p.Location,
-                        
                     })
                     .ToList();
 

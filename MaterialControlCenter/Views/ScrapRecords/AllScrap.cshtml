@@ -653,9 +653,9 @@
 
     </div>
 
-    <div>
-        <ul id="buttonPagination" class="inline-flex items-center gap-1 m-auto mb-4">
-        </ul>
+    <div class="flex items-center justify-between mt-4">
+        <div id="paginationContainer" class="flex-1 flex justify-center"></div>
+        <div id="paginationSummary" class="text-sm text-gray-500 hidden md:block pr-4">Showing <span id="paginationShowing">-</span></div>
     </div>
 </div>
 <!-- End All Card -->
@@ -910,37 +910,85 @@
 
             // ── Pagination ────────────────────────────────────────────────────
             function renderAllScrapPagination(totalCount, pageNumber, size) {
-                const ul         = document.getElementById("buttonPagination");
-                const totalPages = Math.ceil(totalCount / size);
-                ul.innerHTML     = "";
+                const container = document.getElementById("paginationContainer");
+                const summary = document.getElementById("paginationShowing");
+                container.innerHTML = "";
+                if (summary) {
+                    const from = totalCount === 0 ? 0 : Math.min((pageNumber - 1) * size + 1, totalCount);
+                    const to = Math.min(pageNumber * size, totalCount);
+                    summary.textContent = `${from.toLocaleString("id-ID")} - ${to.toLocaleString("id-ID")} of ${totalCount.toLocaleString("id-ID")}`;
+                    document.getElementById("paginationSummary").classList.remove('hidden');
+                }
 
+                const totalPages = Math.ceil(totalCount / size);
                 if (totalPages <= 1) return;
 
+                const maxButtons = 5;
+                let start = Math.max(1, pageNumber - 2);
+                let end = Math.min(totalPages, pageNumber + 2);
+                if (end - start + 1 < maxButtons) {
+                    if (start === 1) end = Math.min(totalPages, start + maxButtons - 1);
+                    else if (end === totalPages) start = Math.max(1, end - maxButtons + 1);
+                }
+
+                let html = '';
+                // container style (pill)
+                html += '<div class="inline-flex items-center gap-2 bg-white border border-gray-100 rounded-full p-2 shadow-sm">';
+
+                // Newest (<<)
                 if (pageNumber > 1) {
-                    const li = document.createElement("li");
-                    li.innerHTML = `<button class="px-3 py-1 text-xs rounded border border-gray-300 hover:bg-gray-100"
-                        onclick="loadAllScrapData(${pageNumber - 1}, ${size}, currentFilters)">‹</button>`;
-                    ul.appendChild(li);
+                    html += `<button aria-label="Newest" class="px-2 py-1 rounded-full text-sm border border-gray-200 hover:bg-gray-100" onclick="goToPage(1, ${size})"><<</button>`;
+                } else {
+                    html += `<button aria-label="Newest" disabled class="px-2 py-1 rounded-full text-sm border border-gray-100 text-gray-400"><<</button>`;
                 }
 
-                const start = Math.max(1, pageNumber - 2);
-                const end   = Math.min(totalPages, pageNumber + 2);
+                // Previous
+                if (pageNumber > 1) {
+                    html += `<button aria-label="Previous" class="px-3 py-1 rounded-full text-sm border border-gray-200 hover:bg-gray-100" onclick="goToPage(${pageNumber - 1}, ${size})">‹</button>`;
+                } else {
+                    html += `<button aria-label="Previous" disabled class="px-3 py-1 rounded-full text-sm border border-gray-100 text-gray-400">‹</button>`;
+                }
+
+                // first page + leading ellipsis
+                if (start > 1) {
+                    html += `<button class="px-3 py-1 rounded-full text-sm border border-gray-200 hover:bg-gray-100" onclick="loadAllScrapData(1, ${size}, currentFilters)">1</button>`;
+                    if (start > 2) html += `<span class="px-2 text-sm text-gray-400">…</span>`;
+                }
+
                 for (let p = start; p <= end; p++) {
-                    const isActive = p === pageNumber;
-                    const li = document.createElement("li");
-                    li.innerHTML = `<button class="px-3 py-1 text-xs rounded border ${isActive
-                        ? "bg-info text-white border-info"
-                        : "border-gray-300 hover:bg-gray-100"}"
-                        onclick="loadAllScrapData(${p}, ${size}, currentFilters)">${p}</button>`;
-                    ul.appendChild(li);
+                    if (p === pageNumber) {
+                        html += `<button class="px-3 w-8 h-8 flex items-center justify-center rounded-full text-sm bg-info text-white border border-info">${p}</button>`;
+                    } else {
+                        html += `<button class="px-3 py-1 rounded-full text-sm border border-gray-200 hover:bg-gray-100" onclick="goToPage(${p}, ${size})">${p}</button>`;
+                    }
                 }
 
-                if (pageNumber < totalPages) {
-                    const li = document.createElement("li");
-                    li.innerHTML = `<button class="px-3 py-1 text-xs rounded border border-gray-300 hover:bg-gray-100"
-                        onclick="loadAllScrapData(${pageNumber + 1}, ${size}, currentFilters)">›</button>`;
-                    ul.appendChild(li);
+                // trailing ellipsis + last
+                if (end < totalPages) {
+                    if (end < totalPages - 1) html += `<span class="px-2 text-sm text-gray-400">…</span>`;
+                    html += `<button class="px-3 py-1 rounded-full text-sm border border-gray-200 hover:bg-gray-100" onclick="goToPage(${totalPages}, ${size})">${totalPages}</button>`;
                 }
+
+                // Next
+                if (pageNumber < totalPages) {
+                    html += `<button aria-label="Next" class="px-3 py-1 rounded-full text-sm border border-gray-200 hover:bg-gray-100" onclick="goToPage(${pageNumber + 1}, ${size})">›</button>`;
+                } else {
+                    html += `<button aria-label="Next" disabled class="px-3 py-1 rounded-full text-sm border border-gray-100 text-gray-400">›</button>`;
+                }
+
+                // Oldest (>>)
+                if (pageNumber < totalPages) {
+                    html += `<button aria-label="Oldest" class="px-2 py-1 rounded-full text-sm border border-gray-200 hover:bg-gray-100" onclick="goToPage(${totalPages}, ${size})">>></button>`;
+                } else {
+                    html += `<button aria-label="Oldest" disabled class="px-2 py-1 rounded-full text-sm border border-gray-100 text-gray-400">>></button>`;
+                }
+
+                html += '</div>';
+
+                // wrap pill + loader
+                container.innerHTML = '<div class="inline-flex items-center gap-3">' + html +
+                    '<div id="paginationLoader" class="hidden ml-2"><div class="animate-spin inline-block w-4 h-4 border-2 border-l-transparent border-gray-400 rounded-full"></div></div>' +
+                    '</div>';
             }
 
 
@@ -1098,6 +1146,33 @@
 
             // Expose ke global scope untuk onclick pagination
             window.loadAllScrapData = loadAllScrapData;
+
+            // Pagination helper: show/hide loader and navigate pages
+            function showPaginationLoader() {
+                var el = document.getElementById('paginationLoader');
+                if (el) el.classList.remove('hidden');
+            }
+            function hidePaginationLoader() {
+                var el = document.getElementById('paginationLoader');
+                if (el) el.classList.add('hidden');
+            }
+
+            function goToPage(page, size) {
+                try {
+                    _currentPage = page;
+                    showPaginationLoader();
+                    var req = loadAllScrapData(page, size, currentFilters || {});
+                    if (req && typeof req.always === 'function') {
+                        req.always(function () { hidePaginationLoader(); });
+                    } else {
+                        // fallback hide after short delay
+                        setTimeout(hidePaginationLoader, 800);
+                    }
+                } catch (e) {
+                    console.error('goToPage error', e);
+                    hidePaginationLoader();
+                }
+            }
 
         })();
     </script>

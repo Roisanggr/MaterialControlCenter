@@ -2340,9 +2340,10 @@ namespace MaterialControlCenter.Service
                     sqlconn.Open();
 
                     string query = @"
-                        SELECT ROW_NUMBER() OVER(ORDER BY [code]) AS [TempId], [facility], [code], [area], [description]
+                        SELECT [id], [facility], [code], [area], [description]
                         FROM [Scrap].[dbo].[pia_code]
-                        WHERE ISNULL([is_deleted], 0) = 0";
+                        WHERE ISNULL([is_deleted], 0) = 0
+                        ORDER BY [code]";
 
                     using (SqlCommand cmd = new SqlCommand(query, sqlconn))
                     using (SqlDataReader reader = cmd.ExecuteReader())
@@ -2356,7 +2357,7 @@ namespace MaterialControlCenter.Service
                                 Location = reader["facility"]?.ToString(),
                                 Area = reader["area"]?.ToString(),
                                 Application = "PIA",
-                                IdRemarks = reader["TempId"] != DBNull.Value ? Convert.ToInt32(reader["TempId"]) : 0
+                                IdRemarks = reader["id"] != DBNull.Value ? Convert.ToInt32(reader["id"]) : 0
                             });
                         }
                     }
