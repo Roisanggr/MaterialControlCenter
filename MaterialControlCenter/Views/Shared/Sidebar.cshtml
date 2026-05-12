@@ -22,14 +22,26 @@
                     </a>
                 </li>
                 <li class="menu nav-item">
-                    <a href="@Url.Action("AllScrap", "ScrapRecords")" class="items-center justify-between text-black nav-link group @(ViewBag.ActiveItem == "records-All" ? "active" : "")">
+                    <a href="javascript:void(0);"
+                       class="items-center justify-between text-black nav-link group @(ViewBag.ActiveItem == "records-All" || ViewBag.ActiveItem == "records-My" ? "active" : "")"
+                       :class="{'active' : isActive('records')}"
+                       @@click="toggle('records')">
                         <div class="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M4 6L12 2L20 6L12 10L4 6ZM4 10L12 14L20 10L12 6L4 10ZM4 14L12 18L20 14L12 10L4 14ZM4 18L12 22L20 18L12 14L4 18Z" />
                             </svg>
-                            <span class="ltr:pl-1.5 rtl:pr-1.5">All Records</span>
+                            <span class="ltr:pl-1.5 rtl:pr-1.5">Records</span>
+                        </div>
+                        <div class="flex items-center justify-center w-4 h-4 dropdown-icon" :class="{'!rotate-180' : isActive('records')}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6">
+                                <path d="M11.9997 13.1714L16.9495 8.22168L18.3637 9.63589L11.9997 15.9999L5.63574 9.63589L7.04996 8.22168L11.9997 13.1714Z" fill="currentColor"></path>
+                            </svg>
                         </div>
                     </a>
+                    <ul x-cloak x-show="isActive('records')" x-collapse class="flex flex-col gap-1 text-black sub-menu dark:text-white/60 group-data-[sidebar=dark]/item:text-white/60 group-data-[sidebar=brand]/item:text-sky-200/50">
+                        <li><a href="@Url.Action("AllScrap", "ScrapRecords")" class="@(ViewBag.ActiveItem == "records-All" ? "active" : "")">All Records</a></li>
+                        <li><a href="@Url.Action("MyScrap", "ScrapRecords")" class="@(ViewBag.ActiveItem == "records-My" ? "active" : "")">My Records</a></li>
+                    </ul>
                 </li>
                 <h2 class="my-2 text-sm text-black/50 dark:text-white/30 group-data-[sidebar=dark]/item:text-white/30 group-data-[sidebar=brand]/item:text-sky-200/50"><span>MCC Handling</span></h2>
                 <li class="menu nav-item">
@@ -99,8 +111,6 @@
                     <ul x-cloak x-show="isActive('users')" x-collapse class="flex flex-col gap-1 text-black sub-menu dark:text-white/60 group-data-[sidebar=dark]/item:text-white/60 group-data-[sidebar=brand]/item:text-sky-200/50">
                         <li><a href="@Url.Action("Profile", "Users")" class="@if (ViewBag.ActiveItem == "profile") {<text>active</text>}">My Profile</a></li>
                         <li><a href="@Url.Action("Profile", "Users")" class="@if (ViewBag.ActiveItem == "profile") {<text>active</text>}">My Delegations</a></li>
-                        <li><a href="@Url.Action("Profile", "Users")" class="@if (ViewBag.ActiveItem == "profile") {<text>active</text>}">My Records</a></li>
-
                         <li id="sidebarUserManagement" class="hidden"><a href="@Url.Action("Management", "Users")" class="@if (ViewBag.ActiveItem == "settings") {<text>active</text>}">Management</a></li>
                     </ul>
                 </li>

@@ -12,11 +12,13 @@ namespace MaterialControlCenter.Controllers
         // GET: ScrapRecords
         public ActionResult AllScrap()
         {
+            ViewBag.CurrentUserKpk = Kpk;
             return View();
         }
 
         public ActionResult MyScrap()
         {
+            ViewBag.CurrentUserKpk = Kpk;
             return View();
         }
 

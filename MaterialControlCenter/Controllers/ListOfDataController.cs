@@ -811,6 +811,47 @@ namespace MaterialControlCenter.Controllers
             }, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpGet]
+        public async Task<JsonResult> GetMyRecords(
+            string appType = null,
+            string approverKpk = null,
+            string approverKpkPdf = null,
+            List<int> statusList = null,
+            string documentId = null,
+            string scrapCode = null,
+            string piaCode = null,
+            decimal? totalFrom = null,
+            decimal? totalTo = null,
+            string facility = null,
+            DateTime? createdDateFrom = null,
+            DateTime? createdDateTo = null,
+            string tc = null,
+            bool includeDelegates = false,
+            bool delegateOnlyMode = false,
+            int pageNumber = 1,
+            int pageSize = 10)
+        {
+            return await GetAllRecords(
+                appType,
+                Kpk,
+                approverKpk,
+                approverKpkPdf,
+                statusList,
+                documentId,
+                scrapCode,
+                piaCode,
+                totalFrom,
+                totalTo,
+                facility,
+                createdDateFrom,
+                createdDateTo,
+                tc,
+                includeDelegates,
+                delegateOnlyMode,
+                pageNumber,
+                pageSize);
+        }
+
 
         [HttpGet]
         public async Task<JsonResult> GetJoinedSourceDataScrap(

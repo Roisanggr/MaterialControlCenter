@@ -221,9 +221,9 @@
                 <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 grow">List</h2>
                 <a href="#" id="filtersScrapNotice" class="px-3 py-1.5 rounded-md text-xs border border-black/20 dark:border-darkborder text-muted"><i class="align-bottom ltr:mr-1 rtl:ml-1 ri-filter-line"></i> Filters</a>
             </div>
-            <!-- application filter -->
             <div id="filterList" class="flex flex-wrap gap-4 justify-between hidden">
-                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                <!-- application filter -->
+                <div class="card flex-1 basis-1/4 min-w-[100px] p-3">
                     <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Application's</h2>
                     <form class="space-y-2">
                         <div class="space-y-1">
@@ -233,13 +233,12 @@
                                 <option value="SCRAP">Scrap</option>
                                 <option value="PIA">PIA</option>
                                 <option value="TPR">TPR</option>
-
                             </select>
                         </div>
                     </form>
                 </div>
                 <!-- facility filter -->
-                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                <div class="card flex-1 basis-1/4 min-w-[100px] p-3">
                     <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Facility</h2>
                     <form class="space-y-2">
                         <div class="space-y-1">
@@ -259,314 +258,26 @@
                         </div>
                     </div>
                 </div>
-                <!-- date range filter -->
-                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
-                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Date Range</h2>
-                    <div id="dateRangePicker">
-                        <div style="display:flex;gap:8px;align-items:center;">
-                            <input id="inputStart" readonly placeholder="Start date"
-                                   class="form-input w-full text-sm p-2 cursor-pointer" />
-                            <span class="text-gray-400 text-sm">→</span>
-                            <input id="inputEnd" readonly placeholder="End date"
-                                   class="form-input w-full text-sm p-2 cursor-pointer" />
-                        </div>
-
-                        <!-- Hidden inputs untuk dikirim ke server -->
-                        <input type="hidden" id="scrapDateStart" name="scrapDateStart" />
-                        <input type="hidden" id="scrapDateEnd" name="scrapDateEnd" />
-
-                        <!-- Calendar Popup -->
-                        <div id="calPopup" style="display:none;position:fixed;z-index:9999;top:0;left:0;
-                                 background:#fff;border:1px solid #ddd;border-radius:8px;
-                                 box-shadow:0 4px 20px rgba(0,0,0,0.12);width:280px;">
-
-                            <div style="background:#4a90d9;color:#fff;border-radius:8px 8px 0 0;">
-                                <div style="display:flex;align-items:center;justify-content:space-between;
-                                          padding:10px 14px;font-size:14px;font-weight:500;">
-                                    <button type="button" id="prevBtn"
-                                            style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 6px;">
-                                        &lsaquo;
-                                    </button>
-                                    <span id="monthLabel"></span>
-                                    <button type="button" id="nextBtn"
-                                            style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 6px;">
-                                        &rsaquo;
-                                    </button>
-                                </div>
-                                <div style="text-align:center;font-size:11px;padding:0 14px 8px;opacity:0.85;">
-                                    <span id="calHint">Select start date</span>
-                                </div>
-                            </div>
-
-                            <div style="padding:10px;" id="calGrid"></div>
-
-                            <div style="display:flex;justify-content:flex-end;padding:6px 10px 10px;border-top:1px solid #eee;">
-                                <button type="button" id="clearBtn"
-                                        style="background:none;border:none;color:#4a90d9;font-size:13px;cursor:pointer;">
-                                    Clear
-                                </button>
-                            </div>
+                <!-- date range start filter -->
+                <div class="card flex-1 basis-1/4 min-w-[100px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Created Date (Start)</h2>
+                    <div class="space-y-3">
+                        <div>
+                            <input id="inputStart" type="date" class="form-input w-full text-sm p-2" />
                         </div>
                     </div>
                 </div>
-
-                <style>
-                    .dr-day {
-                        font-size: 12px;
-                        text-align: center;
-                        padding: 5px 2px;
-                        cursor: pointer;
-                        border-radius: 4px;
-                        color: #333;
-                        user-select: none;
-                    }
-
-                        .dr-day:hover:not(.empty) {
-                            background: #f0f0f0;
-                        }
-
-                        .dr-day.start, .dr-day.end {
-                            background: #4a90d9 !important;
-                            color: #fff !important;
-                            border-radius: 50%;
-                            font-weight: 500;
-                        }
-
-                        .dr-day.in-range {
-                            background: #d0e8f8;
-                            color: #1a5f9a;
-                            border-radius: 0;
-                        }
-
-                        .dr-day.start.has-end {
-                            border-radius: 50% 0 0 50%;
-                        }
-
-                        .dr-day.end.has-start {
-                            border-radius: 0 50% 50% 0;
-                        }
-
-                        .dr-day.today {
-                            color: #4a90d9;
-                            font-weight: 500;
-                        }
-                </style>
-
-                <script>
-                    (function () {
-                        var MONTHS = ['January','February','March','April','May','June',
-                                      'July','August','September','October','November','December'];
-                        var DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-                        var now    = new Date();
-                        var viewYear = now.getFullYear(), viewMonth = now.getMonth();
-                        var startDate = null, endDate = null, hoverDate = null, selecting = false;
-
-                        /* ── helpers ── */
-                        function sameDay(a,b){
-                            return a&&b&&a.getFullYear()===b.getFullYear()
-                                &&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
-                        }
-                        function fmt(d){
-                            if(!d)return'';
-                            return('0'+d.getDate()).slice(-2)+'/'
-                                +('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
-                        }
-                        function fmtISO(d){
-                            if(!d)return'';
-                            return d.getFullYear()+'-'
-                                +('0'+(d.getMonth()+1)).slice(-2)+'-'
-                                +('0'+d.getDate()).slice(-2);
-                        }
-                        function getWeekNum(d){
-                            var j=new Date(d.getFullYear(),0,1);
-                            return Math.ceil(((d-j)/86400000+j.getDay()+1)/7);
-                        }
-
-                        /* ── popup positioning (fixed) ── */
-                        function openPopup(){
-                            var popup  = document.getElementById('calPopup');
-                            var anchor = document.getElementById('dateRangePicker');
-                            popup.style.display = 'block';
-                            var rect = anchor.getBoundingClientRect();
-                            var popH = popup.offsetHeight || 320;
-                            var top  = (window.innerHeight - rect.bottom >= popH || rect.top < popH)
-                                       ? rect.bottom + window.scrollY + 4
-                                       : rect.top  + window.scrollY - popH - 4;
-                            var left = Math.min(rect.left + window.scrollX,
-                                                window.innerWidth - 288 + window.scrollX);
-                            popup.style.top  = top  + 'px';
-                            popup.style.left = left + 'px';
-                        }
-                        function closePopup(){
-                            document.getElementById('calPopup').style.display = 'none';
-                        }
-                        function isPopupOpen(){
-                            return document.getElementById('calPopup').style.display === 'block';
-                        }
-
-                        /* ── render calendar ── */
-                        function render(){
-                            document.getElementById('monthLabel').textContent =
-                                MONTHS[viewMonth]+' '+viewYear;
-
-                            var hint = document.getElementById('calHint');
-                            if(hint) hint.textContent = selecting ? 'Pilih tanggal akhir' : 'Pilih tanggal awal';
-
-                            var grid = document.getElementById('calGrid');
-                            grid.innerHTML = '';
-
-                            /* header hari */
-                            var hRow = document.createElement('div');
-                            hRow.style.cssText='display:grid;grid-template-columns:28px repeat(7,1fr);gap:2px;margin-bottom:4px;';
-                            hRow.appendChild(document.createElement('div'));
-                            DAYS.forEach(function(d){
-                                var el=document.createElement('div');
-                                el.style.cssText='font-size:11px;color:#888;text-align:center;padding:3px 0;font-weight:500;';
-                                el.textContent=d;
-                                hRow.appendChild(el);
-                            });
-                            grid.appendChild(hRow);
-
-                            var first   = new Date(viewYear,viewMonth,1);
-                            var startDow= first.getDay();
-                            var dim     = new Date(viewYear,viewMonth+1,0).getDate();
-
-                            var effEnd  = endDate||(selecting&&hoverDate?hoverDate:null);
-                            var rStart  = startDate&&effEnd?(startDate<=effEnd?startDate:effEnd):startDate;
-                            var rEnd    = startDate&&effEnd?(startDate<=effEnd?effEnd:startDate):null;
-
-                            var row=null, col=0;
-                            function newRow(date){
-                                row=document.createElement('div');
-                                row.style.cssText='display:grid;grid-template-columns:28px repeat(7,1fr);gap:2px;margin-bottom:2px;';
-                                var wk=document.createElement('div');
-                                wk.style.cssText='font-size:10px;color:#bbb;display:flex;align-items:center;justify-content:center;';
-                                if(date)wk.textContent=getWeekNum(date);
-                                row.appendChild(wk); grid.appendChild(row); col=0;
-                            }
-                            newRow(first);
-
-                            for(var i=0;i<startDow;i++){
-                                var emp=document.createElement('div');
-                                emp.className='dr-day empty'; row.appendChild(emp); col++;
-                            }
-                            for(var d=1;d<=dim;d++){
-                                if(col>0&&col%7===0) newRow(new Date(viewYear,viewMonth,d));
-                                var dt=new Date(viewYear,viewMonth,d);
-                                var el=document.createElement('div');
-                                el.className='dr-day';
-                                el.textContent=d;
-                                el.dataset.date=dt.toISOString();
-                                var isS=rStart&&sameDay(dt,rStart);
-                                var isE=rEnd  &&sameDay(dt,rEnd);
-                                var inR=rStart&&rEnd&&dt>rStart&&dt<rEnd;
-                                if(isS&&isE){el.classList.add('start','end');}
-                                else{
-                                    if(isS){el.classList.add('start'); if(rEnd)  el.classList.add('has-end');}
-                                    if(isE){el.classList.add('end');   if(rStart)el.classList.add('has-start');}
-                                    if(inR) el.classList.add('in-range');
-                                }
-                                if(sameDay(dt,now)&&!isS&&!isE) el.classList.add('today');
-                                row.appendChild(el); col++;
-                            }
-
-                            document.getElementById('inputStart').value   = startDate ? fmt(startDate)    : '';
-                            document.getElementById('inputEnd').value     = endDate   ? fmt(endDate)      : '';
-                            document.getElementById('scrapDateStart').value = startDate ? fmtISO(startDate) : '';
-                            document.getElementById('scrapDateEnd').value   = endDate   ? fmtISO(endDate)   : '';
-                        }
-
-                        /* ── event: klik hari di kalender ──
-                           Dipasang di calGrid (bukan calPopup) dan TIDAK pakai stopPropagation
-                           supaya tidak konflik dengan listener lain.
-                           Document listener kita pasang di bubble phase (bukan capture)
-                           dan kita cek apakah klik ada di dalam popup. */
-                        document.getElementById('calGrid').addEventListener('mouseover',function(e){
-                            var el=e.target.closest&&e.target.closest('.dr-day:not(.empty)');
-                            if(!el||!selecting)return;
-                            hoverDate=new Date(el.dataset.date); render();
-                        });
-                        document.getElementById('calGrid').addEventListener('mouseleave',function(){
-                            if(selecting){hoverDate=null; render();}
-                        });
-                        document.getElementById('calGrid').addEventListener('click',function(e){
-                            var el=e.target.closest&&e.target.closest('.dr-day:not(.empty)');
-                            if(!el||!el.dataset.date)return;
-                            var clicked=new Date(el.dataset.date);
-                            if(!selecting){
-                                /* klik pertama */
-                                startDate=clicked; endDate=null; selecting=true; hoverDate=null;
-                                render();
-                                /* popup tetap terbuka — jangan panggil closePopup */
-                            } else {
-                                /* klik kedua */
-                                if(clicked<startDate){endDate=startDate; startDate=clicked;}
-                                else{endDate=clicked;}
-                                selecting=false; hoverDate=null;
-                                render();
-                                closePopup();
-                            }
-                            /* PENTING: stop di sini agar document listener tidak ikut proses */
-                            e.stopPropagation();
-                        });
-
-                        /* navigasi bulan */
-                        document.getElementById('prevBtn').addEventListener('click',function(e){
-                            e.stopPropagation();
-                            viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--;} render();
-                        });
-                        document.getElementById('nextBtn').addEventListener('click',function(e){
-                            e.stopPropagation();
-                            viewMonth++; if(viewMonth>11){viewMonth=0;viewYear++;} render();
-                        });
-                        document.getElementById('clearBtn').addEventListener('click',function(e){
-                            e.stopPropagation();
-                            startDate=null; endDate=null; selecting=false; hoverDate=null;
-                            render(); closePopup();
-                        });
-
-                        /* input start */
-                        document.getElementById('inputStart').addEventListener('click',function(e){
-                            e.stopPropagation();
-                            if(isPopupOpen()){
-                                closePopup();
-                            } else {
-                                startDate=null; endDate=null; selecting=false; hoverDate=null;
-                                render(); openPopup();
-                            }
-                        });
-
-                        /* input end */
-                        document.getElementById('inputEnd').addEventListener('click',function(e){
-                            e.stopPropagation();
-                            if(isPopupOpen()){
-                                /* popup sudah buka — biarkan user pilih */
-                                return;
-                            }
-                            if(startDate&&!endDate){
-                                selecting=true; render();
-                            } else {
-                                startDate=null; endDate=null; selecting=false; hoverDate=null;
-                                render();
-                            }
-                            openPopup();
-                        });
-
-                        /* tutup popup jika klik di luar — BUBBLE phase, bukan capture */
-                        document.addEventListener('click',function(e){
-                            var popup  = document.getElementById('calPopup');
-                            var picker = document.getElementById('dateRangePicker');
-                            if(!popup||!picker)return;
-                            if(popup.contains(e.target)||picker.contains(e.target))return;
-                            if(selecting&&!endDate){selecting=false; hoverDate=null; render();}
-                            closePopup();
-                        }); /* false = bubble phase (default) */
-
-                        render();
-                    })();
-                </script>
-                <!-- date range test -->
-                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                <!-- date range end filter -->
+                <div class="card flex-1 basis-1/4 min-w-[100px] p-3">
+                    <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Created Date (End)</h2>
+                    <div class="space-y-3">
+                        <div>
+                            <input id="inputEnd" type="date" class="form-input w-full text-sm p-2" />
+                        </div>
+                    </div>
+                </div>
+                <!-- code filter -->
+                <div class="card flex-1 basis-1/4 min-w-[100px] p-3">
                     <h2 id="codeFilterLabel" class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Code</h2>
                     <form class="space-y-2">
                         <div class="space-y-1">
@@ -574,7 +285,8 @@
                         </div>
                     </form>
                 </div>
-                <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                <!-- tc filter -->
+                <div class="card flex-1 basis-1/4 min-w-[100px] p-3">
                     <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">TC Code</h2>
                     <form class="space-y-2">
                         <div class="space-y-1">
@@ -590,7 +302,6 @@
                         <i class="ri-check-line text-sm mr-1"></i>
                         Apply
                     </button>
-
                     <!-- Reset Filters icon -->
                     <button id="resetFiltersScrapListButton"
                             class="px-2 py-1 bg-danger text-white rounded shadow hover:bg-danger/[0.85] transition flex items-center justify-center text-sm mb-2">
@@ -598,9 +309,6 @@
                         Reset
                     </button>
                 </div>
-
-
-
             </div>
             <div class="overflow-auto">
                 <table class="min-w-[640px] w-full">
@@ -649,13 +357,19 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="flex flex-col gap-3 pt-4 border-t border-black/10 dark:border-darkborder sm:flex-row sm:items-center sm:justify-between">
+                <div id="paginationContainer" class="flex-1 flex justify-center sm:justify-start mt-3"></div>
+                <div class="flex items-center gap-2 sm:justify-end">
+                    <div id="paginationLoader" class="hidden flex items-center gap-2 text-sm text-gray-500">
+                        <div class="animate-spin inline-block w-4 h-4 border-2 border-l-transparent border-gray-400 rounded-full"></div>
+                        <span>Loading page...</span>
+                    </div>
+                    <div id="paginationSummary" class="text-sm text-gray-500 hidden md:block pr-0 sm:pr-2">Showing <span id="paginationShowing">-</span></div>
+                </div>
+            </div>
         </div>
 
-    </div>
-
-    <div class="flex items-center justify-between mt-4">
-        <div id="paginationContainer" class="flex-1 flex justify-center"></div>
-        <div id="paginationSummary" class="text-sm text-gray-500 hidden md:block pr-4">Showing <span id="paginationShowing">-</span></div>
     </div>
 </div>
 <!-- End All Card -->
@@ -669,6 +383,7 @@
             // ── Konstanta & state ─────────────────────────────────────────────
             const _pageSize = 10;
             let _currentPage = 1;
+            let currentFilters = {};
 
             // URL endpoint baru (ditambahkan di Vendor_Scripts)
             const _urlGetAllRecords = urlGetAllRecords;
@@ -694,13 +409,15 @@
                 // Apply filter
                 document.getElementById("applyFiltersScrapListButton").addEventListener("click", function () {
                     const appType = document.getElementById("applicationTypeFilter").value || "";
+                    const createdDateFrom = document.getElementById("inputStart").value || "";
+                    const createdDateTo = document.getElementById("inputEnd").value || "";
 
                     currentFilters = {
                         appType:          appType,
                         initiatorKpk:     document.getElementById("scrapInitiatorKpkFilter").value || "",
                         facility:         document.getElementById("scrapFacilityFilter").value || "",
-                        createdDateFrom:  document.getElementById("scrapDateStart").value || "",
-                        createdDateTo:    document.getElementById("scrapDateEnd").value || "",
+                        createdDateFrom:  createdDateFrom,
+                        createdDateTo:    createdDateTo,
                         // scrapCode hanya dikirim kalau appType bukan PIA
                         scrapCode:        (appType.toUpperCase() !== "PIA")
                                             ? (document.getElementById("scrapCodeFilter").value || "") : "",
@@ -719,8 +436,6 @@
                     document.getElementById("scrapInitiatorKpkFilter").value  = "";
                     document.getElementById("scrapFacilityFilter").value      = "";
                     document.getElementById("applicationTypeFilter").value    = "";
-                    document.getElementById("scrapDateStart").value           = "";
-                    document.getElementById("scrapDateEnd").value             = "";
                     document.getElementById("inputStart").value               = "";
                     document.getElementById("inputEnd").value                 = "";
                     document.getElementById("scrapCodeFilter").value          = "";
@@ -784,6 +499,8 @@
                 if (appType !== "PIA")   requestData.scrapCode = filters.scrapCode || "";
                 if (appType !== "SCRAP") requestData.piaCode   = filters.piaCode   || "";
 
+                showPaginationLoader();
+
                 return $.ajax({
                     url:      _urlGetAllRecords,
                     type:     "GET",
@@ -793,11 +510,13 @@
                     renderAllScrapTable(res.Data || []);
                     renderAllScrapPagination(res.TotalCount, res.PageNumber, res.PageSize);
                     if (typeof setApplyFilterLoading === "function") setApplyFilterLoading(false);
+                    hidePaginationLoader();
                 }).fail(function (xhr, status, error) {
                     console.error("[AllScrap] loadAllScrapData error:", error);
                     document.getElementById("listOfScrap").innerHTML =
                         '<tr><td colspan="12" class="text-center py-6 text-muted">Failed to load data.</td></tr>';
                     if (typeof setApplyFilterLoading === "function") setApplyFilterLoading(false);
+                    hidePaginationLoader();
                 });
             }
 
@@ -951,7 +670,7 @@
 
                 // first page + leading ellipsis
                 if (start > 1) {
-                    html += `<button class="px-3 py-1 rounded-full text-sm border border-gray-200 hover:bg-gray-100" onclick="loadAllScrapData(1, ${size}, currentFilters)">1</button>`;
+                    html += `<button class="px-3 py-1 rounded-full text-sm border border-gray-200 hover:bg-gray-100" onclick="goToPage(1, ${size})">1</button>`;
                     if (start > 2) html += `<span class="px-2 text-sm text-gray-400">…</span>`;
                 }
 
@@ -985,10 +704,7 @@
 
                 html += '</div>';
 
-                // wrap pill + loader
-                container.innerHTML = '<div class="inline-flex items-center gap-3">' + html +
-                    '<div id="paginationLoader" class="hidden ml-2"><div class="animate-spin inline-block w-4 h-4 border-2 border-l-transparent border-gray-400 rounded-full"></div></div>' +
-                    '</div>';
+                container.innerHTML = html;
             }
 
 
@@ -1146,6 +862,9 @@
 
             // Expose ke global scope untuk onclick pagination
             window.loadAllScrapData = loadAllScrapData;
+            window.goToPage = goToPage;
+            window.showPaginationLoader = showPaginationLoader;
+            window.hidePaginationLoader = hidePaginationLoader;
 
             // Pagination helper: show/hide loader and navigate pages
             function showPaginationLoader() {
@@ -1160,14 +879,7 @@
             function goToPage(page, size) {
                 try {
                     _currentPage = page;
-                    showPaginationLoader();
-                    var req = loadAllScrapData(page, size, currentFilters || {});
-                    if (req && typeof req.always === 'function') {
-                        req.always(function () { hidePaginationLoader(); });
-                    } else {
-                        // fallback hide after short delay
-                        setTimeout(hidePaginationLoader, 800);
-                    }
+                    loadAllScrapData(page, size, currentFilters || {});
                 } catch (e) {
                     console.error('goToPage error', e);
                     hidePaginationLoader();
