@@ -288,7 +288,7 @@
     const userName = rawUserName.trim().replace(/^"|"$/g, "");
     let initialsUserTopbar = "";
     const supervisorKpk = '@(Session["SupervisorKpk"] ?? "")';
-    const urlGetTypeScrap = '@Url.Action("GetTypeScraps", "DataForms")';
+    const urlGetDocumentType = '@Url.Action("GetDocumentType", "DataForms")';
     const urlGetEmployee = '@Url.Action("GetEmployeeByNameOrKpk", "DataForms")';
     const urlGetSourceDataScrap = '@Url.Action("GetJoinedSourceDataScrap", "ListOfData")';
     const urlGetAllRecords = '@Url.Action("GetAllRecords", "ListOfData")';

@@ -6,7 +6,6 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-
 <!-- Start All Card -->
 <div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
     <div class="flex justify-center items-center bg-muted/20 h-32">
@@ -331,8 +330,8 @@
         let selectedPiaCode = null;
         let selectedPiaCodeString = null;
         let selectedCommit = false;
-        let selectedFacilities = plant;
         let selectedFacilityInDropdown = null;
+        let piaDocumentRules = [];
         let specialRemarksCache = {};
         const piaCodesWithNotes = ["MHK", "MII", "MOQ", "MQC"];
         const piaCodesWithTCCompanion = ["MHK", "MII", "MOQ", "MQC", "MAL", "DDS", "DDT", "ENC", "ENM", "ENP", "MH", "OMF", "QHE", "QPX", "QRS"];
@@ -341,14 +340,7 @@
             localStorage.removeItem("specialCodeRemarks");
             localStorage.removeItem("CompanionTc");
             localStorage.removeItem("CompanionTcValue");
-            loadTypeOfPiaDropdown();
-            loadFacilityDropdown(
-                selectedFacilities,
-                "facilityDropdown",
-                "facilityInitiator",
-                "tcDropdown",
-                TC_URL
-            );
+            loadDocumentRules(2);
 
             loadPiaCodeRemarks();
             if (supervisorKpk) {
@@ -385,6 +377,196 @@
                 dropdown = $("#" + dropdownId);
             }
             return dropdown;
+        }
+
+        function loadDocumentRules(application) {
+            const typeWrapperId = $("#typeOfPiaDropdown").parent().attr("id");
+            showDropdownSpinner(typeWrapperId);
+
+            $.ajax({
+                url: urlGetDocumentType,
+                type: "GET",
+                dataType: "json",
+                data: { application: application },
+                success: function (response) {
+                    hideDropdownSpinner(typeWrapperId);
+                    piaDocumentRules = Array.isArray(response) ? response : [];
+                    initializePiaDocumentSelectors();
+                },
+                error: function () {
+                    hideDropdownSpinner(typeWrapperId);
+                    handleAjaxError("Failed to load PIA document rules.");
+                }
+            });
+        }
+
+        function initializePiaDocumentSelectors() {
+            const typeDropdown = $("#typeOfPiaDropdown");
+            const facilityDropdown = document.getElementById("facilityDropdown");
+            const tcDropdown = document.getElementById("tcDropdown");
+            const facilityInput = document.getElementById("facilityInitiator");
+
+            const typeOptions = [];
+            const seenTypes = new Set();
+
+            piaDocumentRules.forEach(function (item) {
+                const typeName = (item.Type_Desc || "").trim();
+                const key = typeName.toLowerCase();
+                if (!typeName || seenTypes.has(key)) return;
+                seenTypes.add(key);
+                typeOptions.push({ value: typeName, text: typeName });
+            });
+
+            typeDropdown.empty();
+            typeDropdown.append('<option value="">-- Select Type --</option>');
+            typeOptions.forEach(function (option) {
+                typeDropdown.append(`<option value="${option.value}">${option.text}</option>`);
+            });
+
+            facilityDropdown.innerHTML = '<option value="">-- Select Facility --</option>';
+            facilityDropdown.disabled = true;
+            tcDropdown.innerHTML = '<option value="">-- Select TC --</option>';
+            tcDropdown.disabled = true;
+            facilityInput.value = "";
+            selectedFacilityInDropdown = null;
+
+            typeDropdown.off("change").on("change", function () {
+                const selectedType = ($(this).val() || "").trim();
+                resetPiaDownstreamSelectors();
+                populateFacilityOptions(selectedType);
+
+                // If Type is Subcont, WC is not required and should stay hidden.
+                if (selectedType.toLowerCase() === "subcont") {
+                    $('#piaCodeWCResultCard').addClass('hidden');
+                    $('#wcDropdown').val('');
+                    $('#wcDropdown').prop('disabled', true);
+                } else {
+                    // ensure WC can be shown later when TC selection allows it
+                    $('#wcDropdown').prop('disabled', false);
+                }
+            });
+
+            $("#facilityDropdown").off("change").on("change", function () {
+                const selectedFacility = $(this).val();
+                facilityInput.value = selectedFacility;
+                selectedFacilityInDropdown = selectedFacility;
+                populateTcOptions($("#typeOfPiaDropdown").val(), selectedFacility);
+            });
+
+            $("#tcDropdown").off("change").on("change", function () {
+                const selectedTc = $(this).val();
+                const selectedFacility = document.getElementById("facilityInitiator").value;
+
+                if (!selectedTc) {
+                    $('#piaCodeWCResultCard').addClass('hidden');
+                    $('#piaCodeResultCard').addClass('hidden');
+                    $('#piaCodeRemarksResultCard').addClass('hidden');
+                    return;
+                }
+
+                if (!["20", "22"].includes(selectedTc)) {
+                    loadWC(selectedFacility, "wcDropdown", "wcDropdown", "@Url.Action("GetWorkCenters", "DataForms")");
+                    $('#piaCodeWCResultCard').removeClass('hidden');
+                } else {
+                    $('#piaCodeWCResultCard').addClass('hidden');
+                }
+
+                $('#piaCodeResultCard').removeClass('hidden');
+                $('#piaCodeRemarksResultCard').removeClass('hidden');
+                loadPiaCodeDropdown(
+                    selectedFacility,
+                    selectedTc,
+                    "piaCodeDropdown",
+                    "piaCodeDropdownWrapper",
+                    "@Url.Action("GetPiaCodeByLocation", "DataForms")"
+                );
+            });
+
+            if (typeOptions.length === 1) {
+                typeDropdown.val(typeOptions[0].value).trigger("change");
+            }
+        }
+
+        function resetPiaDownstreamSelectors() {
+            const facilityDropdown = document.getElementById("facilityDropdown");
+            const tcDropdown = document.getElementById("tcDropdown");
+            const facilityInput = document.getElementById("facilityInitiator");
+
+            facilityDropdown.innerHTML = '<option value="">-- Select Facility --</option>';
+            facilityDropdown.disabled = true;
+            tcDropdown.innerHTML = '<option value="">-- Select TC --</option>';
+            tcDropdown.disabled = true;
+            if (facilityInput) facilityInput.value = "";
+
+            $('#piaCodeTcResultCard').addClass('hidden');
+            $('#piaCodeWCResultCard').addClass('hidden');
+            $('#piaCodeResultCard').addClass('hidden');
+            $('#piaCodeRemarksResultCard').addClass('hidden');
+
+            selectedFacilityInDropdown = null;
+            selectedPiaCode = null;
+            selectedPiaCodeString = null;
+        }
+
+        function populateFacilityOptions(selectedType) {
+            const facilityDropdown = document.getElementById("facilityDropdown");
+            const facilityInput = document.getElementById("facilityInitiator");
+            const filteredFacilities = piaDocumentRules
+                .filter(function (item) {
+                    return (item.Type_Desc || "").trim() === selectedType && (item.Facility || "").trim() !== "";
+                })
+                .map(function (item) { return (item.Facility || "").trim(); })
+                .filter(function (value, index, array) { return array.indexOf(value) === index; });
+
+            facilityDropdown.innerHTML = '<option value="">-- Select Facility --</option>';
+
+            if (filteredFacilities.length === 0) {
+                facilityDropdown.disabled = true;
+                facilityInput.value = "";
+                return;
+            }
+
+            filteredFacilities.forEach(function (facility) {
+                facilityDropdown.append(new Option(facility, facility));
+            });
+
+            facilityDropdown.disabled = false;
+            if (filteredFacilities.length === 1) {
+                facilityDropdown.value = filteredFacilities[0];
+                facilityInput.value = filteredFacilities[0];
+                selectedFacilityInDropdown = filteredFacilities[0];
+                populateTcOptions(selectedType, filteredFacilities[0]);
+            }
+        }
+
+        function populateTcOptions(selectedType, selectedFacility) {
+            const tcDropdown = document.getElementById("tcDropdown");
+            const filteredTc = piaDocumentRules
+                .filter(function (item) {
+                    return (item.Type_Desc || "").trim() === selectedType &&
+                        (item.Facility || "").trim() === selectedFacility &&
+                        (item.TC || "").trim() !== "";
+                })
+                .map(function (item) { return (item.TC || "").trim(); })
+                .filter(function (value, index, array) { return array.indexOf(value) === index; })
+                .sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); });
+
+            tcDropdown.innerHTML = '<option value="">-- Select TC --</option>';
+
+            if (filteredTc.length === 0) {
+                tcDropdown.disabled = true;
+                return;
+            }
+
+            filteredTc.forEach(function (tc) {
+                tcDropdown.append(new Option(tc, tc));
+            });
+
+            tcDropdown.disabled = false;
+            if (filteredTc.length === 1) {
+                tcDropdown.value = filteredTc[0];
+                $("#tcDropdown").trigger("change");
+            }
         }
 
         function populateDropdown(dropdown, data, options = {}) {
@@ -430,13 +612,24 @@
             showDropdownSpinner(wrapperId);
 
             $.ajax({
-                url: urlGetTypeScrap,
+                url: urlGetDocumentType,
                 type: 'GET',
+                data: { application: 2 },
                 success: function (data) {
                     hideDropdownSpinner(wrapperId);
 
+                    const uniqueTypes = [];
+                    const seenTypes = new Set();
+                    (Array.isArray(data) ? data : []).forEach(function (item) {
+                        const typeName = (item.Type_Desc || "").trim();
+                        const typeKey = typeName.toLowerCase();
+                        if (!typeName || seenTypes.has(typeKey)) return;
+                        seenTypes.add(typeKey);
+                        uniqueTypes.push({ Type_ID: item.Type_ID, Type_Desc: typeName });
+                    });
 
-                    populateDropdown(dropdown, data, {
+
+                    populateDropdown(dropdown, uniqueTypes, {
                         valueField: "Type_ID",
                         placeholder: "-- Select Type --",
                         formatFn: (item) => item.Type_Desc
@@ -578,7 +771,13 @@
                             $('#piaCodeResultCard').removeClass('hidden');
                             $('#piaCodeRemarksResultCard').removeClass('hidden');
                             $('#remarksDropdown').empty().append('<option value="">-- Select Remarks --</option>');
-                            if (!["20", "22"].includes(selectedTC)) {
+                            // Don't show WC for Subcont type regardless of TC
+                            const selType = (($("#typeOfPiaDropdown").val() || "").toLowerCase());
+                            if (selType === 'subcont') {
+                                $('#piaCodeWCResultCard').addClass('hidden');
+                                $('#wcDropdown').val('');
+                                $('#wcDropdown').prop('disabled', true);
+                            } else if (!["20", "22"].includes(selectedTC)) {
                                loadWC(facility, "wcDropdown", "wcDropdown", "@Url.Action("GetWorkCenters", "DataForms")");
                                 $('#piaCodeWCResultCard').removeClass('hidden');
                             } else {
@@ -706,7 +905,7 @@
             $dropdown.prop('disabled', true);
 
             $.ajax({
-                url: '@Url.Action("GetRemarksByPiaCode", "DataForms")' + '?piaCode=' + encodeURIComponent(piaCode),
+                url: '@Url.Action("GetRemarksByPiaCodeId", "DataForms")' + '?piaCodeId=' + encodeURIComponent(piaCode),
                 type: 'GET',
                 dataType: 'json',
                 success: function(response) {
@@ -953,6 +1152,12 @@
                 { id: "remarksDropdown", label: "Remarks" }
             ];
 
+            // If selected Type is Subcont, WC should not be required
+            const _selectedTypeLower = (document.getElementById("typeOfPiaDropdown")?.value || "").trim().toLowerCase();
+            const effectiveRequiredFields = (_selectedTypeLower === 'subcont')
+                ? requiredFields.filter(f => f.id !== 'wcDropdown')
+                : requiredFields;
+
             showDynamicSwal({
                 title: "Confirmation",
                 text: "Do you want to continue to next step?",
@@ -961,7 +1166,7 @@
                 cancelText: "No, Stay"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const isValid = validateRequiredFields(requiredFields, true);
+                    const isValid = validateRequiredFields(effectiveRequiredFields, true);
                     if (!isValid) return;
                     const container = document.getElementById("sectionContainer");
                     container.innerHTML = `
@@ -2111,6 +2316,8 @@
             const headerRemarks = specialRemarks || (selectedRemarksValue ? selectedRemarksText : "");
             const createdByKpkValue = (typeof kpk !== "undefined" ? kpk : "") || "";
             const createdByNameValue = (typeof userName !== "undefined" ? userName : "") || "";
+            const typeLabel = document.getElementById("typeOfPiaDropdown")?.options[document.getElementById("typeOfPiaDropdown")?.selectedIndex]?.text || "Reguler";
+            const typeValue = getPiaTypeValue(typeLabel);
 
             // Validasi PiaCode tidak boleh kosong
             const piaCodeValue = document.getElementById("piaCodeDropdown")?.value?.trim();
@@ -2120,7 +2327,8 @@
             }
 
             const headerData = {
-                Type        : document.getElementById("typeOfPiaDropdown")?.value || "Reguler",
+                Type        : typeValue,
+                TypeLabel   : typeLabel,
                 Facility    : document.getElementById("facilityInitiator")?.value || null,
                 TC          : document.getElementById("tcDropdown")?.value || null,
                 PiaCode     : piaCodeInt,
@@ -2198,7 +2406,7 @@
                 ["PIA Code", (header.PiaCode || "-").toString()],
                 ["WC", (header.WC || "-").toString()],
                 ["Initiator KPK", "N/A"],
-                ["Type", (header.Type || "-").toString()]
+                ["Type", (header.TypeLabel || header.Type || "-").toString()]
             ];
 
             const headerFn = (doc, pageNumber, totalPages) => {
@@ -2456,6 +2664,20 @@
             }
 
             return { valid: true };
+        }
+
+        function getPiaTypeValue(typeLabel) {
+            const normalizedType = (typeLabel || "").trim().toLowerCase();
+
+            if (normalizedType === "subcont") {
+                return 2;
+            }
+
+            if (normalizedType === "wip" || normalizedType === "reguler") {
+                return 1;
+            }
+
+            return 1;
         }
 
     </script>

@@ -678,15 +678,16 @@ namespace MaterialControlCenter.Controllers
         }
 
         [HttpGet]
+        public JsonResult GetDocumentType(int application = 2, bool includeDeleted = false)
+        {
+            var data = dbScrap.GetDocumentRulesByApplication(application, includeDeleted);
+            return Json(data, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
         public JsonResult GetTypeScraps(bool includeDeleted = false)
         {
-            var data = dbScrap.GetAllTypeScrap();
-            if (!includeDeleted)
-            {
-                data = data.Where(x => x.IsDelete == false).ToList();
-            }
-
-            return Json(data, JsonRequestBehavior.AllowGet);
+            return GetDocumentType(2, includeDeleted);
         }
 
         [HttpPost]
@@ -1193,18 +1194,16 @@ namespace MaterialControlCenter.Controllers
         }
 
         [HttpGet]
-        public JsonResult GetRemarksByPiaCode(string piaCode)
+        public JsonResult GetRemarksByPiaCodeId(int piaCodeId)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(piaCode))
+                if (piaCodeId <= 0)
                     return Json(new { success = false, message = "PIA Code is required." }, JsonRequestBehavior.AllowGet);
 
-                var allRemarks = dbScrap.GetPiaCodeRemarks();
+                var allRemarks = dbScrap.GetPiaCodeRemarksByPiaCodeId(piaCodeId);
 
                 var filtered = allRemarks
-                    .Where(r => r.ScrapCode != null &&
-                                r.ScrapCode.Equals(piaCode, StringComparison.OrdinalIgnoreCase))
                     .OrderBy(r => r.Remarks)
                     .Select(r => new
                     {

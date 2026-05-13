@@ -403,13 +403,24 @@
             showDropdownSpinner(wrapperId);
 
             $.ajax({
-                url: urlGetTypeScrap,
+                url: urlGetDocumentType,
                 type: 'GET',
+                data: { application: 3 },
                 success: function (data) {
                     hideDropdownSpinner(wrapperId);
 
+                    const uniqueTypes = [];
+                    const seenTypes = new Set();
+                    (Array.isArray(data) ? data : []).forEach(function (item) {
+                        const typeName = (item.Type_Desc || "").trim();
+                        const typeKey = typeName.toLowerCase();
+                        if (!typeName || seenTypes.has(typeKey)) return;
+                        seenTypes.add(typeKey);
+                        uniqueTypes.push(item);
+                    });
 
-                    populateDropdown(dropdown, data, {
+
+                    populateDropdown(dropdown, uniqueTypes, {
                         valueField: "Type_ID",
                         placeholder: "-- Select Type --",
                         formatFn: (item) => item.Type_Desc
@@ -1986,6 +1997,7 @@
                 WC: document.getElementById("wcDropdown")?.value || null,
                 InitiatorKpk: typeof kpk !== "undefined" ? kpk : null,
                 Type_ID: document.getElementById("typeOfTprDropdown")?.value || null,
+                Type_Desc: document.getElementById("typeOfTprDropdown")?.selectedOptions?.[0]?.text || null,
                 SpecialCodeRemarks: localStorage.getItem("specialCodeRemarks") || null,
                 SpecialCodeTcCompanion: localStorage.getItem("CompanionTc") || null,
             };
@@ -2068,9 +2080,7 @@
             logoImg.src = logoUrl;
             await new Promise(resolve => (logoImg.onload = resolve));
             const typeLabel =
-                parseInt(master.Type_ID) === 1 ? "REGULAR" :
-                    parseInt(master.Type_ID) === 2 ? "RAP" :
-                        master.Type_ID || "-";
+                (master.Type_Desc || master.Type_ID || "-").toString().toUpperCase();
 
             const rnValue = (parts || []).map(p => p.RnNumber).filter(Boolean)[0] || "N/A";
 

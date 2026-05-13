@@ -1920,6 +1920,49 @@ namespace MaterialControlCenter.Service
 
             return list;
         }
+
+        public List<TypeScrapModel> GetDocumentRulesByApplication(int application, bool includeInactive = false)
+        {
+            var list = new List<TypeScrapModel>();
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = @"
+                    SELECT [id], [application], [type], [facility], [tc], [description], [is_active], [created_at]
+                    FROM [Scrap].[dbo].[mcc_application_rule]
+                    WHERE [application] = @application
+                      AND (@includeInactive = 1 OR [is_active] = 1)
+                    ORDER BY [type], [facility], [tc], [id]";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@application", application);
+                    cmd.Parameters.AddWithValue("@includeInactive", includeInactive ? 1 : 0);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            list.Add(new TypeScrapModel
+                            {
+                                Type_ID = reader["id"] != DBNull.Value ? Convert.ToInt32(reader["id"]) : 0,
+                                Application = reader["application"] != DBNull.Value ? Convert.ToInt32(reader["application"]) : 0,
+                                Type_Desc = reader["type"] as string,
+                                Facility = reader["facility"] as string,
+                                TC = reader["tc"]?.ToString(),
+                                Description = reader["description"] as string,
+                                IsActive = reader["is_active"] != DBNull.Value && Convert.ToBoolean(reader["is_active"]),
+                                IsDelete = !(reader["is_active"] != DBNull.Value && Convert.ToBoolean(reader["is_active"])),
+                                CreatedAt = reader["created_at"] != DBNull.Value ? (DateTime?)reader["created_at"] : null
+                            });
+                        }
+                    }
+                }
+            }
+
+            return list;
+        }
         public bool SubmitScrapCode(ScrapCode model, string createdByKpk, string createdByName)
         {
             using (SqlConnection sqlconn = new SqlConnection(connectionString))
@@ -2945,6 +2988,40 @@ namespace MaterialControlCenter.Service
                     }
                 }
             }
+            return result;
+        }
+
+        public List<ScrapCodeRemarkModel> GetPiaCodeRemarksByPiaCodeId(int piaCodeId)
+        {
+            var result = new List<ScrapCodeRemarkModel>();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string query = @"
+            SELECT r.id AS IdRemarks, r.remarks, p.code AS ScrapCode
+            FROM [Scrap].[dbo].[pia_code_remarks] r
+            INNER JOIN [Scrap].[dbo].[pia_code] p ON r.pia_code_id = p.id
+            WHERE ISNULL(r.is_deleted, 0) = 0
+              AND r.pia_code_id = @piaCodeId";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@piaCodeId", piaCodeId);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            result.Add(new ScrapCodeRemarkModel
+                            {
+                                IdRemarks = reader["IdRemarks"] != DBNull.Value ? Convert.ToInt32(reader["IdRemarks"]) : 0,
+                                Remarks = reader["remarks"]?.ToString(),
+                                ScrapCode = reader["ScrapCode"]?.ToString()
+                            });
+                        }
+                    }
+                }
+            }
+
             return result;
         }
 

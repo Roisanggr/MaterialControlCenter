@@ -142,6 +142,12 @@ namespace MaterialControlCenter.Models
         public int Type_ID { get; set; }
         public string Type_Desc { get; set; }
         public bool IsDelete { get; set; }
+        public int Application { get; set; }
+        public string Facility { get; set; }
+        public string TC { get; set; }
+        public string Description { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
     public class TCCompanion
     {
