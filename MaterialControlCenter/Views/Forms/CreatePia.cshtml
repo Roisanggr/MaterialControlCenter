@@ -5,10 +5,81 @@
     ViewBag.ActiveItem = "forms-createPia";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<!-- New Layout Form -->
+<div class="flex flex-col gap-4 mb-8">
+    <div class="flex justify-center items-center bg-muted/20 h-32">
+        <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded text-center">
+            PIA Header Form
+        </h2>
+    </div>
+
+        <div class="card p-4 md:p-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">Type</label>
+                <div id="previewTypeOfPiaDropdownWrapper" class="md:col-span-4">
+                    <select id="previewTypeOfPiaDropdown" class="form-input w-full">
+                        <option value="">-- Select Type --</option>
+                    </select>
+                    <div class="preview-loading-state mt-2 flex items-center gap-2 text-xs text-muted">
+                        <div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-purple rounded-full"></div>
+                        <span>Loading Type...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">Manager</label>
+                <div id="previewSupervisorWrapper" class="md:col-span-4">
+                    <input type="hidden" id="previewSupervisorInitiatorKpk" />
+                    <input type="text" id="previewSupervisorInitiatorName" class="form-input w-full" placeholder="Search Manager..." autocomplete="off" />
+                    <div id="previewSupervisorResults" class="dropdown-results absolute w-100 bg-white border border-muted rounded mt-1 z-50 hidden" style="max-height: 200px; overflow-y: auto;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">Facility</label>
+                <div id="previewFacilityDropdownWrapper" class="md:col-span-4">
+                    <select id="previewFacilityDropdown" class="form-input w-full">
+                        <option value="">-- Select Facility --</option>
+                    </select>
+                    <div class="preview-loading-state mt-2 flex items-center gap-2 text-xs text-muted">
+                        <div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-purple rounded-full"></div>
+                        <span>Loading Facility...</span>
+                    </div>
+                </div>
+            </div>
+            <div id="previewTcCompanionCard" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">TC Companion</label>
+                <div id="previewTcCompanionDropdownWrapper" class="md:col-span-4">
+                    <select id="previewTcCompanionDropdown" class="form-input w-full" disabled>
+                        <option value="">-- Select TC Companion (Optional) --</option>
+                        <option value="62">TCC - 62</option>
+                        <option value="70">TCC - 70</option>
+                        <option value="71">TCC - 71</option>
+                    </select>
+                    <div class="preview-loading-state mt-2 flex items-center gap-2 text-xs text-muted">
+                        <div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-purple rounded-full"></div>
+                        <span>Waiting for Facility...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="previewExcelDropZone" class="mt-6 rounded-xl border border-dashed border-muted bg-white p-5 min-h-[140px] flex items-center justify-center text-center cursor-pointer select-none transition hover:border-info hover:bg-info/5">
+        <div>
+            <p class="text-sm font-medium text-black dark:text-white/80">Drop or click file here to fill the table</p>
+            <p class="text-xs text-muted">Supports: .xlsx, .xls</p>
+        </div>
+    </div>
+</div>
+</div>
 
 <!-- Start All Card -->
-<div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
-    <div class="flex justify-center items-center bg-muted/20 h-32">
+<div id="legacyPiaContainer" class="flex flex-col gap-4 min-h-[calc(100vh-212px)] hidden" style="display: none;">
+    <div id="legacyPiaHeaderTitle" class="flex justify-center items-center bg-muted/20 h-32">
         <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded text-center">
             PIA Header Form
         </h2>
@@ -16,7 +87,7 @@
 
 
     <!-- 4 kolom -->
-    <div class="flex flex-wrap gap-4 justify-between">
+    <div id="legacyPiaHeaderFields" class="flex flex-wrap gap-4 justify-between">
 
         <div class="card flex-1 basis-1/3 min-w-[300px]">
             <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Type Of PIA</h2>
@@ -54,14 +125,26 @@
             </div>
         </div>
 
-        <div id="piaCodeTcResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden">
+        <div id="tcCompanionCard" class="card flex-1 basis-1/3 min-w-[300px] hidden" style="display: none;">
+            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">TC Companion</h2>
+            <div class="space-y-4">
+                <select id="tcCompanionDropdown" class="form-input">
+                    <option value="">-- Select TC Companion (Optional) --</option>
+                    <option value="62">TCC - 62</option>
+                    <option value="70">TCC - 70</option>
+                    <option value="71">TCC - 71</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="piaCodeTcResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden" style="display: none;">
             <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">TC</h2>
             <div class="space-y-4">
                 <select id="tcDropdown" class="form-input" required>
                 </select>
             </div>
         </div>
-        <div id="piaCodeWCResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden">
+        <div id="piaCodeWCResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden" style="display: none;">
             <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">WC</h2>
             <div id="wcDropdownWrapper" class="space-y-4">
                 <select id="wcDropdown" class="form-input" required>
@@ -70,7 +153,7 @@
                 </select>
             </div>
         </div>
-        <div id="piaCodeResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden">
+        <div id="piaCodeResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden" style="display: none;">
             <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Reason Code</h2>
             <div id="piaCodeDropdownWrapper" class="space-y-4">
                 <select id="piaCodeDropdown" class="form-input" required>
@@ -78,7 +161,7 @@
                 </select>
             </div>
         </div>
-        <div id="piaCodeRemarksResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden">
+        <div id="piaCodeRemarksResultCard" class="card flex-1 basis-1/3 min-w-[300px] hidden" style="display: none;">
             <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">Remarks</h2>
             <div id="remarksDropdownWrapper" class="space-y-4">
                 <select id="remarksDropdown" class="form-input" required>
@@ -185,6 +268,9 @@
                         <th class="border border-muted">System Quantity</th>
                         <th class="border border-muted">Variance Quantity</th>
                         <th class="border border-muted">Total Value</th>
+                        <th class="border border-muted">Reason Code</th>
+                        <th class="border border-muted">WC</th>
+                        <th class="border border-muted">Remarks</th>
                         <th class="border border-muted" data-column="leader">Leader</th>
                     </tr>
                 </thead>
@@ -333,6 +419,8 @@
         let selectedFacilityInDropdown = null;
         let piaDocumentRules = [];
         let specialRemarksCache = {};
+        let typeToTcMap = {}; // Global map to store Type -> TC relationship
+        let isDetailFormAutoShown = false;
         const piaCodesWithNotes = ["MHK", "MII", "MOQ", "MQC"];
         const piaCodesWithTCCompanion = ["MHK", "MII", "MOQ", "MQC", "MAL", "DDS", "DDT", "ENC", "ENM", "ENP", "MH", "OMF", "QHE", "QPX", "QRS"];
 
@@ -353,7 +441,74 @@
                 "#supervisorInitiatorName",
                 urlGetEmployee
             );
+            initSupervisorDropdown(
+                "#previewSupervisorInitiatorName",
+                "#previewSupervisorResults",
+                "#previewSupervisorInitiatorKpk",
+                "#previewSupervisorInitiatorName",
+                urlGetEmployee
+            );
+
+            $("#previewTypeOfPiaDropdown").on("change", evaluateAutoShowDetailFormFromPreview);
+            $("#previewFacilityDropdown").on("change", evaluateAutoShowDetailFormFromPreview);
+            $("#previewSupervisorInitiatorName").on("input", evaluateAutoShowDetailFormFromPreview);
         });
+
+        function arePreviewMandatoryFieldsCompleted() {
+            const previewType = ($("#previewTypeOfPiaDropdown").val() || "").trim();
+            const previewFacility = ($("#previewFacilityDropdown").val() || "").trim();
+            const previewManagerKpk = ($("#previewSupervisorInitiatorKpk").val() || "").trim();
+            return !!previewType && !!previewFacility && !!previewManagerKpk;
+        }
+
+        function syncPreviewHeaderToLegacyHiddenFields() {
+            const previewType = ($("#previewTypeOfPiaDropdown").val() || "").trim();
+            const previewFacility = ($("#previewFacilityDropdown").val() || "").trim();
+            const previewManagerName = ($("#previewSupervisorInitiatorName").val() || "").trim();
+            const previewManagerKpk = ($("#previewSupervisorInitiatorKpk").val() || "").trim();
+
+            if (previewType) {
+                $("#typeOfPiaDropdown").val(previewType).trigger("change");
+            }
+
+            if (previewFacility) {
+                $("#facilityDropdown").val(previewFacility).trigger("change");
+                $("#facilityInitiator").val(previewFacility);
+            }
+
+            $("#supervisorInitiatorName").val(previewManagerName);
+            $("#supervisorInitiatorKpk").val(previewManagerKpk);
+        }
+
+        function showDetailFormAutomatically() {
+            if (isDetailFormAutoShown) return;
+            isDetailFormAutoShown = true;
+
+            const $legacyContainer = $("#legacyPiaContainer");
+            const $detailForm = $("#formContainerDetailsPartNumber");
+
+            $legacyContainer.removeClass("hidden").css("display", "none").fadeIn(200);
+            $("#legacyPiaHeaderTitle").addClass("hidden").css("display", "none");
+            $("#legacyPiaHeaderFields").addClass("hidden").css("display", "none");
+            $("#sectionContainer").addClass("hidden").css("display", "none");
+
+            $detailForm.stop(true, true).hide().removeClass("hidden").slideDown(240);
+
+            if (partCounter === 0) {
+                const activeTc = document.getElementById("tcDropdown")?.value;
+                if (activeTc) {
+                    createPartCard(activeTc);
+                }
+            }
+        }
+
+        function evaluateAutoShowDetailFormFromPreview() {
+            if (isDetailFormAutoShown) return;
+            if (!arePreviewMandatoryFieldsCompleted()) return;
+
+            syncPreviewHeaderToLegacyHiddenFields();
+            showDetailFormAutomatically();
+        }
 
         function showDropdownSpinner(wrapperId) {
             $("#" + wrapperId).append(
@@ -361,6 +516,21 @@
                 '<div class="animate-spin inline-block size-6 border-[3px] border-l-transparent border-purple rounded-full"></div>' +
                 '</div>'
             );
+        }
+
+        function showPreviewFieldLoading(wrapperId, message = "Loading...") {
+            const $wrapper = $("#" + wrapperId);
+            $wrapper.find(".preview-loading-state").remove();
+            $wrapper.append(
+                '<div class="preview-loading-state mt-2 flex items-center gap-2 text-xs text-muted">' +
+                '<div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-purple rounded-full"></div>' +
+                `<span>${message}</span>` +
+                '</div>'
+            );
+        }
+
+        function hidePreviewFieldLoading(wrapperId) {
+            $("#" + wrapperId + " .preview-loading-state").remove();
         }
 
         function hideDropdownSpinner(wrapperId) {
@@ -392,6 +562,7 @@
                     hideDropdownSpinner(typeWrapperId);
                     piaDocumentRules = Array.isArray(response) ? response : [];
                     initializePiaDocumentSelectors();
+                    initializeNewLayoutPreviewSelectors();
                 },
                 error: function () {
                     hideDropdownSpinner(typeWrapperId);
@@ -408,13 +579,23 @@
 
             const typeOptions = [];
             const seenTypes = new Set();
+            typeToTcMap = {}; // Reset and rebuild global map
 
             piaDocumentRules.forEach(function (item) {
                 const typeName = (item.Type_Desc || "").trim();
+                const tc = (item.TC || "").trim();
                 const key = typeName.toLowerCase();
                 if (!typeName || seenTypes.has(key)) return;
                 seenTypes.add(key);
-                typeOptions.push({ value: typeName, text: typeName });
+
+                // Store TC for this type
+                if (tc) {
+                    typeToTcMap[typeName] = tc;
+                }
+
+                // Display text with TC info
+                const displayText = tc ? `${typeName} - TC${tc}` : typeName;
+                typeOptions.push({ value: typeName, text: displayText, tc: tc });
             });
 
             typeDropdown.empty();
@@ -434,6 +615,27 @@
                 const selectedType = ($(this).val() || "").trim();
                 resetPiaDownstreamSelectors();
                 populateFacilityOptions(selectedType);
+
+                // Auto-set TC based on Type
+                const defaultTc = typeToTcMap[selectedType];
+                if (defaultTc) {
+                    tcDropdown.value = defaultTc;
+                    // Trigger change event to load WC, PIA Code, and Remarks
+                    $("#tcDropdown").trigger("change");
+                }
+
+                // Show/hide TC Companion form based on Type
+                const isWip = selectedType.toLowerCase() === "wip";
+                const tcCompanionCard = document.getElementById('tcCompanionCard');
+                if (isWip) {
+                    tcCompanionCard.classList.remove('hidden');
+                    tcCompanionCard.style.display = '';
+                } else {
+                    tcCompanionCard.classList.add('hidden');
+                    tcCompanionCard.style.display = 'none';
+                    // Reset TC Companion dropdown when hiding
+                    document.getElementById('tcCompanionDropdown').value = '';
+                }
 
                 // If Type is Subcont, WC is not required and should stay hidden.
                 if (selectedType.toLowerCase() === "subcont") {
@@ -485,6 +687,105 @@
             if (typeOptions.length === 1) {
                 typeDropdown.val(typeOptions[0].value).trigger("change");
             }
+        }
+
+        function initializeNewLayoutPreviewSelectors() {
+            const previewTypeDropdown = $("#previewTypeOfPiaDropdown");
+            const previewFacilityDropdown = document.getElementById("previewFacilityDropdown");
+            const previewTcCompanionCard = document.getElementById("previewTcCompanionCard");
+            const previewTypeWrapper = "previewTypeOfPiaDropdownWrapper";
+            const previewFacilityWrapper = "previewFacilityDropdownWrapper";
+            const previewTcCompanionWrapper = "previewTcCompanionDropdownWrapper";
+
+            showPreviewFieldLoading(previewTypeWrapper, "Loading Type...");
+            showPreviewFieldLoading(previewFacilityWrapper, "Loading Facility...");
+            showPreviewFieldLoading(previewTcCompanionWrapper, "Loading TC Companion...");
+
+            const typeOptions = [];
+            const seenTypes = new Set();
+
+            piaDocumentRules.forEach(function (item) {
+                const typeName = (item.Type_Desc || "").trim();
+                const tc = (item.TC || "").trim();
+                const key = typeName.toLowerCase();
+                if (!typeName || seenTypes.has(key)) return;
+                seenTypes.add(key);
+
+                const displayText = tc ? `${typeName} - TC${tc}` : typeName;
+                typeOptions.push({ value: typeName, text: displayText });
+            });
+
+            previewTypeDropdown.empty();
+            previewTypeDropdown.append('<option value="">-- Select Type --</option>');
+            typeOptions.forEach(function (option) {
+                previewTypeDropdown.append(`<option value="${option.value}">${option.text}</option>`);
+            });
+            hidePreviewFieldLoading(previewTypeWrapper);
+
+            previewFacilityDropdown.innerHTML = '<option value="">-- Select Facility --</option>';
+            previewFacilityDropdown.disabled = true;
+            document.getElementById('previewTcCompanionDropdown').disabled = true;
+            hidePreviewFieldLoading(previewFacilityWrapper);
+
+            previewTypeDropdown.off('change').on('change', function () {
+                const selectedType = ($(this).val() || '').trim();
+                populatePreviewFacilityOptions(selectedType);
+                evaluateAutoShowDetailFormFromPreview();
+            });
+
+            if (typeOptions.length === 1) {
+                previewTypeDropdown.val(typeOptions[0].value).trigger('change');
+            }
+        }
+
+        function populatePreviewFacilityOptions(selectedType) {
+            const previewFacilityDropdown = document.getElementById("previewFacilityDropdown");
+            const previewTcCompanionDropdown = document.getElementById('previewTcCompanionDropdown');
+            const filteredFacilities = piaDocumentRules
+                .filter(function (item) {
+                    return (item.Type_Desc || "").trim() === selectedType && (item.Facility || "").trim() !== "";
+                })
+                .map(function (item) { return (item.Facility || "").trim(); })
+                .filter(function (value, index, array) { return array.indexOf(value) === index; });
+
+            showPreviewFieldLoading("previewFacilityDropdownWrapper", "Loading Facility...");
+            previewFacilityDropdown.innerHTML = '<option value="">-- Select Facility --</option>';
+            previewTcCompanionDropdown.disabled = true;
+            previewTcCompanionDropdown.value = '';
+
+            if (filteredFacilities.length === 0) {
+                previewFacilityDropdown.disabled = true;
+                previewTcCompanionDropdown.disabled = true;
+                hidePreviewFieldLoading("previewFacilityDropdownWrapper");
+                return;
+            }
+
+            filteredFacilities.forEach(function (facility) {
+                previewFacilityDropdown.append(new Option(facility, facility));
+            });
+
+            previewFacilityDropdown.disabled = false;
+            if (filteredFacilities.length === 1) {
+                previewFacilityDropdown.value = filteredFacilities[0];
+                previewTcCompanionDropdown.disabled = false;
+                hidePreviewFieldLoading("previewTcCompanionDropdownWrapper");
+            }
+
+            hidePreviewFieldLoading("previewFacilityDropdownWrapper");
+
+            $('#previewFacilityDropdown').off('change').on('change', function () {
+                const hasFacility = !!($(this).val() || '').trim();
+                const tcCompanionDropdown = document.getElementById('previewTcCompanionDropdown');
+                tcCompanionDropdown.disabled = !hasFacility;
+                if (!hasFacility) {
+                    tcCompanionDropdown.value = '';
+                    showPreviewFieldLoading("previewTcCompanionDropdownWrapper", "Waiting for Facility...");
+                } else {
+                    hidePreviewFieldLoading("previewTcCompanionDropdownWrapper");
+                }
+
+                evaluateAutoShowDetailFormFromPreview();
+            });
         }
 
         function resetPiaDownstreamSelectors() {
@@ -927,6 +1228,79 @@
             });
         }
 
+        function populateDetailReasonCodeDropdown(rowIndex, facility, selectedTC) {
+            const $dropdown = $(`#reasonCode-${rowIndex}`);
+            if (!$dropdown.length) return;
+
+            $dropdown.empty().append('<option value="">Loading...</option>').prop('disabled', true);
+
+            $.ajax({
+                url: "@Url.Action("GetPiaCodeByLocation", "DataForms")",
+                type: "GET",
+                dataType: "json",
+                data: { location: facility, TC: selectedTC },
+                success: function (response) {
+                    $dropdown.empty().append('<option value="">-- Select Reason Code --</option>');
+
+                    if (response.success && Array.isArray(response.data) && response.data.length > 0) {
+                        response.data.forEach(function (item) {
+                            const piaCodeValue = (item.pia_code || item.PiaCode || item.Code || "").toString().trim();
+                            if (!piaCodeValue) return;
+
+                            const displayText = item.ShowScrapCode
+                                ? `${item.ShowScrapCode} - ${item.Name} (${item.Location || 'All'})`
+                                : `${piaCodeValue} - ${item.Name} (${item.Location || 'All'})`;
+
+                            $dropdown.append(`<option value="${piaCodeValue}">${displayText}</option>`);
+                        });
+                        $dropdown.prop('disabled', false);
+                    } else {
+                        $dropdown.append('<option value="">-- No Reason Code Available --</option>');
+                        $dropdown.prop('disabled', true);
+                    }
+                },
+                error: function () {
+                    $dropdown.empty().append('<option value="">-- Error Loading Reason Code --</option>');
+                    $dropdown.prop('disabled', true);
+                }
+            });
+        }
+
+        function populateDetailWcDropdown(rowIndex, facility) {
+            const $dropdown = $(`#wc-${rowIndex}`);
+            if (!$dropdown.length) return;
+
+            $dropdown.empty().append('<option value="">Loading...</option>').prop('disabled', true);
+
+            $.ajax({
+                url: "@Url.Action("GetWorkCenters", "DataForms")",
+                type: "GET",
+                dataType: "json",
+                data: { facility: facility },
+                success: function (response) {
+                    $dropdown.empty().append('<option value="">-- Select WC --</option>');
+
+                    if (response.success && Array.isArray(response.data) && response.data.length > 0) {
+                        response.data.forEach(function (item) {
+                            const wcValue = (item.WC || "").toString().trim();
+                            if (!wcValue) return;
+
+                            const displayText = `${wcValue} - ${item.Description || ''}`.trim();
+                            $dropdown.append(`<option value="${wcValue}">${displayText}</option>`);
+                        });
+                        $dropdown.prop('disabled', false);
+                    } else {
+                        $dropdown.append('<option value="">-- No WC Available --</option>');
+                        $dropdown.prop('disabled', true);
+                    }
+                },
+                error: function () {
+                    $dropdown.empty().append('<option value="">-- Error Loading WC --</option>');
+                    $dropdown.prop('disabled', true);
+                }
+            });
+        }
+
         function handleSpecialNotes(piaCode) {
             const hasNotes = piaCodesWithNotes.includes(piaCode);
             if (!hasNotes) {
@@ -1144,12 +1518,12 @@
             const requiredFields = [
                 { id: "supervisorInitiatorKpk", label: "Supervisor" },
                 { id: "tcDropdown", label: "TC" },
-                { id: "wcDropdown", label: "WC" },
-                { id: "piaCodeDropdown", label: "PIA Code" },
+                //{ id: "wcDropdown", label: "WC" },
+                //{ id: "piaCodeDropdown", label: "PIA Code" },
                 { id: "facilityDropdown", label: "Facility" },
                 { id: "typeOfPiaDropdown", label: "Type PIA" },
                 { id: "supervisorInitiatorName", label: "Supervisor" },
-                { id: "remarksDropdown", label: "Remarks" }
+                //{ id: "remarksDropdown", label: "Remarks" }
             ];
 
             // If selected Type is Subcont, WC should not be required
@@ -1168,6 +1542,17 @@
                 if (result.isConfirmed) {
                     const isValid = validateRequiredFields(effectiveRequiredFields, true);
                     if (!isValid) return;
+
+                    // Lock TC Companion field if visible
+                    const tcCompanionCard = document.getElementById('tcCompanionCard');
+                    if (tcCompanionCard && !tcCompanionCard.classList.contains('hidden')) {
+                        const tcCompanionDropdown = document.getElementById('tcCompanionDropdown');
+                        if (tcCompanionDropdown) {
+                            tcCompanionDropdown.disabled = true;
+                            tcCompanionDropdown.style.backgroundColor = "#f0f0f0";
+                        }
+                    }
+
                     const container = document.getElementById("sectionContainer");
                     container.innerHTML = `
                         <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded text-center">
@@ -1266,6 +1651,19 @@
                   <td class="border border-muted"><input id="systemQuantity-${partCounter}"  placeholder="Qty" type="number" step="${stepQty}" class="form-input w-24"></td>
                   <td class="border border-muted"><input id="varianceQuantity-${partCounter}"  placeholder="Qty" type="number" step="${stepQty}" class="form-input w-24" readonly></td>
                   <td class="border border-muted"><input id="totalValue-${partCounter}"  placeholder="Total Value" type="text" class="form-input w-full" readonly></td>
+                                    <td class="border border-muted">
+                                        <select id="reasonCode-${partCounter}" class="form-input w-full">
+                                            <option value="">-- Select Reason Code --</option>
+                                        </select>
+                                    </td>
+                                    <td class="border border-muted">
+                                        <select id="wc-${partCounter}" class="form-input w-full">
+                                            <option value="">-- Select WC --</option>
+                                        </select>
+                                    </td>
+                                    <td class="border border-muted">
+                                        <input id="remarks-${partCounter}" type="text" class="form-input w-full" placeholder="Remarks">
+                                    </td>
                   <td class="border border-muted hidden"><input id="ftypit-${partCounter}" type="text" class="form-input w-full"></td>
                   <td class="border border-muted hidden"><input id="typeit-${partCounter}" type="text" class="form-input w-full"></td>
                   <td class="border border-muted hidden "><input id="planit-${partCounter}" type="text" class="form-input w-full"></td>
@@ -1301,8 +1699,15 @@
             physicalQtyInput.addEventListener("input", createCalculateVarianceQuantity(partCounter));
             systemQtyInput.addEventListener("input", createCalculateVarianceQuantity(partCounter));
 
+            const currentFacility = document.getElementById("facilityInitiator")?.value || selectedFacilityInDropdown || document.getElementById("facilityDropdown")?.value || "";
+            // Skip auto-populate saat createPartCard dipanggil dari mode import Excel
+            // (import akan menangani populate sendiri dengan await agar sinkron)
+            if (!createPartCard._skipAutoPopulate) {
+                populateDetailReasonCodeDropdown(partCounter, currentFacility, selectedTC);
+                populateDetailWcDropdown(partCounter, currentFacility);
+            }
+
             initPartAutocomplete(partCounter, selectedTC);
-            filterRemarksByPiaCode(partCounter, selectedPiaCode);
             initLeaderAutocomplete(partCounter);
 
             // Create closure for field input events
@@ -1316,13 +1721,20 @@
                 };
             };
 
-            ['partNumber', 'description', 'unit', 'processPoint', 'baseValue', 'physicalQuantity', 'systemQuantity', 'varianceQuantity', 'totalValue', 'leader']
+            ['partNumber', 'description', 'unit', 'processPoint', 'baseValue', 'physicalQuantity', 'systemQuantity', 'varianceQuantity', 'totalValue', 'reasonCode', 'wc', 'remarks', 'leader']
                 .forEach(field => {
                     const input = document.getElementById(`${field}-${partCounter}`);
                     if (input) {
                         input.addEventListener('input', createFieldInputHandler(field, partCounter));
                     }
                 });
+
+            ['reasonCode', 'wc'].forEach(field => {
+                const input = document.getElementById(`${field}-${partCounter}`);
+                if (input) {
+                    input.addEventListener('change', createFieldInputHandler(field, partCounter));
+                }
+            });
 
             if (showSpecialFields) {
                 ['rn'].forEach(field => {
@@ -1355,6 +1767,7 @@
         }
 
         function showQtyWarning(rowId, message) {
+            if (!rowId) return;
             let existing = document.getElementById(`qty-warning-${rowId}`);
             if (!existing) {
                 const warning = document.createElement("small");
@@ -1362,6 +1775,7 @@
                 warning.className = "text-danger text-xs block mt-1";
                 warning.textContent = message;
                 const qtyCell = document.querySelector(`#row-${rowId} td:nth-child(7)`);
+                if (!qtyCell) return;
                 qtyCell.appendChild(warning);
             }
         }
@@ -1400,6 +1814,9 @@
                 `systemQuantity-${partCounter}`,
                 `varianceQuantity-${partCounter}`,
                 `totalValue-${partCounter}`,
+                `reasonCode-${partCounter}`,
+                `wc-${partCounter}`,
+                `remarks-${partCounter}`,
                 // `leaderKpk-${partCounter}`,
             ];
 
@@ -1486,6 +1903,9 @@
                 `systemQuantity-${counter}`,
                 `varianceQuantity-${counter}`,
                 `totalValue-${counter}`,
+                `reasonCode-${counter}`,
+                `wc-${counter}`,
+                `remarks-${counter}`,
                 `ftypit-${counter}`,
                 `typeit-${counter}`,
                 `planit-${counter}`,
@@ -1733,299 +2153,620 @@
             });
         }
 
-        document.getElementById("importExcel").addEventListener("click", function () {
-            document.getElementById("excelFile").click();
-        });
+        function normalizeExcelText(value) {
+            return (value === null || value === undefined ? "" : value.toString())
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "");
+        }
 
-        document.getElementById("excelFile").addEventListener("change", function (e) {
+        function getExcelCellValue(row, index) {
+            if (!row || index === null || index === undefined || index < 0) return "";
+            const value = row[index];
+            return value === null || value === undefined ? "" : value.toString().trim();
+        }
 
-            const file = e.target.files[0];
+        function getExcelColumnMap(headers) {
+            const normalizedHeaders = (headers || []).map(normalizeExcelText);
+            const findIndex = (aliases, fallbackIndex) => {
+                const foundIndex = normalizedHeaders.findIndex(header => aliases.includes(header));
+                return foundIndex >= 0 ? foundIndex : fallbackIndex;
+            };
+
+            return {
+                type: findIndex(["type", "piatype"], -1),
+                facility: findIndex(["facility", "plant", "location"], -1),
+                manager: findIndex(["manager", "supervisor", "initiator"], -1),
+                tcc: findIndex(["tcc", "tccompanion", "tc", "companiontc"], -1),
+                partNumber: findIndex(["pn", "partnumber", "partno", "part", "partnumberpn"], -1),
+                physicalQty: findIndex(["physicalquantity", "physicalqty"], -1),
+                systemQty: findIndex(["systemquantity", "systemqty"], -1),
+                quantity: findIndex(["quantity", "qty"], -1),
+                reasonCode: findIndex(["reasoncode", "pia code", "piacode", "scrapcode"], -1),
+                wc: findIndex(["wc", "workcenter", "workcentre"], -1),
+                remarks: findIndex(["remarks", "remark", "notes"], -1),
+                kpk: findIndex(["kpk", "employeekpk", "managerkpk"], -1)
+            };
+        }
+
+        function setSelectValue(selectElement, rawValue) {
+            if (!selectElement) return false;
+
+            const value = (rawValue === null || rawValue === undefined ? "" : rawValue.toString()).trim();
+            if (!value) {
+                selectElement.value = "";
+                return true;
+            }
+
+            const normalizedValue = normalizeExcelText(value);
+            const matchingOption = Array.from(selectElement.options || []).find(function (option) {
+                return normalizeExcelText(option.value) === normalizedValue || normalizeExcelText(option.textContent) === normalizedValue;
+            });
+
+            if (matchingOption) {
+                selectElement.value = matchingOption.value;
+                return true;
+            }
+
+            selectElement.add(new Option(value, value));
+            selectElement.value = value;
+            return true;
+        }
+
+        /**
+         * Menunggu dropdown selesai dimuat (options lebih dari 1) lalu set nilainya.
+         * Berguna untuk dropdown yang diisi secara async (AJAX).
+         */
+        function setSelectValueWhenReady(selectElement, rawValue, timeoutMs = 8000) {
+            return new Promise(function (resolve) {
+                if (!selectElement || !rawValue || rawValue.toString().trim() === "") {
+                    resolve(false);
+                    return;
+                }
+
+                const deadline = Date.now() + timeoutMs;
+
+                function trySet() {
+                    // Dropdown siap jika sudah ada opsi lebih dari 1 (lebih dari placeholder)
+                    // DAN tidak mengandung teks "Loading..."
+                    const hasOptions = selectElement.options.length > 1;
+                    const isLoading = Array.from(selectElement.options).some(o => /loading/i.test(o.textContent));
+
+                    if (hasOptions && !isLoading) {
+                        const result = setSelectValue(selectElement, rawValue);
+                        resolve(result);
+                        return;
+                    }
+
+                    if (Date.now() >= deadline) {
+                        // Timeout: set anyway sebagai fallback
+                        const result = setSelectValue(selectElement, rawValue);
+                        resolve(result);
+                        return;
+                    }
+
+                    setTimeout(trySet, 120);
+                }
+
+                trySet();
+            });
+        }
+
+        /**
+         * Populate dropdown async per-row (reasonCode / wc) dan tunggu sampai selesai.
+         * Mengembalikan Promise yang resolve saat opsi berhasil di-set.
+         */
+        function populateDetailDropdownAndSet(populateFn, rowIndex, facility, tc, selectId, valueToSet, timeoutMs = 8000) {
+            return new Promise(function (resolve) {
+                // Panggil fungsi load AJAX-nya dulu
+                populateFn(rowIndex, facility, tc);
+
+                // Lalu tunggu dropdown terisi dan set nilainya
+                const selectEl = document.getElementById(selectId);
+                if (!selectEl) { resolve(false); return; }
+
+                setSelectValueWhenReady(selectEl, valueToSet, timeoutMs).then(resolve);
+            });
+        }
+
+        function setPreviewImportBusy(isBusy, message) {
+            const dropZone = document.getElementById("previewExcelDropZone");
+            const fileInput = document.getElementById("excelFile");
+
+            if (dropZone) {
+                dropZone.classList.toggle("opacity-60", isBusy);
+                dropZone.classList.toggle("cursor-wait", isBusy);
+                dropZone.style.pointerEvents = isBusy ? "none" : "auto";
+
+                // Tampilkan loading spinner di dalam drop zone selama proses berlangsung
+                const existingOverlay = dropZone.querySelector(".import-loading-overlay");
+                if (isBusy) {
+                    if (!existingOverlay) {
+                        const overlay = document.createElement("div");
+                        overlay.className = "import-loading-overlay flex flex-col items-center gap-2 text-info text-sm";
+                        overlay.innerHTML =
+                            '<div class="animate-spin inline-block size-7 border-[3px] border-l-transparent border-info rounded-full"></div>' +
+                            '<span class="import-loading-msg font-medium">' + (message || "Membaca file Excel...") + '</span>';
+                        dropZone.innerHTML = "";
+                        dropZone.appendChild(overlay);
+                    } else if (message) {
+                        const msgEl = existingOverlay.querySelector(".import-loading-msg");
+                        if (msgEl) msgEl.textContent = message;
+                    }
+                } else {
+                    // Kembalikan isi drop zone ke tampilan semula
+                    dropZone.innerHTML =
+                        '<div>' +
+                        '<p class="text-sm font-medium text-black dark:text-white/80">Drop or click file here to fill the table</p>' +
+                        '<p class="text-xs text-muted">Supports: .xlsx, .xls</p>' +
+                        '</div>';
+                }
+            }
+
+            if (fileInput) {
+                fileInput.disabled = isBusy;
+            }
+        }
+
+        function clearImportedDetailRows() {
+            const partList = document.getElementById("listOfPartnumber");
+            if (partList) {
+                partList.innerHTML = "";
+            }
+
+            partCounter = 0;
+            selectedCommit = false;
+            specialRemarksCache = {};
+
+            const totalQtyEl = document.getElementById("totalQty");
+            const totalRupiahEl = document.getElementById("totalRupiah");
+
+            if (totalQtyEl) totalQtyEl.textContent = "0.00";
+            if (totalRupiahEl) totalRupiahEl.textContent = formatRupiah(0);
+
+            updateGrandTotal();
+            updateSelectedCommit();
+        }
+
+        function getEmployeeByKeyword(keyword) {
+            return new Promise(function (resolve) {
+                $.ajax({
+                    url: "@Url.Action("GetEmployeeByNameOrKpk","DataForms")",
+                    type: "GET",
+                    data: { keyword: keyword },
+                    success: function (response) {
+                        if (response && response.success && response.data) {
+                            if (Array.isArray(response.data) && response.data.length > 0) {
+                                resolve(response.data[0]);
+                                return;
+                            }
+
+                            if (response.data.name && response.data.kpk) {
+                                resolve(response.data);
+                                return;
+                            }
+                        }
+
+                        resolve(null);
+                    },
+                    error: function () {
+                        resolve(null);
+                    }
+                });
+            });
+        }
+
+        function getPartMasterByNumber(partNumber, tcValue) {
+            return new Promise(function (resolve) {
+                $.ajax({
+                    url: "@Url.Action("GetPartMasterUpdated","DataForms")",
+                    type: "GET",
+                    data: { data: partNumber, tc: tcValue, exact: true },
+                    success: function (response) {
+                        resolve(response || null);
+                    },
+                    error: function () {
+                        resolve(null);
+                    }
+                });
+            });
+        }
+
+        function getFirstNonEmpty(values) {
+            for (const value of values) {
+                if ((value || "").toString().trim()) {
+                    return value.toString().trim();
+                }
+            }
+            return "";
+        }
+
+        function updateImportProgress(message) {
+            setPreviewImportBusy(true, message);
+        }
+
+        async function handlePreviewExcelImport(file) {
             if (!file) return;
 
-            const reader = new FileReader();
+            setPreviewImportBusy(true, "Membaca file Excel...");
+            Swal.fire({
+                title: "Mengisi Form Otomatis",
+                html: "<span id='importProgressMsg'>Membaca file Excel...</span>",
+                allowOutsideClick: false,
+                didOpen: function () {
+                    Swal.showLoading();
+                }
+            });
 
-            reader.onload = function (evt) {
+            function updateSwalProgress(msg) {
+                setPreviewImportBusy(true, msg);
+                try {
+                    const el = document.getElementById("importProgressMsg");
+                    if (el) el.textContent = msg;
+                } catch(e) { /* ignore */ }
+            }
 
-                const data = new Uint8Array(evt.target.result);
-                const workbook = XLSX.read(data, { type: "array" });
-
+            try {
+                updateSwalProgress("Membaca data dari Excel...");
+                const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
                 const sheetName = workbook.SheetNames[0];
+                if (!sheetName) {
+                    throw new Error("The Excel file does not contain any sheet.");
+                }
+
                 const worksheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                const filteredData = jsonData.filter(row =>
-                    row.some(cell => cell !== null && cell !== undefined && cell.toString().trim() !== "")
-                );
-                if (filteredData.length <= 1) {
-
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Empty Excel File',
-                        text: 'The Excel file has no data to import.'
+                const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                const dataRows = rows.filter(function (row) {
+                    return Array.isArray(row) && row.some(function (cell) {
+                        return cell !== null && cell !== undefined && cell.toString().trim() !== "";
                     });
+                });
 
-                    e.target.value = "";
-                    return;
+                if (dataRows.length < 2) {
+                    throw new Error("The Excel template must contain a header row and at least one data row.");
                 }
-                const invalidList = [];
-                const invalidProcessPointParts = [];
 
-                for (let r = 1; r < filteredData.length; r++) {
+                const columnMap = getExcelColumnMap(dataRows[0]);
+                const firstDataRow = dataRows[1];
+                const previewTypeDropdown = document.getElementById("previewTypeOfPiaDropdown");
+                const previewFacilityDropdown = document.getElementById("previewFacilityDropdown");
+                const previewManagerNameInput = document.getElementById("previewSupervisorInitiatorName");
+                const previewManagerKpkInput = document.getElementById("previewSupervisorInitiatorKpk");
+                const previewTccDropdown = document.getElementById("previewTcCompanionDropdown");
 
-                    const partNum = filteredData[r][0]?.toString().trim();
-                    if (!partNum) continue;
+                const existingPreviewType = (previewTypeDropdown?.value || "").trim();
+                const existingPreviewFacility = (previewFacilityDropdown?.value || "").trim();
+                const existingPreviewManagerName = (previewManagerNameInput?.value || "").trim();
+                const existingPreviewManagerKpk = (previewManagerKpkInput?.value || "").trim();
+                const existingPreviewTcc = (previewTccDropdown?.value || "").trim();
 
-                    if (!isValidToyPart(partNum)) {
-                        invalidList.push({
-                            row: r,
-                            value: partNum
-                        });
+                const hasHeaderType = columnMap.type >= 0;
+                const hasHeaderFacility = columnMap.facility >= 0;
+                const hasHeaderManager = columnMap.manager >= 0 || columnMap.kpk >= 0;
+                const hasLegacyQuantity = columnMap.quantity >= 0;
+
+                const previewTypeValue = getFirstNonEmpty([
+                    getExcelCellValue(firstDataRow, columnMap.type),
+                    getExcelCellValue(dataRows[0], columnMap.type),
+                    existingPreviewType
+                ]);
+                const previewFacilityValue = getFirstNonEmpty([
+                    getExcelCellValue(firstDataRow, columnMap.facility),
+                    getExcelCellValue(dataRows[0], columnMap.facility),
+                    existingPreviewFacility
+                ]);
+                const previewManagerValue = getFirstNonEmpty([
+                    getExcelCellValue(firstDataRow, columnMap.manager),
+                    getExcelCellValue(firstDataRow, columnMap.kpk),
+                    getExcelCellValue(dataRows[0], columnMap.manager),
+                    getExcelCellValue(dataRows[0], columnMap.kpk),
+                    existingPreviewManagerName,
+                    existingPreviewManagerKpk
+                ]);
+                const previewTccValue = getFirstNonEmpty([
+                    getExcelCellValue(firstDataRow, columnMap.tcc),
+                    getExcelCellValue(dataRows[0], columnMap.tcc),
+                    existingPreviewTcc
+                ]);
+
+                if (!previewTypeValue && !existingPreviewType) {
+                    throw new Error("Type is required in the Excel file or must already be selected on the page.");
+                }
+
+                if (!previewFacilityValue && !existingPreviewFacility) {
+                    throw new Error("Facility is required in the Excel file or must already be selected on the page.");
+                }
+
+                clearImportedDetailRows();
+
+                setSelectValue(previewTypeDropdown, previewTypeValue);
+                if (previewTypeDropdown) {
+                    $(previewTypeDropdown).trigger("change");
+                }
+
+                setSelectValue(previewFacilityDropdown, previewFacilityValue);
+                if (previewFacilityDropdown) {
+                    $(previewFacilityDropdown).trigger("change");
+                }
+
+                updateSwalProgress("Mencari data manager...");
+                const resolvedManager = await getEmployeeByKeyword(previewManagerValue);
+                if (resolvedManager) {
+                    previewManagerNameInput.value = resolvedManager.name || previewManagerValue;
+                    previewManagerKpkInput.value = resolvedManager.kpk || previewManagerValue;
+                } else {
+                    previewManagerNameInput.value = previewManagerValue;
+                    previewManagerKpkInput.value = previewManagerValue;
+                }
+
+                setSelectValue(previewTccDropdown, previewTccValue);
+
+                evaluateAutoShowDetailFormFromPreview();
+
+                const importedType = (previewTypeDropdown?.value || previewTypeValue || existingPreviewType).trim();
+                selectedTC = typeToTcMap[importedType] || document.getElementById("tcDropdown")?.value || null;
+
+                if (!selectedTC) {
+                    throw new Error("Unable to determine the main TC from the imported Type.");
+                }
+
+                const headerReasonCode = getFirstNonEmpty([
+                    getExcelCellValue(firstDataRow, columnMap.reasonCode),
+                    getExcelCellValue(dataRows[0], columnMap.reasonCode)
+                ]);
+                const headerWc = getFirstNonEmpty([
+                    getExcelCellValue(firstDataRow, columnMap.wc),
+                    getExcelCellValue(dataRows[0], columnMap.wc)
+                ]);
+
+                selectedPiaCode = headerReasonCode || selectedPiaCode;
+                selectedPiaCodeString = headerReasonCode || selectedPiaCodeString;
+
+                const legacyPiaCodeDropdown = document.getElementById("piaCodeDropdown");
+                const legacyWcDropdown = document.getElementById("wcDropdown");
+
+                if (legacyPiaCodeDropdown && headerReasonCode) {
+                    setSelectValue(legacyPiaCodeDropdown, headerReasonCode);
+                    $(legacyPiaCodeDropdown).trigger("change");
+                }
+
+                if (legacyWcDropdown && headerWc) {
+                    setSelectValue(legacyWcDropdown, headerWc);
+                }
+
+                const existingParts = Array.from(document.querySelectorAll("[id^='partNumber-']"))
+                    .map(function (element) { return (element.value || "").trim(); })
+                    .filter(function (value) { return value !== ""; });
+
+                const duplicateParts = [];
+                const missingMasters = [];
+                const missingRemarks = [];
+                const importedRows = [];
+
+                for (let rowIndex = 1; rowIndex < dataRows.length; rowIndex++) {
+                    const row = dataRows[rowIndex];
+                    if (!row || row.length === 0) continue;
+
+                    const partNumber = getExcelCellValue(row, columnMap.partNumber >= 0 ? columnMap.partNumber : 0);
+                    if (!partNumber) continue;
+
+                    if (existingParts.includes(partNumber)) {
+                        duplicateParts.push(partNumber);
+                        continue;
                     }
+
+                    existingParts.push(partNumber);
+                    importedRows.push(row);
                 }
 
-                if (invalidList.length > 0) {
+                if (importedRows.length === 0) {
+                    throw new Error("No valid part numbers were found in the imported Excel file.");
+                }
 
-                    Swal.fire({
-                        icon: "error",
-                        title: "Invalid Part Number Format",
-                        html: `
-                            <p>Please correct the following rows:</p>
-                            <div style="text-align:left;margin-top:6px">
-                                ${invalidList.map(x =>
-                                    `Row ${x.row}: <b>${x.value}</b>`
-                                ).join("<br>")}
-                            </div>
+                const managerForRows = resolvedManager || {
+                    name: previewManagerValue,
+                    kpk: previewManagerValue
+                };
 
-                            <br><b>Required format:</b><br>
-                            <code>TOYNIT-PARTIT</code><br>
-                            Example:<br>
-                            <code>MM031-9007</code>
-                        `,
-                        confirmButtonText: "OK",
-                        allowOutsideClick: false
-                    });
+                const importMode = hasHeaderType || hasHeaderFacility || hasHeaderManager || hasLegacyQuantity ? "mixed" : "legacy";
 
-                    e.target.value = "";
-                    return;
+                updateSwalProgress("Mengisi detail baris dari Excel...");
+                for (let index = 0; index < importedRows.length; index++) {
+                    const row = importedRows[index];
+                    const targetRow = index + 1;
+
+                    createPartCard._skipAutoPopulate = true;
+                    while (partCounter < targetRow) {
+                        createPartCard(selectedTC);
+                    }
+                    createPartCard._skipAutoPopulate = false;
+
+                    updateSwalProgress("Mengisi baris " + targetRow + " dari " + importedRows.length + "...");
+
+                    const partNumber = getExcelCellValue(row, columnMap.partNumber >= 0 ? columnMap.partNumber : 0);
+                    const physicalQty = importMode === "legacy"
+                        ? (getExcelCellValue(row, columnMap.quantity) || "0")
+                        : (getExcelCellValue(row, columnMap.physicalQty) || "0");
+                    const systemQty = importMode === "legacy"
+                        ? (getExcelCellValue(row, columnMap.systemQty) || "0")
+                        : (getExcelCellValue(row, columnMap.systemQty) || "0");
+                    const reasonCode = getExcelCellValue(row, columnMap.reasonCode) || headerReasonCode || (document.getElementById("piaCodeDropdown")?.value || "");
+                    const wcValue = getExcelCellValue(row, columnMap.wc) || headerWc || (document.getElementById("wcDropdown")?.value || "");
+                    const remarksValue = getExcelCellValue(row, columnMap.remarks);
+                    const rowManagerValue = getFirstNonEmpty([
+                        getExcelCellValue(row, columnMap.manager),
+                        getExcelCellValue(row, columnMap.kpk),
+                        previewManagerValue
+                    ]);
+
+                    const partInput = document.getElementById(`partNumber-${targetRow}`);
+                    const physicalQtyInput = document.getElementById(`physicalQuantity-${targetRow}`);
+                    const systemQtyInput = document.getElementById(`systemQuantity-${targetRow}`);
+                    const varianceQtyInput = document.getElementById(`varianceQuantity-${targetRow}`);
+                    const descInput = document.getElementById(`description-${targetRow}`);
+                    const baseValueInput = document.getElementById(`baseValue-${targetRow}`);
+                    const unitInput = document.getElementById(`unit-${targetRow}`);
+                    const processPointInput = document.getElementById(`processPoint-${targetRow}`);
+                    const leaderInput = document.getElementById(`leader-${targetRow}`);
+                    const leaderKpkInput = document.getElementById(`leaderKpk-${targetRow}`);
+                    const ftypitInput = document.getElementById(`ftypit-${targetRow}`);
+                    const typeitInput = document.getElementById(`typeit-${targetRow}`);
+                    const planitInput = document.getElementById(`planit-${targetRow}`);
+                    const commitInput = document.getElementById(`commit-${targetRow}`);
+                    const cmiditInput = document.getElementById(`cmidit-${targetRow}`);
+                    const reasonCodeSelect = document.getElementById(`reasonCode-${targetRow}`);
+                    const wcSelect = document.getElementById(`wc-${targetRow}`);
+                    const remarksInput = document.getElementById(`remarks-${targetRow}`);
+
+                    if (partInput) partInput.value = partNumber;
+                    if (physicalQtyInput) physicalQtyInput.value = physicalQty;
+                    if (systemQtyInput) systemQtyInput.value = systemQty;
+                    if (varianceQtyInput) varianceQtyInput.value = (parseFloat(physicalQty) || 0) - (parseFloat(systemQty) || 0);
+
+                    const resolvedRowManager = rowManagerValue ? await getEmployeeByKeyword(rowManagerValue) : null;
+                    if (leaderInput) leaderInput.value = (resolvedRowManager?.name || managerForRows.name || rowManagerValue || previewManagerValue);
+                    if (leaderKpkInput) leaderKpkInput.value = (resolvedRowManager?.kpk || managerForRows.kpk || rowManagerValue || previewManagerValue);
+
+                    // Populate reason code dropdown (AJAX) dan tunggu sampai nilai ter-set
+                    const importFacility = previewFacilityValue || existingPreviewFacility;
+                    if (reasonCode) {
+                        await populateDetailDropdownAndSet(
+                            function (rowIdx, fac, tc) { populateDetailReasonCodeDropdown(rowIdx, fac, tc); },
+                            targetRow, importFacility, selectedTC,
+                            "reasonCode-" + targetRow, reasonCode
+                        );
+                    } else if (reasonCodeSelect) {
+                        setSelectValue(reasonCodeSelect, reasonCode);
+                    }
+
+                    // Populate WC dropdown (AJAX) dan tunggu sampai nilai ter-set
+                    if (wcValue) {
+                        await populateDetailDropdownAndSet(
+                            function (rowIdx, fac) { populateDetailWcDropdown(rowIdx, fac); },
+                            targetRow, importFacility, null,
+                            "wc-" + targetRow, wcValue
+                        );
+                    } else if (wcSelect) {
+                        setSelectValue(wcSelect, wcValue);
+                    }
+
+                    filterRemarksByPiaCode(targetRow, reasonCode || selectedPiaCode);
+
+                    if (remarksInput) {
+                        remarksInput.value = remarksValue;
+                    }
+
+                    const masterResponse = await getPartMasterByNumber(partNumber, selectedTC);
+                    if (masterResponse && masterResponse.success && Array.isArray(masterResponse.data) && masterResponse.data.length > 0) {
+                        const selectedPart = masterResponse.data[0];
+
+                        if (descInput) descInput.value = selectedPart.Description || "";
+                        if (baseValueInput) baseValueInput.value = formatRupiah(selectedPart.BasePrice);
+                        if (unitInput) unitInput.value = selectedPart.Measurement || "";
+                        if (ftypitInput) ftypitInput.value = selectedPart.ftypit || "";
+                        if (typeitInput) typeitInput.value = selectedPart.typeit || "";
+                        if (planitInput) planitInput.value = selectedPart.planit || "";
+                        if (cmiditInput) cmiditInput.value = selectedPart.cmidit || "";
+                        if (commitInput) commitInput.value = selectedPart.commit || "";
+                        if (processPointInput) processPointInput.value = selectedPart.ProcessPoint?.trim() || "N";
+
+                        const isCommitX = (selectedPart?.commit || "").toString().toLowerCase() === "x";
+                        const rowElement = document.getElementById(`row-${targetRow}`);
+                        if (rowElement) {
+                            rowElement.classList.toggle("bg-warning/20", isCommitX);
+                        }
+                        if (isCommitX) {
+                            selectedCommit = true;
+                        }
+
+                        calculateTotal(targetRow);
+                    } else {
+                        missingMasters.push(partNumber);
+                    }
+
+                    validateQtyInput(physicalQtyInput, targetRow);
+                    calculateTotal(targetRow);
+                }
+
+                for (let i = 1; i <= partCounter; i++) {
+                    validatePartCard(i, selectedTC == "22");
+                }
+
+                updateGrandTotal();
+                updateSelectedCommit();
+
+                setPreviewImportBusy(false);
+
+                let htmlMessage = `<p>Berhasil mengisi <b>${importedRows.length}</b> baris dari Excel.</p>`;
+
+                if (duplicateParts.length > 0) {
+                    htmlMessage += `<p><b>Part duplikat dilewati:</b><br>${duplicateParts.join(", ")}</p>`;
+                }
+
+                if (missingMasters.length > 0) {
+                    htmlMessage += `<p><b>Part master tidak ditemukan:</b><br>${missingMasters.join(", ")}</p>`;
                 }
 
                 Swal.fire({
-                    title: "Matching Data",
-                    text: "Please wait while the data is being matched with the master list...",
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
+                    icon: duplicateParts.length > 0 || missingMasters.length > 0 ? "warning" : "success",
+                    title: duplicateParts.length > 0 || missingMasters.length > 0 ? "Import Selesai (Periksa Detail)" : "Form Berhasil Diisi Otomatis",
+                    html: htmlMessage
                 });
+            } catch (error) {
+                setPreviewImportBusy(false);
+                Swal.fire({
+                    icon: "error",
+                    title: "Import Gagal",
+                    text: error?.message || "Tidak dapat mengimpor file Excel."
+                });
+            } finally {
+                setPreviewImportBusy(false);
+                document.getElementById("excelFile").value = "";
+            }
+        }
 
-                const totalAvailable = filteredData.length - 1;
+        const previewExcelDropZone = document.getElementById("previewExcelDropZone");
+        const excelFileInput = document.getElementById("excelFile");
 
-                let uniqueCount = 0;
-                let totalProcessedRows = 0;
-                let processedAjax = 0;
-                let totalAjaxRequest = 0;
-                const duplicateParts = [];
+        function openPreviewExcelPicker() {
+            if (excelFileInput) {
+                excelFileInput.click();
+            }
+        }
 
-                const existingParts = Array.from(
-                    document.querySelectorAll("[id^='partNumber-']")
-                )
-                    .map(el => el.value.trim())
-                    .filter(v => v !== "");
+        document.getElementById("importExcel")?.addEventListener("click", function () {
+            openPreviewExcelPicker();
+        });
 
-                for (let i = 1; i < filteredData.length; i++) {
+        if (previewExcelDropZone) {
+            previewExcelDropZone.addEventListener("click", function () {
+                openPreviewExcelPicker();
+            });
 
-                    if (uniqueCount >= 30) break;
+            previewExcelDropZone.addEventListener("dragover", function (event) {
+                event.preventDefault();
+                previewExcelDropZone.classList.add("border-info", "bg-info/5");
+            });
 
-                    const row = filteredData[i];
-                    if (!row || row.length < 2) continue;
+            previewExcelDropZone.addEventListener("dragleave", function (event) {
+                event.preventDefault();
+                previewExcelDropZone.classList.remove("border-info", "bg-info/5");
+            });
 
-                    totalProcessedRows++;
+            previewExcelDropZone.addEventListener("drop", function (event) {
+                event.preventDefault();
+                previewExcelDropZone.classList.remove("border-info", "bg-info/5");
 
-                    const partNum = row[0]?.toString().trim();
-                    const qty = row[1];
-                    const leaderValue = row[2];
-
-                    if (!partNum) continue;
-                    if (existingParts.includes(partNum)) {
-                        duplicateParts.push(partNum);
-                        continue;
-                    }
-                    existingParts.push(partNum);
-                    uniqueCount++;
-
-                    if (partCounter >= 30) break;
-                    let currentIndex;
-
-                    if (uniqueCount === 1 && partCounter === 1) {
-                        currentIndex = 1;
-                    } else {
-                        createPartCard(selectedTC);
-                        currentIndex = partCounter;
-                    }
-                    const remarksInput = document.getElementById(`remarks-${currentIndex}`);
-                    const remarksHidden = document.getElementById(`remarksId-${currentIndex}`);
-
-                    filterRemarksByPiaCode(currentIndex, selectedPiaCode);
-
-                    const remarksValue = row[3]?.toString();
-
-                    if (remarksValue) {
-
-                        const normalizedExcelRemarks = normalizeText(remarksValue);
-                        const matchedRemark = allRemarks
-                            .filter(r => r.ScrapCode === selectedPiaCode)
-                            .find(r => normalizeText(r.Remarks) === normalizedExcelRemarks);
-
-                        if (matchedRemark) {
-                            remarksInput.value = matchedRemark.IdRemarks;
-                            remarksHidden.value = matchedRemark.IdRemarks;
-                        } else {
-                            missingRemarks.push(remarksValue);
-                        }
-                    }
-                    const specialRemark = row[4]?.toString().trim();
-                    if (specialRemark) {
-                        specialRemarksCache[partNum] = {
-                            excelRow: i + 1,
-                            remark: specialRemark
-                        };
-
-                    }
-
-                    const partInput = document.getElementById(`partNumber-${currentIndex}`);
-                    const physicalQtyInput = document.getElementById(`physicalQuantity-${currentIndex}`);
-                    const systemQtyInput = document.getElementById(`systemQuantity-${currentIndex}`);
-                    const varianceQtyInput = document.getElementById(`varianceQuantity-${currentIndex}`);
-                    const descInput = document.getElementById(`description-${currentIndex}`);
-                    const baseValueInput = document.getElementById(`baseValue-${currentIndex}`);
-                    const unitInput = document.getElementById(`unit-${currentIndex}`);
-                    const processPointInput = document.getElementById(`processPoint-${currentIndex}`);
-                    const leaderInput = document.getElementById(`leader-${currentIndex}`);
-                    const leaderKpkInput = document.getElementById(`leaderKpk-${currentIndex}`);
-                    const ftypitInput = document.getElementById(`ftypit-${currentIndex}`);
-                    const typeitInput = document.getElementById(`typeit-${currentIndex}`);
-                    const planitInput = document.getElementById(`planit-${currentIndex}`);
-                    const commitInput = document.getElementById(`commit-${currentIndex}`);
-                    const cmiditInput = document.getElementById(`cmidit-${currentIndex}`);
-
-                    partInput.value = partNum;
-                    physicalQtyInput.value = qty || 0;
-                    validateQtyInput(physicalQtyInput, currentIndex);
-                    if (leaderValue) {
-
-                        const cleanLeader = leaderValue.toString().trim();
-
-                        $.ajax({
-                            url: "@Url.Action("GetEmployeeByNameOrKpk","DataForms")",
-                            type: "GET",
-                            data: { keyword: cleanLeader },
-                            success: function (res) {
-
-                                if (res.success && res.data) {
-
-                                    if (Array.isArray(res.data) && res.data.length) {
-                                        leaderInput.value = res.data[0].name;
-                                        leaderKpkInput.value = res.data[0].kpk;
-                                    }
-                                    else if (res.data.name && res.data.kpk) {
-                                        leaderInput.value = res.data.name;
-                                        leaderKpkInput.value = res.data.kpk;
-                                    }
-                                }
-                                else {
-                                    leaderInput.value = cleanLeader;
-                                }
-                            }
-                        });
-                    }
-                    totalAjaxRequest++;
-                    $.ajax({
-                        url: "@Url.Action("GetPartMasterUpdated","DataForms")",
-                        type: "GET",
-                        data: { data: partNum, tc: selectedTC, exact: true },
-                        success: function (response) {
-
-                            if (response.success && response.data.length > 0) {
-                                const selected = response.data[0];
-                                descInput.value = selected.Description || "";
-                                baseValueInput.value = formatRupiah(selected.BasePrice);
-                                unitInput.value = selected.Measurement || "";
-                                ftypitInput.value = selected.ftypit || "";
-                                typeitInput.value = selected.typeit || "";
-                                planitInput.value = selected.planit || "";
-                                cmiditInput.value = selected.cmidit || "";
-                                commitInput.value = selected.commit || "";
-                                processPointInput.value = selected.ProcessPoint?.trim() || "N";
-
-                                const isCommitX = selected?.commit?.toLowerCase() === 'x';
-                                const rowDiv = document.getElementById(`row-${currentIndex}`);
-
-                                if (rowDiv) rowDiv.classList.toggle('bg-warning/20', isCommitX);
-                                if (isCommitX) selectedCommit = true;
-                                if (!response.success || response.data.length === 0) {
-
-                                    const expectedPP = selectedTC === "23" ? "N" : "Y";
-
-                                    invalidProcessPointParts.push({
-                                        partNumber: partNum,
-                                        tc: selectedTC,
-                                        expected: expectedPP,
-                                        actual: expectedPP === "N" ? "Y" : "N",
-                                        reason: `Invalid Process Point for TC ${selectedTC}`
-                                    });
-
-                                    removeRowByElement(rowDiv);
-                                    return;
-                                }
-                                calculateTotal(currentIndex);
-                            }
-                        },
-                        complete: function () {
-                            processedAjax++;
-                            if (processedAjax >= totalAjaxRequest) {
-
-                                Swal.close();
-
-                                for (let i = 1; i <= partCounter; i++) {
-                                    validatePartCard(i, selectedTC == "22");
-                                }
-
-                                let htmlMessage = `<p>Imported <b>${uniqueCount}</b> unique parts from ${totalProcessedRows} rows.</p>`;
-                                let icon = "success";
-
-                                if (duplicateParts.length > 0 || missingRemarks.length > 0) {
-
-                                    icon = "warning";
-                                    htmlMessage += "<br>";
-
-                                    if (duplicateParts.length)
-                                        htmlMessage += `<p><b>Duplicate parts skipped:</b><br>${duplicateParts.join(", ")}</p>`;
-
-                                    if (missingRemarks.length)
-                                        htmlMessage += `<p><b>Remarks not found:</b><br>${missingRemarks.join(", ")}</p>`;
-
-                                    if (invalidProcessPointParts.length)
-                                        htmlMessage += `
-                                        <hr><b>Skipped (Invalid TC):</b>
-                                        <ul>${invalidProcessPointParts.map(p =>
-                                            `<li>${p.partNumber} (TC ${p.tc})</li>`
-                                        ).join("")}</ul>`;
-
-                                }
-
-                                Swal.fire({
-                                    icon: icon,
-                                    title: icon === "success"
-                                        ? "Import Completed"
-                                        : "Import Completed (Check Details)",
-                                    html: htmlMessage
-                                });
-
-                                document.getElementById("excelFile").value = "";
-                            }
-                        }
-                    });
+                const file = event.dataTransfer?.files?.[0];
+                if (file) {
+                    handlePreviewExcelImport(file);
                 }
-            };
+            });
+        }
 
-            reader.readAsArrayBuffer(file);
+        excelFileInput?.addEventListener("change", function (event) {
+            const file = event.target.files?.[0];
+            handlePreviewExcelImport(file);
         });
 
         function removeRowByElement(rowElement) {
@@ -2155,16 +2896,32 @@
         function initSupervisorDropdown(inputSelector, resultsSelector, kpkSelector, nameSelector, apiUrl) {
             const $input = $(inputSelector);
             const $results = $(resultsSelector);
+            const isPreviewManager = inputSelector === "#previewSupervisorInitiatorName";
+            let latestManagerRequestId = 0;
 
             $input.on("input", function () {
                 const query = $(this).val().trim();
 
                 if (query.length < 3) {
                     $results.empty().hide();
+                    if (isPreviewManager) {
+                        $results.removeData("requestId");
+                    }
                     return;
                 }
 
+                if (isPreviewManager) {
+                    latestManagerRequestId += 1;
+                    const requestId = latestManagerRequestId;
+                    $results.empty().show();
+                    $results.html('<div class="px-3 py-2 text-xs text-muted flex items-center gap-2"><div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-purple rounded-full"></div><span>Searching manager...</span></div>');
+                    $results.data("requestId", requestId);
+                }
+
                 fetchData(apiUrl, { keyword: query }, function (res) {
+                    if (isPreviewManager && $results.data("requestId") !== latestManagerRequestId) {
+                        return;
+                    }
                     $results.empty();
 
                     if (res.success && Array.isArray(res.data)) {
@@ -2176,6 +2933,10 @@
                                     $(kpkSelector).val(item.kpk);
                                     $(nameSelector).val(capitalizeWords(item.name));
                                     $results.empty().hide();
+
+                                    if (isPreviewManager) {
+                                        evaluateAutoShowDetailFormFromPreview();
+                                    }
                                 });
 
 
@@ -2333,7 +3094,7 @@
                 TC          : document.getElementById("tcDropdown")?.value || null,
                 PiaCode     : piaCodeInt,
                 WC          : document.getElementById("wcDropdown")?.value || null,
-                TcCompanion : localStorage.getItem("CompanionTc") || null,
+                TcCompanion : document.getElementById("tcCompanionDropdown")?.value || null,
                 Remarks     : headerRemarks || null,
                 CreatedByKpk  : createdByKpkValue,  
                 CreatedByName : createdByNameValue || null              
@@ -2369,6 +3130,9 @@
                     system_qty       : parseFloat(row.querySelector('input[id^="systemQuantity-"]')?.value)   || 0,
                     variance_qty     : parseFloat(row.querySelector('input[id^="varianceQuantity-"]')?.value) || 0,
                     total_value      : rawTotal,
+                    pia_code         : row.querySelector('select[id^="reasonCode-"]')?.value || null,
+                    wc               : row.querySelector('select[id^="wc-"]')?.value || null,
+                    remarks          : row.querySelector('input[id^="remarks-"]')?.value?.trim() || null,
                     LeaderKPK        : row.querySelector('input[id^="leaderKpk-"]')?.value || null,
                     status           : "active"
                 });

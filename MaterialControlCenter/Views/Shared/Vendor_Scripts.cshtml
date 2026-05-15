@@ -571,8 +571,9 @@ const facility = (options.facility
     || document.querySelector(facilitySelector)?.value?.trim()
     || "");
 
+const codeSelector = typeof options.codeSelector === "string" ? options.codeSelector.trim() : "";
 const documentCode = (options.documentCode
-    || document.querySelector(options.codeSelector || "")?.value?.trim()
+    || (codeSelector ? document.querySelector(codeSelector)?.value?.trim() : "")
     || selectedCodeFromDom
     || "");
 
@@ -646,7 +647,7 @@ function hideApprovalChainLoader() {
     function renderApprovalBadges(steps) {
     const container = document.getElementById("approvalBadgesContainer");
     if (!container) return;
- 
+
     if (!steps || steps.length === 0) {
         container.innerHTML = `
             <span class="text-xs text-muted italic px-1">
@@ -654,16 +655,16 @@ function hideApprovalChainLoader() {
             </span>`;
         return;
     }
- 
+
     const tierColors = { 1: "bg-info", 2: "bg-warning", 3: "bg-danger" };
- 
+
     const stepsHtml = steps.map(function(stepObj) {
         const step      = stepObj.step;
         const approvers = stepObj.approvers || [];
         const priority  = stepObj.priority;
- 
+
         const badgeColor = tierColors[priority] || "bg-info";
- 
+
         // Jika >1 approver dalam step ini → tampilkan sebagai parallel (joined by "/")
         const approverBadges = approvers.map(function(a) {
             return `<span class="inline-flex items-center gap-1 text-white text-xs
@@ -672,10 +673,10 @@ function hideApprovalChainLoader() {
                 <span class="opacity-80">(${a.kpk})</span>
             </span>`;
         }).join(`<span class="text-xs text-muted mx-1 font-semibold">&amp;</span>`);
- 
+
         return approverBadges;
     }).join("");
- 
+
     container.innerHTML = `
         <span class="text-xs font-semibold mr-1">Approval Chain:</span>
         ${stepsHtml}`;
@@ -1345,6 +1346,13 @@ function hideApprovalChainLoader() {
                 </svg>
                 Download Excel Template for Scrap
             </button>
+            <button id="downloadPiaWeb" class="btn bg-success border-success text-white hover:bg-success/[0.85] hover:border-success/[0.85] flex items-center gap-2">
+                <!-- Excel Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14l-2.5-3 2.5-3 2.5 3-2.5 3zm5-7h-4V5h4v5z"/>
+                </svg>
+                Download Excel Template for PIA
+            </button>
                <button id="downloadScrapReport" class="btn bg-info border-info text-white hover:bg-info/[0.85] hover:border-info/[0.85] flex items-center gap-2">
                    <!-- Excel Icon -->
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -1430,6 +1438,10 @@ function hideApprovalChainLoader() {
             document.getElementById("downloadScrapWeb").addEventListener("click", () => {
                 const fileUrl = '@Url.Content("~/assets/FileAttachment/Scrap Notice-Template Website.xlsx")';
                 window.location.href = fileUrl;
+            });
+            document.getElementById("downloadPiaWeb").addEventListener("click", () => {
+                const fileUrl = '@Url.Content("~/assets/FileAttachment/PIA-Import-Template.xlsx")';
+                 window.location.href = fileUrl;
             });
             document.getElementById("downloadScrapReport").addEventListener("click", () => {
                 const existingOptions = document.getElementById("reportOptions");
