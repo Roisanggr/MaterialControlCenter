@@ -1,0 +1,546 @@
+﻿@{
+    ViewBag.Title = "Material Control Center";
+    ViewBag.pTitle = "MCC Code";
+    ViewBag.xData = "change";
+    ViewBag.ActiveItem = "ScrapCode";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<!-- Start All Card -->
+<div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Total Code </p>
+                <h4 id="totalValueAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Overall Total</p>
+            </div>
+            <div>
+                <p class="text-base dark:text-white/80">P1</p>
+                <h4 id="totalCodeP1" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Code</p>
+            </div>
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">P2</p>
+                <h4 id="totalCodeP2" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Code</p>
+            </div>
+            <div>
+                <p class="text-base dark:text-white/80">P2S3</p>
+                <h4 id="totalCodeP2S3" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Code</p>
+            </div>
+
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+
+            <div>
+                <p class="text-base dark:text-white/80">P2S4</p>
+                <h4 id="totalCodeP2S4" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Code</p>
+            </div>
+            <div>
+                <p class="text-base dark:text-white/80">P2S5</p>
+                <h4 id="totalCodeP2S5" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Code</p>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-1 xl:grid-cols-1">
+        <div class="card">
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 grow">List Code</h2>
+                <!-- Button Filters -->
+                <button type="button" id="filtersScrapNotice" class="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium border border-black/20 text-muted hover:bg-gray-50 transition-all h-[38px] min-w-[100px]">
+                    <i class="ri-filter-line mr-2"></i>
+                    Filters
+                </button>
+                <!-- Button Add Code -->
+                <button type="button" id="addRemarksButton" class="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium bg-purple text-white hover:bg-purple/[0.85] transition-all h-[38px] min-w-[110px]">
+                    <i class="fas fa-plus mr-2"></i> 
+                    Add Code
+                </button>
+            </div>
+            <div id="filterList" class="hidden">
+                <!-- Container Grid untuk 4 Kolom -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <!-- 1. Application -->
+                    <div class="card p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Application</h2>
+                        <div class="space-y-1">
+                            <select id="applicationFilter" class="form-input w-full text-sm p-2 cursor-pointer">
+                                <option value="">All Application</option>
+                                <option value="Scrap">Scrap</option>
+                                <option value="PIA">PIA</option>
+                                <option value="TPR">TPR</option>
+                            </select>
+                        </div>
+                    </div>
+                 <!-- 2. Location -->
+                    <div class="card p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Location</h2>
+                        <div class="space-y-1">
+                            <select id="locationFilter" class="form-input w-full text-sm p-2 cursor-pointer">
+                                <option value="">All Locations</option>
+                                <option value="P1">P1</option>
+                                <option value="P2">P2</option>
+                                <option value="P2S3">P2S3</option>
+                                <option value="P2S4">P2S4</option>
+                                <option value="P2S5">P2S5</option>
+                            </select>
+                        </div>
+                    </div>
+                 <!-- 3. Area -->
+                    <div class="card p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Area</h2>
+                        <div class="space-y-1">
+                            <input id="areaFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Enter Area Code">
+                        </div>
+                    </div>
+                 <!-- 4. Code -->
+                    <div class="card p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Code</h2>
+                        <div class="space-y-1">
+                            <input id="scrapCodeFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Enter MCC Code">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi di Kanan Bawah -->
+                <div class="flex w-full justify-end gap-2">
+                    <!-- Button Apply Filters -->
+                    <button id="applyFiltersButton" class="px-2 py-1 bg-success text-white rounded shadow hover:bg-success/[0.85] transition flex items-center justify-center text-sm mb-2">
+                        <i class="ri-check-line text-sm mr-1"></i>Apply
+                    </button>
+                    <!-- Button Reset Filters -->
+                    <button id="resetFiltersButton" class="px-2 py-1 bg-danger text-white rounded shadow hover:bg-danger/[0.85] transition flex items-center justify-center text-sm mb-2">
+                        <i class="ri-refresh-line text-sm mr-1"></i>Reset
+                    </button>
+                </div>
+            </div>
+            
+            <div class="overflow-auto">
+                <table class="min-w-[640px] w-full">
+                    <thead>
+                        <tr class="text-black text-left">
+                            <th class="px-3 py-2">ID</th>
+                            <th class="px-3 py-2">Application</th>
+                            <th class="px-3 py-2">Location</th>
+                            <th class="px-3 py-2">Code</th>
+                            <th class="px-3 py-2">Description</th>
+                            
+                            <th class="px-3 py-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listOfScrap">
+                        <tr class="text-muted">
+                            <td colspan="3" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div>
+        <ul id="buttonPagination" class="inline-flex items-center gap-1 m-auto mb-4">
+        </ul>
+    </div>
+</div>
+<!-- End All Card -->
+
+
+
+
+@section scripts{
+
+
+    <script src="~/assets/js/main.js"></script>
+
+    <script>
+
+        const urlDeleteScrapCode = '@Url.Action("DeleteScrapCode", "DataForms")';
+
+
+        $(document).ready(function () {
+            loadData(1, pageSize, { application: "SCRAP" });
+            loadScrapCodeSummaryTotal();
+
+        });
+
+        function getSelectedFilters() {
+            return {
+                application: (document.getElementById("applicationFilter")?.value || "").trim(),
+                scrapCode: (document.getElementById("scrapCodeFilter")?.value || "").trim(),
+                location: (document.getElementById("locationFilter")?.value || "").trim(),
+                area: (document.getElementById("areaFilter")?.value || "").trim()
+            };
+        }
+
+        function setFilterProcessing(isProcessing) {
+            if (!applyButton) return;
+
+            applyButton.disabled = isProcessing;
+            applyButton.classList.toggle("opacity-70", isProcessing);
+            applyButton.classList.toggle("cursor-not-allowed", isProcessing);
+            applyButton.innerHTML = isProcessing
+                ? `<span class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-white rounded-full mr-1"></span>Applying...`
+                : `<i class="ri-check-line text-sm mr-1"></i>Apply`;
+        }
+
+       async function loadData(pageNumber = 1, pageSize = 10, filters = null) {
+            currentPage = pageNumber;
+            const tbody = document.getElementById("listOfScrap");
+            const selectedFilters = filters || getSelectedFilters();
+            const application = (selectedFilters.application || "").toUpperCase();
+            const scrapCode = selectedFilters.scrapCode || "";
+            const location = selectedFilters.location || "";
+            const area = selectedFilters.area || "";
+
+            let mappedLocation = location;
+            if (application === "SCRAP") {
+                if (location === "P1") mappedLocation = "MIDC";
+                if (location === "P2") mappedLocation = "Fashion Dolls";
+            }
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="py-6 text-center">
+                        <div class="flex justify-center items-center gap-2">
+                            <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-purple rounded-full"></div>
+                            <span>Loading data...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const res = await fetch(
+                    `@Url.Action("GetAllScrapCode", "DataForms")?pageNumber=${pageNumber}&pageSize=${pageSize}&application=${encodeURIComponent(application)}&scrapCode=${encodeURIComponent(scrapCode)}&location=${encodeURIComponent(mappedLocation)}&area=${encodeURIComponent(area)}`
+                );
+                const result = await res.json();
+
+                if (!result.success || !Array.isArray(result.data)) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">❌ Failed to load data.</td></tr>`;
+                    return;
+                }
+
+                const pagedData = result.data;
+                const totalCount = result.totalCount;
+
+                if (pagedData.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 py-4">No data found.</td></tr>`;
+                    renderPagination(totalCount, pageNumber, pageSize);
+                    return;
+                }
+
+                tbody.innerHTML = pagedData.map(r => {
+                    const rowApplication = (r.Application || application || "SCRAP").toUpperCase();
+                    const actionCell = rowApplication === "SCRAP"
+                        ? `<button type="button"
+                                class="btn bg-danger border-danger text-white hover:bg-danger/[0.85] hover:border-danger/[0.85] flex items-center justify-center gap-2 px-3 py-1 rounded"
+                                onclick="deleteRemark(${r.IdRemarks ?? 0})">
+                                <i class="fas fa-trash-alt"></i>
+                                <span>Delete</span>
+                           </button>`
+                        : `<span class="text-muted">-</span>`;
+
+                    return `
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td class="px-3 py-2">${r.IdRemarks ?? "-"}</td>
+                        <td class="px-3 py-2">${rowApplication}</td>
+                        <td class="px-3 py-2">${r.Location ?? "-"}</td>
+                        <td class="px-3 py-2 font-semibold text-purple">${r.Code ?? "-"}</td>
+                        <td class="px-3 py-2">${r.Name ?? "-"}</td>
+                        
+                        <td class="px-3 py-2">${actionCell}</td>
+                    </tr>
+                `;
+                }).join("");
+
+                renderPagination(totalCount, pageNumber, pageSize);
+
+            } catch (error) {
+                console.error("Error loading scrap codes:", error);
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error loading data.</td></tr>`;
+            }
+       }
+
+        const addRemarksButton = document.getElementById("addRemarksButton");
+        let isSavingCode = false;
+
+        async function submitCodePayload(payload) {
+            if (isSavingCode) return;
+
+            try {
+                isSavingCode = true;
+
+                Swal.fire({
+                    title: "Saving Data...",
+                    text: "Please wait, data is being submitted.",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const res = await fetch("@Url.Action("SubmitScrapCode", "DataForms")", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+                Swal.close();
+
+                if (result.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success!",
+                        text: `${payload.Application} Code has been saved successfully.`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        loadData();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Failed!",
+                        text: result.message || "Failed to save data."
+                    });
+                }
+            } catch (err) {
+                Swal.close();
+                console.error("Error submitting data:", err);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "An error occurred while saving. Please try again."
+                });
+            } finally {
+                isSavingCode = false;
+            }
+        }
+
+        async function openAddCodeSwalForm() {
+            const facilityOptions = (typeof facilities !== "undefined" && Array.isArray(facilities)) ? facilities : [];
+
+            const formResult = await Swal.fire({
+                title: "Add New Code",
+                width: 720,
+                showCancelButton: true,
+                confirmButtonText: "Next",
+                cancelButtonText: "Cancel",
+                focusConfirm: false,
+                html: `
+                    <div class="text-left space-y-4 mt-2">
+                        <div>
+                            <p class="mb-2 text-sm font-semibold">Facility</p>
+                            <div id="swalFacilityContainer" class="grid grid-flow-col auto-cols-max gap-4 overflow-x-auto"></div>
+                        </div>
+                        <div>
+                            <p class="mb-2 text-sm font-semibold">Application Code</p>
+                            <select id="swalInputApplication" class="swal2-input" style="margin:0; width:100%">
+                                <option value="" selected disabled>Select Application</option>
+                                <option value="SCRAP">Scrap</option>
+                                <option value="PIA">PIA</option>
+                                <option value="TPR">TPR</option>
+                            </select>
+                        </div>
+                        <div id="swalAreaContainer" style="display:none;">
+                            <p class="mb-2 text-sm font-semibold">Area</p>
+                            <input id="swalInputArea" type="text" class="swal2-input" style="margin:0; width:100%" placeholder="Enter New Area">
+                        </div>
+                        <div>
+                            <p class="mb-2 text-sm font-semibold">Code</p>
+                            <input id="swalInputCode" type="text" class="swal2-input" style="margin:0; width:100%" placeholder="Enter New Code">
+                        </div>
+                        <div>
+                            <p class="mb-2 text-sm font-semibold">Description</p>
+                            <input id="swalInputDescription" type="text" class="swal2-input" style="margin:0; width:100%" placeholder="Enter Description Code">
+                        </div>
+                    </div>
+                `,
+                didOpen: () => {
+                    const facilityContainer = document.getElementById("swalFacilityContainer");
+                    if (facilityContainer) {
+                        facilityContainer.innerHTML = facilityOptions.map(fac => `
+                            <label class="inline-flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" value="${fac}" class="form-checkbox text-purple swalFacilityCb"/>
+                                <span>${fac}</span>
+                            </label>
+                        `).join("");
+                    }
+
+                    const appSelect = document.getElementById("swalInputApplication");
+                    const areaContainer = document.getElementById("swalAreaContainer");
+                    const areaInput = document.getElementById("swalInputArea");
+
+                    if (appSelect && areaContainer && areaInput) {
+                        appSelect.addEventListener("change", function () {
+                            if (this.value === "PIA") {
+                                areaContainer.style.display = "block";
+                            } else {
+                                areaContainer.style.display = "none";
+                                areaInput.value = "";
+                            }
+                        });
+                    }
+                },
+                preConfirm: () => {
+                    const application = (document.getElementById("swalInputApplication")?.value || "").trim();
+                    const code = (document.getElementById("swalInputCode")?.value || "").trim();
+                    const description = (document.getElementById("swalInputDescription")?.value || "").trim();
+                    const area = (document.getElementById("swalInputArea")?.value || "").trim();
+                    const checkedFacilities = Array.from(document.querySelectorAll(".swalFacilityCb:checked")).map(cb => cb.value);
+
+                    if (!application) {
+                        Swal.showValidationMessage("Please select Application first.");
+                        return false;
+                    }
+
+                    if (checkedFacilities.length === 0) {
+                        Swal.showValidationMessage("Please select at least one Facility.");
+                        return false;
+                    }
+
+                    if (!code) {
+                        Swal.showValidationMessage("Code is required.");
+                        return false;
+                    }
+
+                    if (!description) {
+                        Swal.showValidationMessage("Description is required.");
+                        return false;
+                    }
+
+                    if (application === "PIA" && !area) {
+                        Swal.showValidationMessage("Area is required for PIA.");
+                        return false;
+                    }
+
+                    const mappedLocations = checkedFacilities.map(fac => {
+                        switch (fac) {
+                            case "P1": return "MIDC";
+                            case "P2": return "Fashion Dolls";
+                            default: return fac;
+                        }
+                    });
+
+                    return {
+                        Application: application,
+                        Facility: checkedFacilities.join(", "),
+                        Area: application === "PIA" ? area : "",
+                        Code: code,
+                        Description: description,
+                        Name: description,
+                        Location: mappedLocations.join(", ")
+                    };
+                }
+            });
+
+            if (!formResult.isConfirmed || !formResult.value) return;
+
+            const confirmSave = await Swal.fire({
+                title: "Confirm Save",
+                text: `Do you want to save this ${formResult.value.Application} code?`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Save",
+                cancelButtonText: "Cancel"
+            });
+
+            if (!confirmSave.isConfirmed) return;
+
+            await submitCodePayload(formResult.value);
+        }
+
+        if (addRemarksButton) {
+            addRemarksButton.addEventListener("click", openAddCodeSwalForm);
+        }
+
+        if (applyButton) {
+            applyButton.addEventListener("click", async function (e) {
+                e.preventDefault();
+
+                const selectedFilters = getSelectedFilters();
+                if (selectedFilters.location === "P1" && !selectedFilters.application) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Validation",
+                        text: "Please select Application when Location is P1 before applying the filter."
+                    });
+                    return;
+                }
+
+                if (selectedFilters.scrapCode && !selectedFilters.application) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Validation",
+                        text: "Please select Application before filtering by Code."
+                    });
+                    return;
+                }
+
+                setFilterProcessing(true);
+                try {
+                    await loadData(1, pageSize, selectedFilters);
+                } finally {
+                    setFilterProcessing(false);
+                }
+            });
+        }
+
+        if (resetButton) {
+            resetButton.addEventListener("click", function (e) {
+                e.preventDefault();
+
+                const appFilter = document.getElementById("applicationFilter");
+                const locationFilterInput = document.getElementById("locationFilter");
+                const areaFilterInput = document.getElementById("areaFilter");
+                const codeFilterInput = document.getElementById("scrapCodeFilter");
+
+                if (appFilter) appFilter.value = "";
+                if (locationFilterInput) locationFilterInput.value = "";
+                if (areaFilterInput) areaFilterInput.value = "";
+                if (codeFilterInput) codeFilterInput.value = "";
+
+                loadData(1, pageSize, { application: "SCRAP", location: "", area: "", scrapCode: "" });
+            });
+        }
+
+        if (filterButton && filterList) {
+            filterButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                filterList.classList.toggle('hidden');
+            });
+        }
+    </script>
+}

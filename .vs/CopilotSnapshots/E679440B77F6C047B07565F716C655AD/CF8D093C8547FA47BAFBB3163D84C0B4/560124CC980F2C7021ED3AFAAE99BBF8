@@ -1,0 +1,714 @@
+﻿
+@{
+    ViewBag.Title = "PIA Notice";
+    ViewBag.pTitle = "Detail Document";
+    ViewBag.xData = "apps";
+    ViewBag.ActiveItem = "project";
+    Layout = null;
+    var imageUrl = Url.Content("~/assets/images/bg-main.png");
+}
+
+<!DOCTYPE html>
+<html lang="en" :dir="$store.app.direction" x-data="{ direction: $store.app.direction }" x-bind:dir="direction" class="group/item" :data-mode="$store.app.mode" :data-sidebar="$store.app.sidebarMode">
+
+<head>
+    @Html.Partial("~/Views/Shared/title_meta.cshtml")
+    @Html.Partial("~/Views/Shared/head_css.cshtml")
+</head>
+
+<body x-data="main" x-init="$store.app.hasCreative = window.location.href.includes('creative.html') ,
+$store.app.hasdetached = window.location.href.includes('detached.html')" :class="[ $store.app.sidebar ?
+'toggle-sidebar' : '', $store.app.fullscreen ? 'full' : '' , $store.app.hasCreative ? 'detached ' : '' ,
+ $store.app.hasdetached ? 'detached detached-simple ' : '' , $store.app.layout  ]"
+      class="relative overflow-x-hidden text-sm antialiased font-normal text-black font-cerebri dark:text-white vertical  " x-data="modals">
+
+    <!-- Start Layout -->
+    <div class="bg-[#f9fbfd] dark:bg-dark">
+
+        <!-- Start detached bg -->
+        <div style="background-image: url('@imageUrl');" class="bg-black min-h-[220px] sm:min-h-[250px] bg-bottom fixed hidden w-full -z-50 detached-img"></div>
+
+        <!-- End detached bg -->
+        <!-- Start Menu Sidebar Overlay -->
+        <div x-cloak class="fixed inset-0 bg-black/60 dark:bg-dark/90 z-10 lg:hidden" :class="{'hidden' : !$store.app.sidebar}" @@click="$store.app.toggleSidebar()"></div>
+        <!-- End Menu Sidebar Overlay -->
+        <!-- Start Main Content -->
+        <div class="flex mx-auto main-container">
+
+            @Html.Partial("~/Views/Shared/Sidebar.cshtml")
+
+            <!-- Start Content Area -->
+            <div class="flex-1 main-content">
+
+                @Html.Partial("~/Views/Shared/Topbar.cshtml")
+
+                <!-- Start Content -->
+                <div class="h-[calc(100vh-60px)]  relative overflow-y-auto overflow-x-hidden p-4 space-y-4 detached-content">
+
+                    <div class="grid grid-cols-12 gap-4">
+                        <div class="col-span-12 xl:col-span-9">
+
+                            @Html.Partial("~/Views/Shared/Page_Title.cshtml")
+                            <!-- Start All Card -->
+                            <div class="flex flex-col gap-4 min-h-[calc(100vh-212px)] mt-4">
+                                <div class="grid grid-cols-1 gap-4 lg:grid-cols-1 2xl:grid-cols-3">
+                                    <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+                                        <div>
+                                            <p class="text-base dark:text-white/80">Document ID</p>
+                                            <h4 id="documentID" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                                                Loading
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+                                        <div>
+                                            <p class="text-base dark:text-white/80">Total Value</p>
+                                            <h4 id="overallTotal" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                                                <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                                            </h4>
+                                            <p class="text-muted">Overall Total</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+                                        <div>
+                                            <p class="text-base dark:text-white/80">Variance Quantity</p>
+                                            <h4 id="overallQuantity" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                                                <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                                            </h4>
+                                            <p class="mt-3 mb-0 text-muted"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div class="p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10  col-span-1">
+                                        <div class="flex items-center justify-between gap-4 mb-4">
+                                            <h2 class="text-base font-semibold text-black dark:text-white/80">Overview</h2>
+
+                                        </div>
+
+                                        <div id="chartSummaryPerLeader" class="w-full h-96">
+                                            <div class="flex flex-col items-center justify-center mt-20 space-y-4">
+                                                <!-- Spinner -->
+                                                <div class="flex flex-wrap items-center justify-center gap-4">
+
+                                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                                </div>
+                                                <p class="text-muted font-medium text-lg">Loading...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div class="gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+                                        <div class="flex items-center gap-3 mb-4">
+                                            <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 grow">Details</h2>
+                                            <a href="#" id="filtersPiaNotice" class="px-3 py-1.5 rounded-md text-xs border border-black/20 dark:border-darkborder text-muted"><i class="align-bottom ltr:mr-1 rtl:ml-1 ri-filter-line"></i> Filters</a>
+                                        </div>
+                                        <div id="filterList" class="flex flex-wrap gap-4 justify-between hidden">
+                                            <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                                                <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Part Number</h2>
+                                                <form class="space-y-2">
+                                                    <div class="space-y-1">
+                                                        <input id="piaPartNumberFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Part Number">
+                                                    </div>
+                                                </form>
+                                            </div>
+
+                                            <div class="card flex-1 basis-1/4 min-w-[200px] p-3">
+                                                <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Process</h2>
+                                                <form class="space-y-2">
+                                                    <div class="space-y-1">
+                                                        <input id="piaProcessFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Process">
+                                                    </div>
+                                                </form>
+                                            </div>
+
+                                            <div class="flex w-full justify-end gap-2 mt-2">
+                                                <!-- Apply Filters icon -->
+                                                <button id="applyFiltersPiaListButtonPiaDetail"
+                                                        class="px-2 py-1 bg-success text-white rounded shadow hover:bg-success/[0.85] transition flex items-center justify-center text-sm mb-2">
+                                                    <i class="ri-check-line text-sm mr-1"></i>
+                                                    Apply
+                                                </button>
+
+                                                <!-- Reset Filters icon -->
+                                                <button id="resetFiltersPiaListButtonPiaDetail"
+                                                        class="px-2 py-1 bg-danger text-white rounded shadow hover:bg-danger/[0.85] transition flex items-center justify-center text-sm mb-2">
+                                                    <i class="ri-refresh-line text-sm mr-1"></i>
+                                                    Reset
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="overflow-auto">
+                                            <table class="min-w-[640px] w-full">
+                                                <thead>
+                                                    <tr class="ltr:text-left rtl:text-right">
+                                                        <th>Part Number</th>
+                                                        <th>Description</th>
+                                                        <th>Process</th>
+                                                        <th>Physical Qty</th>
+                                                        <th>System Qty</th>
+                                                        <th>Variance Qty</th>
+                                                        <th>UM</th>
+                                                        <th>Total Value</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="detailsPia">
+                                                    <tr class="text-muted">
+                                                        <td colspan="4" class="py-6 text-center">
+                                                            <div class="flex justify-center items-center gap-2">
+                                                                <!-- Spinner -->
+                                                                <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                                                <span>Loading...</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <ul id="buttonPagination" class="inline-flex items-center gap-1 m-auto mb-4">
+                                </ul>
+                            </div>
+                            <!-- End All Card -->
+                        </div>
+                        <div class="col-span-12 xl:col-span-3 h-full bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+
+                            <div id="currentStatusDiv" class="bg-muted/50 p-5 border-b mb-4 dark:border-darkborder border-black/10">
+                                <h6 class="font-semibold text-black dark:text-white/80">Current Status PIA</h6>
+                                <div id="currentStatusBadge" class="mt-2"></div>
+                            </div>
+
+                            <div class="bg-muted/50 p-5 border-b mt-4 dark:border-darkborder border-black/10">
+                                <h6 class="font-semibold text-black dark:text-white/80">Approval Progress</h6>
+                            </div>
+                            <div class="p-5">
+                                <div class="flex items-center mt-5 mb-3">
+                                    <h6 class="text-black grow dark:text-white/80">Steps</h6>
+                                    <button id="updateApproval" type="button"
+                                            class="btn bg-info border-info text-white hover:bg-info/[0.85] hover:border-info/[0.85]
+                                                    px-2 py-0.5 text-xs rounded hidden"
+                                            onclick="UpdateApprovalOpenModals()">
+                                        <i class="fa-solid fa-pencil text-xs align-bottom ltr:mr-1 rtl:ml-1"></i> Update
+                                    </button>
+                                </div>
+                                <ul id="approvalProgress" class="flex flex-col gap-3 mb-4">
+                                    <li class="animate-pulse">
+                                        <div class="flex items-center gap-3">
+                                            <!-- Avatar skeleton -->
+                                            <div class="relative rounded-full shrink-0">
+                                                <div class="rounded-full bg-muted size-9"></div>
+                                                <span class="inline-block size-2 bg-muted/50 rounded-full absolute ltr:right-0.5 rtl:left-0.5 bottom-[1px] border border-white"></span>
+                                            </div>
+
+                                            <!-- Text skeleton -->
+                                            <div class="grow space-y-2">
+                                                <div class="h-3 bg-muted/50 rounded w-32"></div>
+                                                <div class="h-2 bg-muted/50 rounded w-24"></div>
+                                            </div>
+
+                                            <!-- Badge skeleton -->
+                                            <div class="relative shrink-0">
+                                                <div class="h-6 w-20 bg-muted/50 rounded-full"></div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="animate-pulse">
+                                        <div class="flex items-center gap-3">
+                                            <!-- Avatar skeleton -->
+                                            <div class="relative rounded-full shrink-0">
+                                                <div class="rounded-full bg-muted size-9"></div>
+                                                <span class="inline-block size-2 bg-muted/50 rounded-full absolute ltr:right-0.5 rtl:left-0.5 bottom-[1px] border border-white"></span>
+                                            </div>
+
+                                            <!-- Text skeleton -->
+                                            <div class="grow space-y-2">
+                                                <div class="h-3 bg-muted/50 rounded w-32"></div>
+                                                <div class="h-2 bg-muted/50 rounded w-24"></div>
+                                            </div>
+
+                                            <!-- Badge skeleton -->
+                                            <div class="relative shrink-0">
+                                                <div class="h-6 w-20 bg-muted/50 rounded-full"></div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="animate-pulse">
+                                        <div class="flex items-center gap-3">
+                                            <!-- Avatar skeleton -->
+                                            <div class="relative rounded-full shrink-0">
+                                                <div class="rounded-full bg-muted size-9"></div>
+                                                <span class="inline-block size-2 bg-muted/50 rounded-full absolute ltr:right-0.5 rtl:left-0.5 bottom-[1px] border border-white"></span>
+                                            </div>
+
+                                            <!-- Text skeleton -->
+                                            <div class="grow space-y-2">
+                                                <div class="h-3 bg-muted/50 rounded w-32"></div>
+                                                <div class="h-2 bg-muted/50 rounded w-24"></div>
+                                            </div>
+
+                                            <!-- Badge skeleton -->
+                                            <div class="relative shrink-0">
+                                                <div class="h-6 w-20 bg-muted/50 rounded-full"></div>
+                                            </div>
+                                        </div>
+                                    </li>
+
+
+                                </ul>
+                                <div id="approveRejectField" class="flex gap-3 w-full hidden">
+                                    <!-- Reject Button -->
+                                    <button type="button"
+                                            class="flex-1 btn bg-danger border-danger text-white hover:bg-danger/[0.85] hover:border-danger/[0.85]"
+                                            onclick="handleDecision(3)">
+                                        <i class="ri-close-line align-bottom ltr:mr-1 rtl:ml-1"></i> Reject
+                                    </button>
+                                    <!-- Approve Button -->
+                                    <button type="button"
+                                            class="flex-1 btn bg-success border-success text-white hover:bg-success/[0.85] hover:border-success/[0.85]"
+                                            onclick="handleDecision(2)">
+                                        <i class="ri-check-line align-bottom ltr:mr-1 rtl:ml-1"></i> Approve
+                                    </button>
+                                </div>
+                                <div id="deleteButtonForInitiator" class="flex gap-3 w-full mt-4 hidden">
+                                    <!-- Reject Button -->
+                                    <button id="buttonDelete" type="button"
+                                            class="flex-1 btn bg-danger border-danger text-white hover:bg-danger/[0.85] hover:border-danger/[0.85]"
+                                            onclick="UpdateStatusDelete()">
+                                        <i class="ri-delete-bin-line align-bottom ltr:mr-1 rtl:ml-1"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="bg-muted/50 p-5 border-b dark:border-darkborder border-black/10">
+                                <h6 class="font-semibold text-black dark:text-white/80">Download File</h6>
+                            </div>
+                            <ul class="flex flex-col gap-3 mb-4 mt-4">
+                                <li>
+                                    <div class="flex justify-center gap-4">
+                                        <!-- Download PDF Button -->
+                                        <button type="button"
+                                                class="btn bg-danger text-white hover:bg-info px-6 py-3 text-sm rounded-lg flex items-center justify-center"
+                                                onclick="downloadPDF()">
+                                            <i class="ri-file-pdf-line ltr:mr-2 rtl:ml-2 text-lg"></i> PDF
+                                        </button>
+
+                                        <!-- Download Excel Button -->
+                                        <button type="button"
+                                                class="btn bg-success text-white hover:bg-muted px-6 py-3 text-sm rounded-lg flex items-center justify-center"
+                                                onclick="downloadExcel()">
+                                            <i class="ri-file-excel-line ltr:mr-2 rtl:ml-2 text-lg"></i> Excel
+                                        </button>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    @Html.Partial("~/Views/Shared/Footer.cshtml")
+
+                </div>
+                <!-- End Content -->
+            </div>
+            <!-- End Content Area -->
+        </div>
+    </div>
+
+    @Html.Partial("~/Views/Shared/Vendor_Scripts.cshtml")
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
+    <script src="~/assets/libs/apexcharts/apexcharts.min.js"></script>
+    <script src="~/assets/js/main.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+        let docId = null;
+        const urlGetPiaSummary = '@Url.Action("GetHeaderDocuments", "ListOfData")';
+        const urlGetPiaDetails = '@Url.Action("GetDetailDocuments", "ListOfData")';
+
+        if (token) {
+            docId = atob(token);
+        }
+
+        $(document).ready(function () {
+            if (docId) {
+                document.getElementById("documentID").textContent = docId;
+                loadSummaryData(docId);
+                loadData(1, 10);
+            } else {
+                document.getElementById("detailsPia").innerHTML =
+                    '<tr><td colspan="9" class="text-center py-6 text-muted">Invalid document ID. Please check the URL.</td></tr>';
+            }
+
+            // ── Filter button toggle ──────────────────────────────────────────
+            document.getElementById('filtersPiaNotice').addEventListener('click', function (e) {
+                e.preventDefault();
+                document.getElementById('filterList').classList.toggle('hidden');
+            });
+
+            // ── Apply filters ─────────────────────────────────────────────────
+            document.getElementById('applyFiltersPiaListButtonPiaDetail').addEventListener('click', function (e) {
+                e.preventDefault();
+                currentFilters = {
+                    partNumber: $("#piaPartNumberFilter").val(),
+                    process: $("#piaProcessFilter").val()
+                };
+                loadData(1, 10, currentFilters);
+            });
+
+            // ── Reset filters ─────────────────────────────────────────────────
+            document.getElementById('resetFiltersPiaListButtonPiaDetail').addEventListener('click', function (e) {
+                e.preventDefault();
+                $('#piaPartNumberFilter, #piaProcessFilter').val('');
+                currentFilters = {};
+                loadData(1, 10, currentFilters);
+            });
+        });
+
+        function loadData(page = 1, pageSize = 10, filters = {}) {
+            if (!docId) {
+                console.warn("[DetailPia] loadData called but docId is not set");
+                return;
+            }
+
+            console.log("[DetailPia] loadData called with:", { page, pageSize, docId, filters });
+
+            $.ajax({
+                url: urlGetPiaDetails,
+                type: "GET",
+                data: {
+                    documentType: 'PIA',
+                    documentId: docId,
+                    page: page,
+                    pageSize: pageSize,
+                    partNumber: filters.partNumber || "",
+                    process: filters.process || ""
+                },
+                success: function (res) {
+                    console.log("[DetailPia] loadData response:", res);
+                    renderTablePiaDetail(res.Data);
+                    renderPagination(res.TotalPartsAll, page, pageSize);
+                },
+                error: function (err) {
+                    console.error("[DetailPia] loadData error:", err);
+                    document.getElementById("detailsPia").innerHTML =
+                        '<tr><td colspan="9" class="text-center py-6 text-muted">Failed to load data.</td></tr>';
+                }
+            });
+        }
+
+        function renderTablePiaDetail(data) {
+            const tbody = document.getElementById("detailsPia");
+            tbody.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                <td colspan="9" class="text-center text-muted py-3">
+                    No data available
+                </td>
+            `;
+                tbody.appendChild(row);
+                return;
+            }
+
+            data.forEach(part => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                <td>${part.PartNumber || '-'}</td>
+                <td>${part.PartDescription || '-'}</td>
+                <td>${part.PartProcess || '-'}</td>
+                <td>${part.PhysicalQty != null ? Number(part.PhysicalQty).toLocaleString("id-ID") : "-"}</td>
+                <td>${part.SystemQty != null ? Number(part.SystemQty).toLocaleString("id-ID") : "-"}</td>
+                <td>${part.VarianceQty != null ? Number(part.VarianceQty).toLocaleString("id-ID") : "-"}</td>
+                <td>${part.Unit || '-'}</td>
+                <td>${part.TotalValue != null ? formatRupiah(part.TotalValue) : "-"}</td>
+                <td>${part.Status || '-'}</td>
+            `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function loadSummaryData(docId) {
+            if (!docId) {
+                console.warn("[DetailPia] loadSummaryData called but docId is not set");
+                return;
+            }
+
+            console.log("[DetailPia] loadSummaryData called with docId:", docId);
+
+            $.ajax({
+                url: urlGetPiaSummary,
+                type: "GET",
+                data: { documentType: 'PIA', documentId: docId },
+                success: function (res) {
+                    console.log("[DetailPia] loadSummaryData response:", res);
+
+                    if (!res || res.error) {
+                        console.warn("[DetailPia] Response error or not found:", res);
+                        document.getElementById("detailsPia").innerHTML =
+                            '<tr><td colspan="9" class="text-center py-6 text-muted">No document found or invalid ID.</td></tr>';
+                        return;
+                    }
+
+                    $('#overallTotal').empty().text(formatRupiahShort(res.TotalValue || 0));
+                    $('#overallQuantity').empty().text(res.TotalVarianceQty || 0);
+
+                    document.getElementById("facilityInfo").textContent = res.Facility || "-";
+                    document.getElementById("tcInfo").textContent = res.TC || "-";
+                    document.getElementById("piaCodeInfo").textContent = res.PiaCode || "-";
+                    document.getElementById("typeInfo").textContent = res.Type || "-";
+
+                    renderCurrentStatus(res.Status || 0);
+                },
+                error: function (err) {
+                    console.error("[DetailPia] loadSummaryData error:", err);
+                    document.getElementById("detailsPia").innerHTML =
+                        '<tr><td colspan="9" class="text-center py-6 text-muted">Failed to load document summary.</td></tr>';
+                }
+            });
+        }
+
+        function renderCurrentStatus(statusId) {
+            const statusMap = {
+                0: { text: "Draft", icon: "ri-edit-line", class: "bg-muted/50" },
+                1: { text: "Waiting", icon: "ri-time-line", class: "bg-warning/10" },
+                4: { text: "Approved", icon: "ri-check-line", class: "bg-success/10" },
+                5: { text: "Rejected", icon: "ri-close-line", class: "bg-danger/10" },
+                9: { text: "Finish", icon: "ri-check-double-line", class: "bg-info/10" },
+                16: { text: "Draft", icon: "ri-edit-line", class: "bg-muted/50" }
+            };
+
+            // Convert string status ID to number if needed
+            const statusIdNum = typeof statusId === "string" ? parseInt(statusId, 10) : statusId;
+            const statusInfo = statusMap[statusIdNum] || { text: "Unknown", icon: "ri-help-line", class: "bg-muted/10" };
+            const statusDiv = document.getElementById("currentStatusDiv");
+            const badgeDiv = document.getElementById("currentStatusBadge");
+
+            statusDiv.className = `p-5 border-b mb-4 rounded ${statusInfo.class} dark:border-darkborder border-black/10 text-center`;
+            badgeDiv.innerHTML = `
+                <div class="inline-flex items-center justify-center gap-2 text-sm font-semibold">
+                    <i class="${statusInfo.icon}"></i>
+                    <span>${statusInfo.text}</span>
+                </div>
+            `;
+        }
+
+        function renderPagination(totalCount, pageNumber, size) {
+            const ul = document.getElementById("buttonPagination");
+            const totalPages = Math.ceil(totalCount / size);
+            ul.innerHTML = "";
+
+            if (totalPages <= 1) return;
+
+            // Previous button
+            if (pageNumber > 1) {
+                const li = document.createElement("li");
+                const btn = document.createElement("button");
+                btn.className = "px-3 py-1 text-xs rounded border border-gray-300 hover:bg-gray-100";
+                btn.textContent = "‹";
+                btn.onclick = function() { 
+                    loadData(pageNumber - 1, size, currentFilters);
+                };
+                li.appendChild(btn);
+                ul.appendChild(li);
+            }
+
+            // Page numbers
+            const start = Math.max(1, pageNumber - 2);
+            const end = Math.min(totalPages, pageNumber + 2);
+            for (let p = start; p <= end; p++) {
+                const isActive = p === pageNumber;
+                const li = document.createElement("li");
+                const btn = document.createElement("button");
+                btn.className = `px-3 py-1 text-xs rounded border ${isActive
+                    ? "bg-info text-white border-info"
+                    : "border-gray-300 hover:bg-gray-100"}`;
+                btn.textContent = p;
+                btn.onclick = function() { 
+                    loadData(p, size, currentFilters);
+                };
+                li.appendChild(btn);
+                ul.appendChild(li);
+            }
+
+            // Next button
+            if (pageNumber < totalPages) {
+                const li = document.createElement("li");
+                const btn = document.createElement("button");
+                btn.className = "px-3 py-1 text-xs rounded border border-gray-300 hover:bg-gray-100";
+                btn.textContent = "›";
+                btn.onclick = function() { 
+                    loadData(pageNumber + 1, size, currentFilters);
+                };
+                li.appendChild(btn);
+                ul.appendChild(li);
+            }
+        }
+
+        window.loadData = loadData;
+
+        async function downloadExcel() {
+            if (!docId) return;
+
+            try {
+                const summaryRes = await $.get(urlGetPiaSummary, { documentType: 'PIA', documentId: docId });
+                const detailRes = await $.get(urlGetPiaDetails, { documentType: 'PIA', documentId: docId, page: 1, pageSize: 99999 });
+
+                const summarySheetData = [
+                    ["Document ID", docId],
+                    ["Facility", summaryRes.Facility ?? "N/A"],
+                    ["TC", summaryRes.TC ?? "N/A"],
+                    ["PIA Code", summaryRes.PiaCode ?? "N/A"],
+                    ["Type", summaryRes.Type ?? "N/A"],
+                    ["Total Value", formatRupiah(summaryRes.TotalValue || 0)],
+                    ["Total Variance Qty", summaryRes.TotalVarianceQty ?? "N/A"],
+                    []
+                ];
+
+                const detailHeader = [
+                    "Part Number",
+                    "Description",
+                    "Process",
+                    "Physical Qty",
+                    "System Qty",
+                    "Variance Qty",
+                    "Unit",
+                    "Total Value",
+                    "Status"
+                ];
+
+                const detailRows = detailRes.Data.map(part => [
+                    part.PartNumber,
+                    part.PartDescription,
+                    part.PartProcess,
+                    part.PhysicalQty,
+                    part.SystemQty,
+                    part.VarianceQty,
+                    part.Unit,
+                    formatRupiah(part.TotalValue || 0),
+                    part.Status
+                ]);
+
+                const ws = XLSX.utils.aoa_to_sheet([...summarySheetData, detailHeader, ...detailRows]);
+                const headerRow = summarySheetData.length;
+
+                const colWidths = [];
+                for (let C = 0; C < detailHeader.length; C++) {
+                    const maxLength = Math.max(...detailRows.map(r => (r[C] ? r[C].toString().length : 0)));
+                    colWidths.push({ wch: maxLength + 5 });
+                }
+                ws['!cols'] = colWidths;
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "PIA Report");
+                XLSX.writeFile(wb, `PiaDetails_${docId}.xlsx`);
+
+            } catch (err) {
+                console.error("Error exporting Excel:", err);
+                Swal.fire("Error", "Failed to download Excel file.", "error");
+            }
+        }
+
+        async function downloadPDF() {
+            if (!docId) return;
+
+            try {
+                const summaryRes = await $.get(urlGetPiaSummary, { documentType: 'PIA', documentId: docId });
+                const detailRes = await $.get(urlGetPiaDetails, {
+                    documentType: 'PIA',
+                    documentId: docId,
+                    page: 1,
+                    pageSize: 30
+                });
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 10;
+                let yPosition = margin;
+
+                // Title
+                doc.setFontSize(16);
+                doc.setFont("helvetica", "bold");
+                doc.text(`PIA Notice - ${docId}`, margin, yPosition);
+                yPosition += 10;
+
+                // Summary info
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                const summaryInfo = [
+                    [`Facility: ${summaryRes.Facility || "N/A"}`, `TC: ${summaryRes.TC || "N/A"}`],
+                    [`PIA Code: ${summaryRes.PiaCode || "N/A"}`, `Type: ${summaryRes.Type || "N/A"}`],
+                    [`Total Value: ${formatRupiah(summaryRes.TotalValue || 0)}`, `Variance Qty: ${summaryRes.TotalVarianceQty || "N/A"}`]
+                ];
+
+                summaryInfo.forEach(row => {
+                    doc.text(row[0], margin, yPosition);
+                    doc.text(row[1], pageWidth / 2, yPosition);
+                    yPosition += 6;
+                });
+
+                yPosition += 4;
+
+                // Table header
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(9);
+                const columns = ["Part No", "Description", "Process", "Phys. Qty", "Sys. Qty", "Var. Qty", "Unit", "Total", "Status"];
+                const colWidth = (pageWidth - 2 * margin) / columns.length;
+
+                columns.forEach((col, index) => {
+                    doc.text(col, margin + index * colWidth, yPosition, { maxWidth: colWidth - 1, align: "center" });
+                });
+
+                yPosition += 6;
+                doc.setDrawColor(200, 200, 200);
+                doc.line(margin, yPosition, pageWidth - margin, yPosition);
+                yPosition += 2;
+
+                // Table rows
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(8);
+
+                detailRes.Data.slice(0, 30).forEach(part => {
+                    if (yPosition > pageHeight - 10) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+
+                    const data = [
+                        part.PartNumber || "-",
+                        part.PartDescription || "-",
+                        part.PartProcess || "-",
+                        part.PhysicalQty || "-",
+                        part.SystemQty || "-",
+                        part.VarianceQty || "-",
+                        part.Unit || "-",
+                        formatRupiah(part.TotalValue || 0),
+                        part.Status || "-"
+                    ];
+
+                    data.forEach((cell, index) => {
+                        doc.text(cell.toString(), margin + index * colWidth, yPosition, { maxWidth: colWidth - 1, align: "center" });
+                    });
+
+                    yPosition += 6;
+                });
+
+                doc.save(`Pia_${docId}.pdf`);
+
+            } catch (err) {
+                console.error("Error generating PDF:", err);
+                Swal.fire("Error", "Failed to generate PDF.", "error");
+            }
+        }
+    </script>
+</body>
+
+</html>

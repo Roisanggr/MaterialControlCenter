@@ -1,0 +1,434 @@
+﻿@{
+    ViewBag.Title = "Material Control Center";
+    ViewBag.pTitle = "MCC Remarks";
+    ViewBag.xData = "change";
+    ViewBag.ActiveItem = "Remarks";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<!-- Start All Card -->
+<div class="flex flex-col gap-4 min-h-[calc(100vh-212px)]">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">Remarks </p>
+                <h4 id="totalValueAll" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Overall Total</p>
+            </div>
+            <div>
+                <p class="text-base dark:text-white/80">Scrap</p>
+                <h4 id="totalCodeP1" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Remarks</p>
+            </div>
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div>
+                <p class="text-base dark:text-white/80">PIA</p>
+                <h4 id="totalCodeP2" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Remarks</p>
+            </div>
+            <div>
+                <p class="text-base dark:text-white/80">TPR</p>
+                <h4 id="totalCodeP2S3" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Remarks</p>
+            </div>
+
+        </div>
+        <div class="flex items-center justify-between gap-6 p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+
+            <div>
+                <p class="text-base dark:text-white/80">XXX</p>
+                <h4 id="totalCodeP2S4" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Remarks</p>
+            </div>
+            <div>
+                <p class="text-base dark:text-white/80">XXX</p>
+                <h4 id="totalCodeP2S5" class="flex items-center gap-4 mt-3 text-2xl font-semibold text-black dark:text-white">
+                    <span class="skeleton w-12 h-6 bg-muted/50 animate-pulse rounded"></span>
+                </h4>
+                <p class="text-muted">Remarks</p>
+            </div>
+
+        </div>
+
+
+
+    </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-1 xl:grid-cols-1">
+        <div class="card">
+            <div class="flex items-center gap-3 mb-4">
+                <!-- Button Filters -->
+                <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 grow">List Remarks</h2>
+                <button type="button" id="filtersScrapNotice" class="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium border border-black/20 text-muted hover:bg-gray-50 transition-all h-[38px] min-w-[100px]">
+                    <i class="ri-filter-line mr-2"></i>Filters
+                </button>
+                <!-- Button Add Code -->
+                <button type="button" id="addRemarksButton" class="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium bg-purple text-white hover:bg-purple/[0.85] transition-all h-[38px] min-w-[110px]">
+                    <i class="fas fa-plus mr-2"></i>Add Remarks
+                </button>
+            </div>
+            <!-- Filtering -->
+            <div id="filterList" class="hidden">
+                <!-- Container Grid untuk 4 Kolom -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <!-- 1. Application -->
+                    <div class="card p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Application</h2>
+                        <div class="space-y-1">
+                            <select id="applicationFilter" class="form-input w-full text-sm p-2 cursor-pointer">
+                                <option value="">All Application</option>
+                                <option value="Scrap">Scrap</option>
+                                <option value="PIA">PIA</option>
+                                <option value="TPR">TPR</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- 2. Location -->
+                    <div class="card p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Location</h2>
+                        <div class="space-y-1">
+                            <select id="locationFilter" class="form-input w-full text-sm p-2 cursor-pointer">
+                                <option value="">All Locations</option>
+                                <option value="P1">P1</option>
+                                <option value="P2">P2</option>
+                                <option value="P2S3">P2S3</option>
+                                <option value="P2S4">P2S4</option>
+                                <option value="P2S5">P2S5</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- 3. Area -->
+                    <div class="card p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Area</h2>
+                        <div class="space-y-1">
+                            <input id="areaFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Enter Area Code">
+                        </div>
+                    </div>
+                    <!-- 4. Code -->
+                    <div class="card p-3">
+                        <h2 class="mb-2 text-sm font-semibold text-black capitalize dark:text-white/80">Code</h2>
+                        <div class="space-y-1">
+                            <input id="scrapCodeFilter" type="text" class="form-input w-full text-sm p-2" placeholder="Enter MCC Code">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi di Kanan Bawah -->
+                <div class="flex w-full justify-end gap-2">
+                    <!-- Button Apply Filters -->
+                    <button id="applyFiltersButton" class="px-2 py-1 bg-success text-white rounded shadow hover:bg-success/[0.85] transition flex items-center justify-center text-sm mb-2">
+                        <i class="ri-check-line text-sm mr-1"></i>Apply
+                    </button>
+                    <!-- Button Reset Filters -->
+                    <button id="resetFiltersButton" class="px-2 py-1 bg-danger text-white rounded shadow hover:bg-danger/[0.85] transition flex items-center justify-center text-sm mb-2">
+                        <i class="ri-refresh-line text-sm mr-1"></i>Reset
+                    </button>
+                </div>
+            </div>
+            <!-- Tabel Remarks -->
+            <div class="overflow-auto">
+                <table class="min-w-[640px] w-full">
+                    <thead>
+                        <tr class="text-left text-black">
+                            <th class="px-3 py-2">ID</th>
+                            <th class="px-3 py-2">Application</th>
+                            <th class="px-3 py-2">Location</th>
+                            <th class="px-3 py-2">Code</th>
+                            <th class="px-3 py-2">Remarks</th>
+                            <th class="px-3 py-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listOfScrap">
+                        <tr class="text-muted">
+                            <td colspan="3" class="py-6 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-muted rounded-full"></div>
+                                    <span>Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div>
+        <ul id="buttonPagination" class="inline-flex items-center gap-1 m-auto mb-4">
+        </ul>
+    </div>
+</div>
+<!-- End All Card -->
+
+@section scripts{
+    <script src="~/assets/js/main.js"></script>
+    <script>
+        const urlInsertRemarks = '@Url.Action("AddScrapCodeRemark", "DataForms")';
+        const urlDeleteRemarks = '@Url.Action("DeleteScrapCodeRemark", "DataForms")';
+        
+        $(document).ready(function () {
+            loadData(1, pageSize);
+            loadScrapCodeSummaryTotal();
+        });
+        
+        async function loadData(pageNumber = 1, pageSize = 10) {
+            const tbody = document.getElementById("listOfScrap");
+            const scrapCodeFilter = document.getElementById("scrapCodeFilter").value.trim();
+            const scrapRemarksFilter = document.getElementById("areaFilter").value.trim();
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="py-6 text-center">
+                        <div class="flex justify-center items-center gap-2">
+                            <div class="animate-spin inline-block size-8 border-[3px] border-l-transparent border-purple rounded-full"></div>
+                            <span>Loading data...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const response = await fetch(
+                    `@Url.Action("GetScrapCodeRemarks", "DataForms")?scrapCode=${encodeURIComponent(scrapCodeFilter)}&remarks=${encodeURIComponent(scrapRemarksFilter)}`
+                );
+                const result = await response.json();
+
+                if (!result.success || !Array.isArray(result.data)) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center text-danger py-4">❌ Failed to load data.</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const allData = result.data;
+                const totalCount = allData.length;
+
+                const startIndex = (pageNumber - 1) * pageSize;
+                const pagedData = allData.slice(startIndex, startIndex + pageSize);
+
+                if (pagedData.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center text-gray-500 py-4">No remarks found.</td>
+                        </tr>
+                    `;
+                    renderPagination(totalCount, pageNumber, pageSize);
+                    return;
+                }
+
+                tbody.innerHTML = pagedData.map(r => `
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td class="px-3 py-2">${r.IdRemarks}</td>
+                        <td class="px-3 py-2">${r.Application ?? '-'}</td>
+                        <td class="px-3 py-2">${r.Location ?? '-'}</td>
+                        <td class="px-3 py-2 font-semibold text-purple">${r.ScrapCode}</td>
+                        <td class="px-3 py-2">${r.Remarks}</td>
+                        <td class="px-3 py-2">
+                            <button
+                                type="button"
+                                class="btn bg-danger border-danger text-white hover:bg-danger/[0.85] hover:border-danger/[0.85] flex items-center justify-center gap-2 px-3 py-1 rounded"
+                                onclick="deleteRemark(${r.IdRemarks})">
+                                <i class="fas fa-trash-alt"></i>
+                                <span>Delete</span>
+                            </button>
+                        </td>
+                    </tr>
+                `).join("");
+
+                renderPagination(totalCount, pageNumber, pageSize);
+
+            } catch (error) {
+                console.error("❌ Error loading remarks:", error);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-red-500 py-4">Error loading data.</td>
+                    </tr>
+                `;
+            }
+        }
+
+        function deleteRemark(id) {
+            console.log("🗑️ Delete clicked for IdRemarks:", id);
+            showDynamicSwal({
+                title: "Are you sure?",
+                text: "Do you really want to delete this remark?",
+                icon: "warning",
+                confirmText: "Yes, delete it",
+                cancelText: "Cancel"
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                fetch(`${urlDeleteRemarks}?id=${id}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error("HTTP status " + res.status);
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire("Deleted!", data.message, "success");
+                            loadData(1, pageSize);
+                            const row = document.querySelector(`#remarkRow_${id}`);
+                            if (row) row.remove();
+                        } else {
+                            Swal.fire("Error!", data.message, "error");
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire("Error!", err.message || err, "error");
+                        console.error(err);
+                    });
+            });
+        }
+
+        // --- Swal Fire Add Remarks ---
+        async function openAddRemarksSwalForm() {
+    const formResult = await Swal.fire({
+        title: "Add New Remarks",
+        width: 720,
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        cancelButtonText: "Cancel",
+        focusConfirm: false,
+        html: `
+            <div class="text-left space-y-4 mt-2">
+                <div>
+                    <p class="mb-2 text-sm font-semibold">Application</p>
+                    <select id="swalInputApplication" class="swal2-input" style="margin:0; width:100%">
+                        <option value="" selected disabled>Select Application</option>
+                        <option value="Scrap">Scrap</option>
+                        <option value="PIA">PIA</option>
+                        <option value="TPR">TPR</option>
+                    </select>
+                </div>
+                <div>
+                    <p class="mb-2 text-sm font-semibold">Code</p>
+                    <select id="swalInputCode" class="swal2-input" style="margin:0; width:100%" disabled>
+                        <option value="">-- Select Application first --</option>
+                    </select>
+                </div>
+                <div>
+                    <p class="mb-2 text-sm font-semibold">Remarks</p>
+                    <input id="swalInputRemarks" type="text" class="swal2-input" style="margin:0; width:100%" placeholder="Remarks">
+                </div>
+            </div>
+        `,
+        didOpen: () => {
+            const appSelect  = document.getElementById("swalInputApplication");
+            const codeSelect = document.getElementById("swalInputCode");
+
+            appSelect.addEventListener("change", async function () {
+                const app = this.value;
+
+                // Reset & loading state
+                codeSelect.innerHTML = `<option value="">Loading...</option>`;
+                codeSelect.disabled = true;
+
+                try {
+                    const res    = await fetch(`@Url.Action("GetCodesByApplication", "DataForms")?application=${encodeURIComponent(app)}`);
+                    const result = await res.json();
+
+                    if (result.success && result.data.length > 0) {
+                        codeSelect.innerHTML = `<option value="" disabled selected>-- Select Code --</option>` +
+                            result.data.map(c => `<option value="${c.value}">${c.label}</option>`).join("");
+                        codeSelect.disabled = false;
+                    } else {
+                        codeSelect.innerHTML = `<option value="">No codes available</option>`;
+                        codeSelect.disabled = true;
+                    }
+                } catch (err) {
+                    codeSelect.innerHTML = `<option value="">Error loading codes</option>`;
+                    codeSelect.disabled = true;
+                }
+            });
+        },
+        preConfirm: () => {
+            const application = (document.getElementById("swalInputApplication")?.value || "").trim();
+            const scrapCode   = (document.getElementById("swalInputCode")?.value || "").trim();
+            const remarks     = (document.getElementById("swalInputRemarks")?.value || "").trim();
+
+            if (!application) {
+                Swal.showValidationMessage("Please select Application.");
+                return false;
+            }
+            if (!scrapCode) {
+                Swal.showValidationMessage("Please select a Code.");
+                return false;
+            }
+            if (!remarks) {
+                Swal.showValidationMessage("Remarks is required.");
+                return false;
+            }
+            return { Application: application, ScrapCode: scrapCode, Remarks: remarks };
+        }
+    });
+
+    if (!formResult.isConfirmed || !formResult.value) return;
+
+    // Submit to backend
+    try {
+        Swal.fire({
+            title: "Saving Data...",
+            text: "Please wait, data is being submitted.",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+        const res    = await fetch(urlInsertRemarks, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formResult.value)
+        });
+        const result = await res.json();
+        Swal.close();
+        if (result.success) {
+            Swal.fire({ icon: "success", title: "Success!", text: result.message || "Remarks saved.", timer: 2000, showConfirmButton: false });
+            loadData(1, pageSize);
+        } else {
+            Swal.fire({ icon: "error", title: "Failed!", text: result.message || "Failed to save remarks." });
+        }
+    } catch (err) {
+        Swal.close();
+        Swal.fire({ icon: "error", title: "Error", text: "An error occurred while saving. Please try again." });
+    }
+}
+
+        // Ganti event handler tombol Add Remarks
+        const addRemarksButton = document.getElementById("addRemarksButton");
+        if (addRemarksButton) {
+            addRemarksButton.addEventListener("click", openAddRemarksSwalForm);
+        }
+
+        document.getElementById("applyFiltersButton").addEventListener("click", function () {
+            loadData(1);
+        });
+
+        document.getElementById("resetFiltersButton").addEventListener("click", function () {
+            document.getElementById("scrapCodeFilter").value = "";
+            document.getElementById("areaFilter").value = "";            loadData(1);
+        });
+
+        document.getElementById("filtersScrapNotice").addEventListener("click", function () {
+            const filterList = document.getElementById("filterList");
+                  filterList.classList.toggle("hidden");
+        });
+
+
+    </script>
+}

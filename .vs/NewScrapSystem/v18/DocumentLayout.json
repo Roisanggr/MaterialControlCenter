@@ -1,0 +1,584 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\service\\databaseconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\service\\databaseconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\shared\\vendor_scripts.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\shared\\vendor_scripts.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\forms\\createpia.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\forms\\createpia.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|c:\\users\\anggorro\\documents\\scrap - pia - tpr\\scrapnotice\\newscrapsystem\\controllers\\datareportingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\controllers\\datareportingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\models\\reporting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\models\\reporting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\configuration\\specialcase.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\configuration\\specialcase.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\controllers\\formscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\controllers\\formscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\shared\\sidebar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\shared\\sidebar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\forms\\createscrap.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\forms\\createscrap.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\configuration\\remarks.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\configuration\\remarks.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\configuration\\scrapcode.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\configuration\\scrapcode.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\approval\\delegates.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\approval\\delegates.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\scraprecords\\allscrap.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\scraprecords\\allscrap.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\controllers\\dataformscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\controllers\\dataformscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\users\\profile.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\users\\profile.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\controllers\\scraprecordscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\controllers\\scraprecordscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\scraprecords\\detailscrap.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\scraprecords\\detailscrap.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\controllers\\automateflowcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\controllers\\automateflowcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\controllers\\listofdatacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\controllers\\listofdatacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\controllers\\updatedatacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\controllers\\updatedatacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\scraprecords\\myscrap.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\scraprecords\\myscrap.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\dashboard\\headcountreport.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\dashboard\\headcountreport.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\approval\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\approval\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\service\\validatejwtattributes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\service\\validatejwtattributes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\controllers\\basecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\controllers\\basecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\controllers\\authenticationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\controllers\\authenticationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\models\\ssomodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\models\\ssomodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\models\\insertingdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\models\\insertingdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\newscrapsystem\\views\\forms\\createtpr.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6A8D9322-7BD3-430F-ACCD-180AFFB9EDD0}|NewScrapSystem\\NewScrapSystem.csproj|solutionrelative:newscrapsystem\\views\\forms\\createtpr.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 13,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:2090412827:0:{83107a3e-496a-485e-b455-16ddb978e55e}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Web.config",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Web.config",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Web.config",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Web.config",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Web.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2026-03-09T08:49:01.553Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "FormsController.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\FormsController.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Controllers\\FormsController.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\FormsController.cs",
+              "RelativeToolTip": "NewScrapSystem\\Controllers\\FormsController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T04:09:15.321Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "CreateScrap.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Forms\\CreateScrap.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Forms\\CreateScrap.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Forms\\CreateScrap.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Forms\\CreateScrap.cshtml",
+              "ViewState": "AgIAAOcBAAAAAAAAAAAuwPYBAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-02T06:40:12.173Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "CreateTpr.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Forms\\CreateTpr.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Forms\\CreateTpr.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Forms\\CreateTpr.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Forms\\CreateTpr.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACkJAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-31T04:17:12.566Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Reporting.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Models\\Reporting.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Models\\Reporting.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Models\\Reporting.cs",
+              "RelativeToolTip": "NewScrapSystem\\Models\\Reporting.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHIAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-02T06:40:12.177Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Vendor_Scripts.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Shared\\Vendor_Scripts.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Shared\\Vendor_Scripts.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Shared\\Vendor_Scripts.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Shared\\Vendor_Scripts.cshtml",
+              "ViewState": "AgIAACoFAAAAAAAAAAAAADwFAAA+AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-02T06:40:12.142Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "DataReportingController.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\DataReportingController.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Controllers\\DataReportingController.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\DataReportingController.cs",
+              "RelativeToolTip": "NewScrapSystem\\Controllers\\DataReportingController.cs",
+              "ViewState": "AgIAAOkHAAAAAAAAAAAwwP0HAABPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-02T06:40:12.177Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "DatabaseConnection.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Service\\DatabaseConnection.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Service\\DatabaseConnection.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Service\\DatabaseConnection.cs",
+              "RelativeToolTip": "NewScrapSystem\\Service\\DatabaseConnection.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAA8AAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-02T06:40:12.128Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "CreatePia.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Forms\\CreatePia.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Forms\\CreatePia.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Forms\\CreatePia.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Forms\\CreatePia.cshtml",
+              "ViewState": "AgIAAC8JAAAAAAAAAAAAADEJAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-31T04:14:23.867Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Web.config",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Web.config",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Web.config",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Web.config",
+              "RelativeToolTip": "NewScrapSystem\\Web.config",
+              "ViewState": "AgIAADAAAAAAAAAAAAAAAFAAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2026-03-02T06:40:12.173Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "SpecialCase.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Configuration\\SpecialCase.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Configuration\\SpecialCase.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Configuration\\SpecialCase.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Configuration\\SpecialCase.cshtml",
+              "ViewState": "AgIAAEsAAAAAAAAAAAAcwHIAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-09T03:19:14.246Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Sidebar.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Shared\\Sidebar.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Shared\\Sidebar.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Shared\\Sidebar.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Shared\\Sidebar.cshtml",
+              "ViewState": "AgIAACAAAAAAAAAAAAAawKsAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-31T03:19:46.552Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "ScrapRecordsController.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\ScrapRecordsController.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Controllers\\ScrapRecordsController.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\ScrapRecordsController.cs",
+              "RelativeToolTip": "NewScrapSystem\\Controllers\\ScrapRecordsController.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABgAAABUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-06T09:26:50.181Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "DataFormsController.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\DataFormsController.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Controllers\\DataFormsController.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\DataFormsController.cs",
+              "RelativeToolTip": "NewScrapSystem\\Controllers\\DataFormsController.cs",
+              "ViewState": "AgIAAD0BAAAAAAAAAAAgwGgDAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-02T06:40:12.181Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "Profile.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Users\\Profile.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Users\\Profile.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Users\\Profile.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Users\\Profile.cshtml",
+              "ViewState": "AgIAAEQAAAAAAAAAAAAowFEAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-09T03:20:58.923Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Delegates.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Approval\\Delegates.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Approval\\Delegates.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Approval\\Delegates.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Approval\\Delegates.cshtml",
+              "ViewState": "AgIAAFAAAAAAAAAAAAAvwGgAAACBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-09T03:18:11.058Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Remarks.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Configuration\\Remarks.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Configuration\\Remarks.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Configuration\\Remarks.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Configuration\\Remarks.cshtml",
+              "ViewState": "AgIAAF8AAAAAAAAAAAAcwG4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-09T03:18:45Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "ScrapCode.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Configuration\\ScrapCode.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Configuration\\ScrapCode.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Configuration\\ScrapCode.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Configuration\\ScrapCode.cshtml",
+              "ViewState": "AgIAAGYAAAAAAAAAAAAcwHQAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-09T03:18:59.987Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "DetailScrap.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\ScrapRecords\\DetailScrap.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\ScrapRecords\\DetailScrap.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\ScrapRecords\\DetailScrap.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\ScrapRecords\\DetailScrap.cshtml",
+              "ViewState": "AgIAAEoEAAAAAAAAAAAvwFYEAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-02T06:40:12.175Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "AllScrap.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\ScrapRecords\\AllScrap.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\ScrapRecords\\AllScrap.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\ScrapRecords\\AllScrap.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\ScrapRecords\\AllScrap.cshtml",
+              "ViewState": "AgIAAO8AAAAAAAAAAAAowAQBAABOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-09T03:16:59.007Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "AutomateFlowController.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\AutomateFlowController.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Controllers\\AutomateFlowController.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\AutomateFlowController.cs",
+              "RelativeToolTip": "NewScrapSystem\\Controllers\\AutomateFlowController.cs",
+              "ViewState": "AgIAAFUAAAAAAAAAAAAMwDoAAABcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-02T06:40:12.177Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "ListOfDataController.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\ListOfDataController.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Controllers\\ListOfDataController.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\ListOfDataController.cs",
+              "RelativeToolTip": "NewScrapSystem\\Controllers\\ListOfDataController.cs",
+              "ViewState": "AgIAANoDAAAAAAAAAAAowIUEAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-02T06:40:12.179Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "UpdateDataController.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\UpdateDataController.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Controllers\\UpdateDataController.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\UpdateDataController.cs",
+              "RelativeToolTip": "NewScrapSystem\\Controllers\\UpdateDataController.cs",
+              "ViewState": "AgIAAMoAAAAAAAAAAIAwwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-11T03:53:51.358Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "HeadcountReport.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Dashboard\\HeadcountReport.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Dashboard\\HeadcountReport.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Dashboard\\HeadcountReport.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Dashboard\\HeadcountReport.cshtml",
+              "ViewState": "AgIAAMsAAAAAAAAAAAAowOQAAACgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-09T03:19:31.049Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "MyScrap.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\ScrapRecords\\MyScrap.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\ScrapRecords\\MyScrap.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\ScrapRecords\\MyScrap.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\ScrapRecords\\MyScrap.cshtml",
+              "ViewState": "AgIAAF8AAAAAAAAAAAAowHcAAACYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-09T03:20:38.933Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Approval\\Index.cshtml",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Views\\Approval\\Index.cshtml",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Views\\Approval\\Index.cshtml",
+              "RelativeToolTip": "NewScrapSystem\\Views\\Approval\\Index.cshtml",
+              "ViewState": "AgIAAGkAAAAAAAAAAAAowH8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-09T03:18:30.36Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "BaseController.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\BaseController.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Controllers\\BaseController.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\BaseController.cs",
+              "RelativeToolTip": "NewScrapSystem\\Controllers\\BaseController.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAmwBUAAABOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-02T06:40:12.142Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "ValidateJwtAttributes.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Service\\ValidateJwtAttributes.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Service\\ValidateJwtAttributes.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Service\\ValidateJwtAttributes.cs",
+              "RelativeToolTip": "NewScrapSystem\\Service\\ValidateJwtAttributes.cs",
+              "ViewState": "AgIAABYAAAAAAAAAAAAgwIIAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-02T06:40:12.175Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "SSOModel.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Models\\SSOModel.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Models\\SSOModel.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Models\\SSOModel.cs",
+              "RelativeToolTip": "NewScrapSystem\\Models\\SSOModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-02T06:40:12.175Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "UsersController.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\UsersController.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Controllers\\UsersController.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\UsersController.cs",
+              "RelativeToolTip": "NewScrapSystem\\Controllers\\UsersController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-06T06:08:18.488Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "AuthenticationController.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\AuthenticationController.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Controllers\\AuthenticationController.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Controllers\\AuthenticationController.cs",
+              "RelativeToolTip": "NewScrapSystem\\Controllers\\AuthenticationController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-02T06:40:12.179Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "InsertingData.cs",
+              "DocumentMoniker": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Models\\InsertingData.cs",
+              "RelativeDocumentMoniker": "NewScrapSystem\\Models\\InsertingData.cs",
+              "ToolTip": "C:\\Users\\anggorro\\Documents\\Scrap - PIA - TPR\\ScrapNotice\\NewScrapSystem\\Models\\InsertingData.cs",
+              "RelativeToolTip": "NewScrapSystem\\Models\\InsertingData.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABUAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-02T06:40:12.181Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 313,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cdbdee54-b399-484b-b763-db2c3393d646}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
