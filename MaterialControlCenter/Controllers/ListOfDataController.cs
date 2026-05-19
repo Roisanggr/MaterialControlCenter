@@ -797,7 +797,7 @@ namespace MaterialControlCenter.Controllers
             var totalCount = finalList.Count;
 
             var pagedData = finalList
-                .OrderByDescending(x => (DateTime)x.Centralized_SourceData_Master_CreatedDate)
+                .OrderByDescending(x => (DateTime?)x.Centralized_SourceData_Master_CreatedDate ?? DateTime.MinValue)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
