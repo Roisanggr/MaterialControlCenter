@@ -191,12 +191,6 @@
     </div>
 
     <div id="formContainerDetailsPartNumber" class="space-y-4 mt-4 hidden">
-        <div class="flex justify-center items-center bg-muted/20 h-32">
-            <h2 class="text-base font-semibold text-black capitalize dark:text-white/80 p-2 rounded text-center">
-                PIA Detail Form
-            </h2>
-        </div>
-
         <div class="flex justify-start pt-4 gap-4">
             <!-- Button kiri -->
             <button id="addRowBtn"
@@ -487,64 +481,6 @@
             $("#supervisorInitiatorKpk").val(previewManagerKpk);
         }
 
-        function disablePreviewHeaderForm() {
-            // Disable semua input field di preview header form
-            const previewFields = [
-                "#previewTypeOfPiaDropdown",
-                "#previewFacilityDropdown",
-                "#previewSupervisorInitiatorName",
-                "#previewTcCompanionDropdown"
-            ];
-
-            previewFields.forEach(selector => {
-                $(selector).prop("disabled", true);
-            });
-
-            // Tambahkan visual indicator bahwa form disabled
-            const headerCard = $(".card").first();
-            if (headerCard && !headerCard.hasClass("opacity-50")) {
-                headerCard.addClass("opacity-60").css("pointer-events", "none");
-            }
-        }
-
-        function hideExcelImportArea() {
-            // Hide drag & drop area
-            const $dropZone = $("#previewExcelDropZone");
-            if ($dropZone.length) {
-                $dropZone.fadeOut(200, function () {
-                    $(this).addClass("hidden").css("display", "none");
-                });
-            }
-        }
-
-        function enablePreviewHeaderForm() {
-            // Enable semua input field di preview header form
-            const previewFields = [
-                "#previewTypeOfPiaDropdown",
-                "#previewFacilityDropdown",
-                "#previewSupervisorInitiatorName",
-                "#previewTcCompanionDropdown"
-            ];
-
-            previewFields.forEach(selector => {
-                $(selector).prop("disabled", false);
-            });
-
-            // Hapus visual indicator
-            const headerCard = $(".card").first();
-            if (headerCard && headerCard.hasClass("opacity-60")) {
-                headerCard.removeClass("opacity-60").css("pointer-events", "auto");
-            }
-        }
-
-        function showExcelImportArea() {
-            // Show drag & drop area
-            const $dropZone = $("#previewExcelDropZone");
-            if ($dropZone.length) {
-                $dropZone.removeClass("hidden").fadeIn(200);
-            }
-        }
-
         function showDetailFormAutomatically() {
             if (isDetailFormAutoShown) return;
             isDetailFormAutoShown = true;
@@ -558,10 +494,6 @@
             $("#sectionContainer").addClass("hidden").css("display", "none");
 
             $detailForm.stop(true, true).hide().removeClass("hidden").slideDown(240);
-
-            // Disable header form dan hide import area
-            disablePreviewHeaderForm();
-            hideExcelImportArea();
 
             if (partCounter === 0) {
                 const activeTc = document.getElementById("tcDropdown")?.value;
@@ -2450,30 +2382,6 @@
             return "";
         }
 
-        function mapExcelTypeToFormType(excelType) {
-            // Map Excel numeric values (1, 2) to form type option values (WIP, Subcont)
-            // This ensures matching with existing dropdown options
-            const typeMap = {
-                "1": "WIP",           // Excel value '1' maps to form option 'WIP'
-                "2": "Subcont",       // Excel value '2' maps to form option 'Subcont'
-                "WIP": "WIP",
-                "Subcont": "Subcont"
-            };
-            const normalizedType = (excelType || "").toString().trim();
-            const mappedType = typeMap[normalizedType] || normalizedType;
-            return mappedType;
-        }
-
-        function handleTccFromExcel(excelTccValue) {
-            // If TCC is empty or 0, return empty string to match "Not Required" option
-            // The dropdown has <option value="">Not Required</option>
-            const normalized = (excelTccValue || "").toString().trim();
-            if (!normalized || normalized === "0") {
-                return "";  // Empty string matches the "Not Required" option (value="")
-            }
-            return normalized;
-        }
-
         function updateImportProgress(message) {
             setPreviewImportBusy(true, message);
         }
@@ -2538,13 +2446,11 @@
                 const hasHeaderManager = columnMap.manager >= 0 || columnMap.kpk >= 0;
                 const hasLegacyQuantity = columnMap.quantity >= 0;
 
-                let previewTypeValue = getFirstNonEmpty([
+                const previewTypeValue = getFirstNonEmpty([
                     getExcelCellValue(firstDataRow, columnMap.type),
                     getExcelCellValue(dataRows[0], columnMap.type),
                     existingPreviewType
                 ]);
-                // Map Excel type values to form type names
-                previewTypeValue = mapExcelTypeToFormType(previewTypeValue);
                 const previewFacilityValue = getFirstNonEmpty([
                     getExcelCellValue(firstDataRow, columnMap.facility),
                     getExcelCellValue(dataRows[0], columnMap.facility),
@@ -2558,13 +2464,11 @@
                     existingPreviewManagerName,
                     existingPreviewManagerKpk
                 ]);
-                let previewTccValue = getFirstNonEmpty([
+                const previewTccValue = getFirstNonEmpty([
                     getExcelCellValue(firstDataRow, columnMap.tcc),
                     getExcelCellValue(dataRows[0], columnMap.tcc),
                     existingPreviewTcc
                 ]);
-                // Handle TCC: if empty or 0, set to "Not Required"
-                previewTccValue = handleTccFromExcel(previewTccValue);
 
                 if (!previewTypeValue && !existingPreviewType) {
                     throw new Error("Type is required in the Excel file or must already be selected on the page.");
@@ -2577,11 +2481,14 @@
                 clearImportedDetailRows();
 
                 setSelectValue(previewTypeDropdown, previewTypeValue);
-                
-                // Populate facility options based on selected type BEFORE setting facility value
-                populatePreviewFacilityOptions(previewTypeValue);
-                
+                if (previewTypeDropdown) {
+                    $(previewTypeDropdown).trigger("change");
+                }
+
                 setSelectValue(previewFacilityDropdown, previewFacilityValue);
+                if (previewFacilityDropdown) {
+                    $(previewFacilityDropdown).trigger("change");
+                }
 
                 updateSwalProgress("Mencari data manager...");
                 const resolvedManager = await getEmployeeByKeyword(previewManagerValue);
@@ -2595,17 +2502,13 @@
 
                 setSelectValue(previewTccDropdown, previewTccValue);
 
-                // Now call evaluateAutoShowDetailFormFromPreview to show detail form
                 evaluateAutoShowDetailFormFromPreview();
 
                 const importedType = (previewTypeDropdown?.value || previewTypeValue || existingPreviewType).trim();
                 selectedTC = typeToTcMap[importedType] || document.getElementById("tcDropdown")?.value || null;
 
                 if (!selectedTC) {
-                    // If selectedTC not found, show warning but continue import
-                    updateSwalProgress("Warning: Unable to determine TC from Type. Using default TC...");
-                    // Try to get any available TC as fallback
-                    selectedTC = Object.values(typeToTcMap)[0] || "20";
+                    throw new Error("Unable to determine the main TC from the imported Type.");
                 }
 
                 const headerReasonCode = getFirstNonEmpty([
@@ -2721,11 +2624,9 @@
                     if (systemQtyInput) systemQtyInput.value = systemQty;
                     if (varianceQtyInput) varianceQtyInput.value = (parseFloat(physicalQty) || 0) - (parseFloat(systemQty) || 0);
 
-                    // For leader, always use the current logged-in user KPK
-                    const currentUserKpk = (typeof kpk !== "undefined" ? kpk : "");
-                    const currentUserName = (typeof userName !== "undefined" ? userName : "");
-                    if (leaderInput) leaderInput.value = currentUserName;
-                    if (leaderKpkInput) leaderKpkInput.value = currentUserKpk;
+                    const resolvedRowManager = rowManagerValue ? await getEmployeeByKeyword(rowManagerValue) : null;
+                    if (leaderInput) leaderInput.value = (resolvedRowManager?.name || managerForRows.name || rowManagerValue || previewManagerValue);
+                    if (leaderKpkInput) leaderKpkInput.value = (resolvedRowManager?.kpk || managerForRows.kpk || rowManagerValue || previewManagerValue);
 
                     // Populate reason code dropdown (AJAX) dan tunggu sampai nilai ter-set
                     const importFacility = previewFacilityValue || existingPreviewFacility;
