@@ -1628,12 +1628,9 @@ namespace MaterialControlCenter.Controllers
                         request.Header.CreatedByName = sessionUserName;
                 }
 
-                if (string.IsNullOrWhiteSpace(request.Header.Remarks))
-                {
-                    var specialRemarks = Session["SpecialCodeRemarks"]?.ToString();
-                    if (!string.IsNullOrWhiteSpace(specialRemarks))
-                        request.Header.Remarks = specialRemarks;
-                }
+                // Remarks moved to per-detail level, no longer set at header level
+                // Special remarks from session can be stored in first detail row if needed
+                // or handled separately
 
                 // If CreatedBy still not resolved, try to use LeaderKPK from any detail row
                 if (string.IsNullOrWhiteSpace(request.Header.CreatedByKpk) && request.Details != null && request.Details.Any())
@@ -1803,12 +1800,16 @@ namespace MaterialControlCenter.Controllers
             if (!string.IsNullOrEmpty(request.Header.TcCompanion))
                 tcDesc += $" and TC Companion {request.Header.TcCompanion}";
 
+            // Get first PIA code from details (now per-row field)
+            var firstPiaCodeId = request.Details?.FirstOrDefault()?.pia_code_id;
+            string piaCodeDisplay = firstPiaCodeId.HasValue ? firstPiaCodeId.ToString() : "N/A";
+
             return new CentralizedSourceDataModel
             {
                 Centralized_SystemList_ID = 4,
                 Centralized_SourceData_TableName = "pia_header",
                 Centralized_SourceData_Master_ID = newHeaderId,
-                Centralized_SourceData_Master_Title = $"PIA Document {newHeaderId} - PIA Code {request.Header.PiaCode}",
+                Centralized_SourceData_Master_Title = $"PIA Document {newHeaderId} - PIA Code {piaCodeDisplay}",
                 Centralized_SourceData_Master_Desc = $"This document requests approval for inventory adjustment, with a total value of Rp {totalValue:N2} {tcDesc}.",
                 Centralized_SourceData_Master_Status = 1,
                 Centralized_SourceData_Master_CreatedDate = DateTime.Now

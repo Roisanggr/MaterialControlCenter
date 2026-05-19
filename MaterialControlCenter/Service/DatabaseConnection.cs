@@ -1413,10 +1413,7 @@ namespace MaterialControlCenter.Service
             [type],
             [facility],
             [tc],
-            [pia_code_id],
-            [wc],
             [tc_companion],
-            [remarks],
             [status],
             [created_by_kpk],
             [created_by_name],
@@ -1442,10 +1439,7 @@ namespace MaterialControlCenter.Service
                             Type = reader["type"] as string,
                             Facility = reader["facility"] as string,
                             TC = reader["tc"] as string,
-                            PiaCode = reader["pia_code_id"] != DBNull.Value ? Convert.ToInt32(reader["pia_code_id"]) : 0,
-                            WC = reader["wc"] as string,
                             TcCompanion = reader["tc_companion"] as string,
-                            Remarks = reader["remarks"] as string,
                             Status = reader["status"] != DBNull.Value ? Convert.ToInt32(reader["status"]) : 0,
                             CreatedByKpk = reader["created_by_kpk"] as string,
                             CreatedByName = reader["created_by_name"] as string,
@@ -3180,20 +3174,17 @@ namespace MaterialControlCenter.Service
                 conn.Open();
                 string insertQuery = @"
                 INSERT INTO Scrap.dbo.pia_header
-                (type, facility, tc, pia_code_id, wc, tc_companion, remarks, status, created_by_kpk, created_by_name, created_at, is_deleted)
+                (type, facility, tc, tc_companion, status, created_by_kpk, created_by_name, created_at, is_deleted)
                 OUTPUT INSERTED.id
                 VALUES
-                (@type, @facility, @tc, @pia_code_id, @wc, @tc_companion, @remarks, @status, @created_by_kpk, @created_by_name, @created_at, @is_deleted)";
+                (@type, @facility, @tc, @tc_companion, @status, @created_by_kpk, @created_by_name, @created_at, @is_deleted)";
 
                 using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                 {
                     cmd.Parameters.AddWithValue("@type", model.Type ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@facility", model.Facility ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@tc", model.TC ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@pia_code_id", model.PiaCode);
-                    cmd.Parameters.AddWithValue("@wc", model.WC ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@tc_companion", model.TcCompanion ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@remarks", model.Remarks ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@status", 1);
                     cmd.Parameters.AddWithValue("@created_by_kpk", model.CreatedByKpk ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@created_by_name", model.CreatedByName ?? (object)DBNull.Value);
@@ -3213,9 +3204,9 @@ namespace MaterialControlCenter.Service
 
                 string insertQuery = @"
         INSERT INTO Scrap.dbo.pia_detail
-        (header_id, part_id, part_number, part_description, part_proccess, ftypit, typeit, planit, cmidit, commit_qty, measit, baspit, physical_qty, system_qty, variance_qty, total_value, status, keyin_at, created_at, is_deleted)
+        (header_id, part_id, part_number, part_description, part_proccess, ftypit, typeit, planit, cmidit, commit_qty, measit, baspit, physical_qty, system_qty, variance_qty, total_value, pia_code_id, wc, remarks, status, keyin_at, created_at, is_deleted)
         VALUES
-        (@header_id, @part_id, @part_number, @part_description, @part_proccess, @ftypit, @typeit, @planit, @cmidit, @commit_qty, @measit, @baspit, @physical_qty, @system_qty, @variance_qty, @total_value, @status, @keyin_at, @created_at, @is_deleted)";
+        (@header_id, @part_id, @part_number, @part_description, @part_proccess, @ftypit, @typeit, @planit, @cmidit, @commit_qty, @measit, @baspit, @physical_qty, @system_qty, @variance_qty, @total_value, @pia_code_id, @wc, @remarks, @status, @keyin_at, @created_at, @is_deleted)";
 
                 using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                 {
@@ -3238,6 +3229,12 @@ namespace MaterialControlCenter.Service
                     cmd.Parameters.AddWithValue("@system_qty", model.system_qty);
                     cmd.Parameters.AddWithValue("@variance_qty", model.variance_qty);
                     cmd.Parameters.AddWithValue("@total_value", model.total_value);
+
+                    // New columns for PIA detail per-row specifics
+                    cmd.Parameters.AddWithValue("@pia_code_id", model.pia_code_id.HasValue ? (object)model.pia_code_id.Value : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@wc", model.wc ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@remarks", model.remarks ?? (object)DBNull.Value);
+
                     cmd.Parameters.AddWithValue("@status", 1);
 
                     // keyin_at: insert model value when provided, otherwise NULL (initial insert should be NULL)

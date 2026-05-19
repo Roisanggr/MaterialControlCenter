@@ -13,69 +13,67 @@
         </h2>
     </div>
 
-        <div class="card p-4 md:p-6">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
-                <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">Type</label>
-                <div id="previewTypeOfPiaDropdownWrapper" class="md:col-span-4">
-                    <select id="previewTypeOfPiaDropdown" class="form-input w-full">
-                        <option value="">-- Select Type --</option>
-                    </select>
-                    <div class="preview-loading-state mt-2 flex items-center gap-2 text-xs text-muted">
-                        <div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-purple rounded-full"></div>
-                        <span>Loading Type...</span>
+    <div class="card p-4 md:p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                    <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">Type</label>
+                    <div id="previewTypeOfPiaDropdownWrapper" class="md:col-span-4">
+                        <select id="previewTypeOfPiaDropdown" class="form-input w-full">
+                            <option value="">-- Select Type --</option>
+                        </select>
+                        <div class="preview-loading-state mt-2 flex items-center gap-2 text-xs text-muted">
+                            <div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-purple rounded-full"></div>
+                            <span>Loading Type...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                    <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">Manager</label>
+                    <div id="previewSupervisorWrapper" class="md:col-span-4">
+                        <input type="hidden" id="previewSupervisorInitiatorKpk" />
+                        <input type="text" id="previewSupervisorInitiatorName" class="form-input w-full" placeholder="Search Manager..." autocomplete="off" />
+                        <div id="previewSupervisorResults" class="dropdown-results absolute w-100 bg-white border border-muted rounded mt-1 z-50 hidden" style="max-height: 200px; overflow-y: auto;"></div>
                     </div>
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
-                <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">Manager</label>
-                <div id="previewSupervisorWrapper" class="md:col-span-4">
-                    <input type="hidden" id="previewSupervisorInitiatorKpk" />
-                    <input type="text" id="previewSupervisorInitiatorName" class="form-input w-full" placeholder="Search Manager..." autocomplete="off" />
-                    <div id="previewSupervisorResults" class="dropdown-results absolute w-100 bg-white border border-muted rounded mt-1 z-50 hidden" style="max-height: 200px; overflow-y: auto;"></div>
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                    <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">Facility</label>
+                    <div id="previewFacilityDropdownWrapper" class="md:col-span-4">
+                        <select id="previewFacilityDropdown" class="form-input w-full">
+                            <option value="">-- Select Facility --</option>
+                        </select>
+                        <div class="preview-loading-state mt-2 flex items-center gap-2 text-xs text-muted">
+                            <div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-purple rounded-full"></div>
+                            <span>Loading Facility...</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="previewTcCompanionCard" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                    <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">TC Companion</label>
+                    <div id="previewTcCompanionDropdownWrapper" class="md:col-span-4">
+                        <select id="previewTcCompanionDropdown" class="form-input w-full" disabled>
+                            <option value="">Not Required</option>
+                            <option value="62">TCC - 62</option>
+                            <option value="70">TCC - 70</option>
+                            <option value="71">TCC - 71</option>
+                        </select>
+                        <div class="preview-loading-state mt-2 flex items-center gap-2 text-xs text-muted">
+                            <div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-purple rounded-full"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
-                <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">Facility</label>
-                <div id="previewFacilityDropdownWrapper" class="md:col-span-4">
-                    <select id="previewFacilityDropdown" class="form-input w-full">
-                        <option value="">-- Select Facility --</option>
-                    </select>
-                    <div class="preview-loading-state mt-2 flex items-center gap-2 text-xs text-muted">
-                        <div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-purple rounded-full"></div>
-                        <span>Loading Facility...</span>
-                    </div>
-                </div>
-            </div>
-            <div id="previewTcCompanionCard" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
-                <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">TC Companion</label>
-                <div id="previewTcCompanionDropdownWrapper" class="md:col-span-4">
-                    <select id="previewTcCompanionDropdown" class="form-input w-full" disabled>
-                        <option value="" disabled selected hidden>-- Select TC Companion --</option>
-                        <option value="">Not Required</option>
-                        <option value="62">TCC - 62</option>
-                        <option value="70">TCC - 70</option>
-                        <option value="71">TCC - 71</option>
-                    </select>
-                    <div class="preview-loading-state mt-2 flex items-center gap-2 text-xs text-muted">
-                        <div class="animate-spin inline-block size-4 border-[2px] border-l-transparent border-purple rounded-full"></div>
-                        <span>Waiting for Facility...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div id="previewExcelDropZone" class="mt-6 rounded-xl border border-dashed border-muted bg-white p-5 min-h-[140px] flex items-center justify-center text-center cursor-pointer select-none transition hover:border-info hover:bg-info/5">
-        <div>
-            <p class="text-sm font-medium text-black dark:text-white/80">Drop or click file here to fill the whole form</p>
-            <p class="text-xs text-muted">Supports: .xlsx, .xls</p>
+        <div id="previewExcelDropZone" class="mt-6 rounded-xl border border-dashed border-muted bg-white p-5 min-h-[140px] flex items-center justify-center text-center cursor-pointer select-none transition hover:border-info hover:bg-info/5">
+            <div>
+                <p class="text-sm font-medium text-black dark:text-white/80">Drop or click file here to fill the whole form</p>
+                <p class="text-xs text-muted">Supports: .xlsx, .xls</p>
+            </div>
         </div>
     </div>
-</div>
 </div>
 
 <!-- Start All Card -->
@@ -130,7 +128,7 @@
             <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">TC Companion</h2>
             <div class="space-y-4">
                 <select id="tcCompanionDropdown" class="form-input">
-                    <option value="">-- Select TC Companion (Optional) --</option>
+                    <option value="">Not Required</option>
                     <option value="62">TCC - 62</option>
                     <option value="70">TCC - 70</option>
                     <option value="71">TCC - 71</option>
@@ -176,7 +174,7 @@
         <button id="continueBtnCreatePia"
                 class="flex items-center justify-center gap-2 px-6 py-2 bg-info text-white rounded-lg shadow w-full hover:bg-info/[0.85] transition">
             Continue to Next Step
-            
+
             <svg xmlns="http://www.w3.org/2000/svg"
                  class="w-5 h-5"
                  fill="none"
@@ -387,7 +385,7 @@
             </label>
             <select id="TCCompanionDropdownModal"
                     class="form-input w-full h-[40px] text-sm rounded-md">
-                <option value="">-- Select --</option>
+                <option value="">Not Required</option>
             </select>
         </div>
 
@@ -484,6 +482,9 @@
         function showDetailFormAutomatically() {
             if (isDetailFormAutoShown) return;
             isDetailFormAutoShown = true;
+
+            normalizeTcCompanionSelect(document.getElementById("previewTcCompanionDropdown"));
+            normalizeTcCompanionSelect(document.getElementById("tcCompanionDropdown"));
 
             const $legacyContainer = $("#legacyPiaContainer");
             const $detailForm = $("#formContainerDetailsPartNumber");
@@ -885,14 +886,14 @@
             $.each(data, function (i, item) {
                 let displayText = formatFn(item);
                 let value = item[valueField];
-                
+
                 // Build data attributes string
                 let dataAttrsStr = "";
                 for (let [attrKey, attrValueKey] of Object.entries(dataAttributes)) {
                     let attrValue = item[attrValueKey] || "";
                     dataAttrsStr += ` data-${attrKey}="${attrValue}"`;
                 }
-                
+
                 dropdown.append(`<option value="${value}"${dataAttrsStr}>${displayText}</option>`);
             });
         }
@@ -1181,7 +1182,7 @@
                             if (selectedPiaCode) {
                                 $('#piaCodeRemarksResultCard').removeClass('hidden');
                                 loadRemarksDropdown(selectedPiaCode);
-                            } 
+                            }
                             else {
                                 $('#piaCodeRemarksResultCard').addClass('hidden');
                                 $('#remarksDropdown').empty()
@@ -1405,9 +1406,9 @@
                         leaderCell.insertAdjacentHTML(
                             "beforebegin",
                             `<td class="border border-muted" data-cell="rn">
-                               <input id="rn-${rowIndex}" 
-                               placeholder="RN" 
-                               type="text" 
+                               <input id="rn-${rowIndex}"
+                               placeholder="RN"
+                               type="text"
                                class="form-input w-full">
                             </td>`
                         );
@@ -1603,7 +1604,7 @@
         }
 
         document.getElementById("addRowBtn").addEventListener("click", () => {
-            const selectedTC = document.getElementById("tcDropdown").value; 
+            const selectedTC = document.getElementById("tcDropdown").value;
             createPartCard(selectedTC);
         });
 
@@ -1670,7 +1671,7 @@
                   <td class="border border-muted hidden "><input id="planit-${partCounter}" type="text" class="form-input w-full"></td>
                   <td class="border border-muted hidden "><input id="cmidit-${partCounter}" type="text" class="form-input w-full"></td>
                   <td class="border border-muted hidden "><input id="commit-${partCounter}" type="text" class="form-input w-full"></td>
-                  
+
                   <td class="border border-muted" data-cell="leader" style="position: relative;">
                     <input id="leader-${partCounter}" type="text" class="form-input w-full" placeholder="Leader (search)" autocomplete="off">
                     <div id="leaderList-${partCounter}" class="dropdown-results bg-white border border-muted rounded mt-1 z-50 hidden" style="position: absolute; left: 0; right: 0; max-height: 200px; overflow-y: auto; z-index: 99999;"></div>
@@ -2382,6 +2383,26 @@
             return "";
         }
 
+        function normalizeTcCompanionValue(value) {
+            const normalized = (value === null || value === undefined ? "" : value.toString()).trim();
+            if (!normalized) return "";
+            if (normalized === "0") return "";
+            if (normalized.toLowerCase() === "not required") return "";
+            return normalized;
+        }
+
+        function normalizeTcCompanionSelect(selectElement) {
+            if (!selectElement) return;
+
+            Array.from(selectElement.options || []).forEach(function (option) {
+                if ((option.value || "").trim() === "0") {
+                    option.remove();
+                }
+            });
+
+            selectElement.value = normalizeTcCompanionValue(selectElement.value);
+        }
+
         function updateImportProgress(message) {
             setPreviewImportBusy(true, message);
         }
@@ -2464,11 +2485,11 @@
                     existingPreviewManagerName,
                     existingPreviewManagerKpk
                 ]);
-                const previewTccValue = getFirstNonEmpty([
+                const previewTccValue = normalizeTcCompanionValue(getFirstNonEmpty([
                     getExcelCellValue(firstDataRow, columnMap.tcc),
                     getExcelCellValue(dataRows[0], columnMap.tcc),
                     existingPreviewTcc
-                ]);
+                ]));
 
                 if (!previewTypeValue && !existingPreviewType) {
                     throw new Error("Type is required in the Excel file or must already be selected on the page.");
@@ -2490,7 +2511,7 @@
                     $(previewFacilityDropdown).trigger("change");
                 }
 
-                updateSwalProgress("Mencari data manager...");
+                updateSwalProgress("Search manager initiator...");
                 const resolvedManager = await getEmployeeByKeyword(previewManagerValue);
                 if (resolvedManager) {
                     previewManagerNameInput.value = resolvedManager.name || previewManagerValue;
@@ -2500,15 +2521,22 @@
                     previewManagerKpkInput.value = previewManagerValue;
                 }
 
+                normalizeTcCompanionSelect(previewTccDropdown);
                 setSelectValue(previewTccDropdown, previewTccValue);
 
                 evaluateAutoShowDetailFormFromPreview();
 
                 const importedType = (previewTypeDropdown?.value || previewTypeValue || existingPreviewType).trim();
-                selectedTC = typeToTcMap[importedType] || document.getElementById("tcDropdown")?.value || null;
+                const selectedTcFromPage = (document.getElementById("tcDropdown")?.value || "").trim();
+                selectedTC = getFirstNonEmpty([
+                    typeToTcMap[importedType],
+                    selectedTcFromPage
+                ]);
 
                 if (!selectedTC) {
-                    throw new Error("Unable to determine the main TC from the imported Type.");
+                    updateSwalProgress("Main TC tidak ditemukan dari Excel. Melanjutkan import tanpa TC utama...");
+                    console.warn("[PIA Import] Main TC could not be resolved from imported Type; continuing with null TC.");
+                    selectedTC = null;
                 }
 
                 const headerReasonCode = getFirstNonEmpty([
@@ -2582,7 +2610,7 @@
                     }
                     createPartCard._skipAutoPopulate = false;
 
-                    updateSwalProgress("Mengisi baris " + targetRow + " dari " + importedRows.length + "...");
+                    updateSwalProgress("Fill row " + targetRow + " from " + importedRows.length + "...");
 
                     const partNumber = getExcelCellValue(row, columnMap.partNumber >= 0 ? columnMap.partNumber : 0);
                     const physicalQty = importMode === "legacy"
@@ -2631,22 +2659,30 @@
                     // Populate reason code dropdown (AJAX) dan tunggu sampai nilai ter-set
                     const importFacility = previewFacilityValue || existingPreviewFacility;
                     if (reasonCode) {
+                        if (!selectedTC) {
+                            setSelectValue(reasonCodeSelect, reasonCode);
+                        } else {
                         await populateDetailDropdownAndSet(
                             function (rowIdx, fac, tc) { populateDetailReasonCodeDropdown(rowIdx, fac, tc); },
                             targetRow, importFacility, selectedTC,
                             "reasonCode-" + targetRow, reasonCode
                         );
+                        }
                     } else if (reasonCodeSelect) {
                         setSelectValue(reasonCodeSelect, reasonCode);
                     }
 
                     // Populate WC dropdown (AJAX) dan tunggu sampai nilai ter-set
                     if (wcValue) {
+                        if (!selectedTC) {
+                            setSelectValue(wcSelect, wcValue);
+                        } else {
                         await populateDetailDropdownAndSet(
                             function (rowIdx, fac) { populateDetailWcDropdown(rowIdx, fac); },
                             targetRow, importFacility, null,
                             "wc-" + targetRow, wcValue
                         );
+                        }
                     } else if (wcSelect) {
                         setSelectValue(wcSelect, wcValue);
                     }
@@ -2698,19 +2734,19 @@
 
                 setPreviewImportBusy(false);
 
-                let htmlMessage = `<p>Berhasil mengisi <b>${importedRows.length}</b> baris dari Excel.</p>`;
+                let htmlMessage = `<p>Success fill <b>${importedRows.length}</b> row from Excel.</p>`;
 
                 if (duplicateParts.length > 0) {
-                    htmlMessage += `<p><b>Part duplikat dilewati:</b><br>${duplicateParts.join(", ")}</p>`;
+                    htmlMessage += `<p><b>skipping duplicate part:</b><br>${duplicateParts.join(", ")}</p>`;
                 }
 
                 if (missingMasters.length > 0) {
-                    htmlMessage += `<p><b>Part master tidak ditemukan:</b><br>${missingMasters.join(", ")}</p>`;
+                    htmlMessage += `<p><b>Part master can't find:</b><br>${missingMasters.join(", ")}</p>`;
                 }
 
                 Swal.fire({
                     icon: duplicateParts.length > 0 || missingMasters.length > 0 ? "warning" : "success",
-                    title: duplicateParts.length > 0 || missingMasters.length > 0 ? "Import Selesai (Periksa Detail)" : "Form Berhasil Diisi Otomatis",
+                    title: duplicateParts.length > 0 || missingMasters.length > 0 ? "Import Selesai (Periksa Detail)" : "Automatic fill form success",
                     html: htmlMessage
                 });
             } catch (error) {
@@ -2718,7 +2754,7 @@
                 Swal.fire({
                     icon: "error",
                     title: "Import Gagal",
-                    text: error?.message || "Tidak dapat mengimpor file Excel."
+                    text: error?.message || "Cannot fill form from excel."
                 });
             } finally {
                 setPreviewImportBusy(false);
@@ -2956,12 +2992,12 @@
             try {
                 const totalParts = document.querySelectorAll("[id^='row-']").length;
                 let invalidCards = [];
- 
+
                 if (totalParts === 0) {
                     await Swal.fire({ title: "No Parts Added", text: "You must add at least one part before submitting.", icon: "warning" });
                     return;
                 }
- 
+
                 for (let i = 1; i <= totalParts; i++) {
                     const showSpecialFields = (selectedTC === "22");
                     try {
@@ -2972,29 +3008,29 @@
                         invalidCards.push(i);
                     }
                 }
- 
+
                 if (invalidCards.length > 0) {
                     await Swal.fire({ title: "Missing Fields", text: `Missing fields in card(s): ${invalidCards.join(", ")}.`, icon: "warning" });
                     return;
                 }
- 
+
                 const remarksValidation = validateSpecialCodeRemarks();
                 if (!remarksValidation.valid) {
                     await Swal.fire({ title: "Missing Remarks", text: remarksValidation.message, icon: "warning" });
                     return;
                 }
- 
+
                 // ── DEBUG: log state sebelum confirm ──
                 console.log("[Submit] detectedKPKGlobal at submit time:", JSON.stringify(detectedKPKGlobal));
                 console.log("[Submit] selectedPiaCode:", selectedPiaCode);
- 
+
                 let confirmationText = "Are you sure you want to save this PIA?";
                 let useHtml = false;
                 if (selectedCommit) {
                     confirmationText = `This document contains Commit flag. Are you sure?`;
                     useHtml = false;
                 }
- 
+
                 const result = await Swal.fire({
                     title: "Submit PIA",
                     ...(useHtml ? { html: confirmationText } : { text: confirmationText }),
@@ -3003,19 +3039,19 @@
                     confirmButtonText: "Yes, Save",
                     cancelButtonText: "Cancel"
                 });
- 
+
                 if (!result.isConfirmed) return;
- 
+
                 const submitBtn = document.getElementById("submitBtnCreatePia");
                 submitBtn.disabled = true;
                 submitBtn.style.opacity = "0.6";
- 
+
                 const payload = buildPiaPayload();
- 
+
                 // ── DEBUG: log payload ──
                 console.log("[Submit] payload.detectedKPKGlobal:", payload.detectedKPKGlobal);
                 console.log("[Submit] payload.Header:", payload.Header);
- 
+
                 if (!payload.detectedKPKGlobal || payload.detectedKPKGlobal.length === 0) {
                     submitBtn.disabled = false;
                     submitBtn.style.opacity = "";
@@ -3026,21 +3062,21 @@
                     });
                     return;
                 }
- 
+
                 const pdfBase64 = await generatePiaPDFBase64();
                 payload.PdfBase64 = encodeURIComponent(pdfBase64);
- 
+
                 Swal.fire({
                     title: "Submitting...",
                     html: "<b>Step 1:</b> Sending email notification...<br><b>Step 2:</b> Saving data.<br><br>Please wait.",
                     allowOutsideClick: false,
                     didOpen: () => { Swal.showLoading(); }
                 });
- 
+
                 try {
                     const data = await insertPia(payload);
                     Swal.close();
- 
+
                     if (data.Error) {
                         submitBtn.disabled = false;
                         submitBtn.style.opacity = "";
@@ -3059,7 +3095,7 @@
                     console.error("[Submit] insertPia error:", err);
                     Swal.fire({ title: "Submission Failed", text: err.message, icon: "error" });
                 }
- 
+
             } catch(outerErr) {
                 // Catch semua error yang mungkin silent sebelumnya
                 console.error("[Submit] Outer error caught:", outerErr);
@@ -3072,50 +3108,41 @@
         });
 
         function buildPiaPayload() {
-            const selectedRemarksText = $('#remarksDropdown option:selected').text().trim();
-            const selectedRemarksValue = $('#remarksDropdown').val();
-            const specialRemarks = (localStorage.getItem("specialCodeRemarks") || "").trim();
-            const headerRemarks = specialRemarks || (selectedRemarksValue ? selectedRemarksText : "");
             const createdByKpkValue = (typeof kpk !== "undefined" ? kpk : "") || "";
             const createdByNameValue = (typeof userName !== "undefined" ? userName : "") || "";
             const typeLabel = document.getElementById("typeOfPiaDropdown")?.options[document.getElementById("typeOfPiaDropdown")?.selectedIndex]?.text || "Reguler";
             const typeValue = getPiaTypeValue(typeLabel);
 
-            // Validasi PiaCode tidak boleh kosong
-            const piaCodeValue = document.getElementById("piaCodeDropdown")?.value?.trim();
-            const piaCodeInt = piaCodeValue ? parseInt(piaCodeValue) : null;
-            if (!piaCodeInt || isNaN(piaCodeInt)) {
-                throw new Error("PIA Code is required. Please select a valid PIA Code.");
-            }
-
+            // Header now only contains Type, Facility, TC, TcCompanion
             const headerData = {
                 Type        : typeValue,
                 TypeLabel   : typeLabel,
                 Facility    : document.getElementById("facilityInitiator")?.value || null,
                 TC          : document.getElementById("tcDropdown")?.value || null,
-                PiaCode     : piaCodeInt,
-                WC          : document.getElementById("wcDropdown")?.value || null,
                 TcCompanion : document.getElementById("tcCompanionDropdown")?.value || null,
-                Remarks     : headerRemarks || null,
-                CreatedByKpk  : createdByKpkValue,  
-                CreatedByName : createdByNameValue || null              
+                CreatedByKpk  : createdByKpkValue,
+                CreatedByName : createdByNameValue || null
             };
             const rows = document.querySelectorAll("#listOfPartnumber tr");
             const detailList = [];
             let partIdSequence = 1;  // Sequential part_id counter
- 
+
             rows.forEach((row) => {
                 const partNum = row.querySelector('input[id^="partNumber-"]')?.value?.trim() || null;
                 if (!partNum) return;
- 
+
                 let rawBase = row.querySelector('input[id^="baseValue-"]')?.value || "0";
                 rawBase     = parseFloat(rawBase.replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".")) || 0;
- 
+
                 let rawTotal = row.querySelector('input[id^="totalValue-"]')?.value || "0";
                 rawTotal     = parseFloat(rawTotal.replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".")) || 0;
- 
+
+                // Get pia_code_id from reasonCode dropdown value (should be the ID)
+                const piaCodeIdValue = row.querySelector('select[id^="reasonCode-"]')?.value || null;
+                const piaCodeId = piaCodeIdValue ? parseInt(piaCodeIdValue) : null;
+
                 detailList.push({
-                    header_id        : 0,                                                                     
+                    header_id        : 0,
                     part_id          : partIdSequence++,  // Auto-increment: 1, 2, 3, ...
                     part_number      : partNum,
                     part_description : row.querySelector('input[id^="description-"]')?.value || null,
@@ -3131,14 +3158,14 @@
                     system_qty       : parseFloat(row.querySelector('input[id^="systemQuantity-"]')?.value)   || 0,
                     variance_qty     : parseFloat(row.querySelector('input[id^="varianceQuantity-"]')?.value) || 0,
                     total_value      : rawTotal,
-                    pia_code         : row.querySelector('select[id^="reasonCode-"]')?.value || null,
+                    pia_code_id      : piaCodeId,        // Changed from pia_code (string) to pia_code_id (int)
                     wc               : row.querySelector('select[id^="wc-"]')?.value || null,
                     remarks          : row.querySelector('input[id^="remarks-"]')?.value?.trim() || null,
                     LeaderKPK        : row.querySelector('input[id^="leaderKpk-"]')?.value || null,
                     status           : "active"
                 });
             });
- 
+
             return {
                 Header           : headerData,      // ← "Header" bukan "Master"
                 Details          : detailList,      // ← "Details" bukan "Parts"
@@ -3168,9 +3195,6 @@
                 ["Facility", (header.Facility || "-").toString()],
                 ["TC", (header.TC || "-").toString()],
                 ["TC Companion", (header.TcCompanion || "N/A").toString()],
-                ["PIA Code", (header.PiaCode || "-").toString()],
-                ["WC", (header.WC || "-").toString()],
-                ["Initiator KPK", "N/A"],
                 ["Type", (header.TypeLabel || header.Type || "-").toString()]
             ];
 

@@ -86,10 +86,7 @@ namespace MaterialControlCenter.Models
         public string Type { get; set; }
         public string Facility { get; set; }
         public string TC { get; set; }
-        public int PiaCode { get; set; }
-        public string WC { get; set; }
         public string TcCompanion { get; set; }
-        public string Remarks { get; set; }
         public int Status { get; set; }
         public string CreatedByKpk { get; set; }
         public string CreatedByName { get; set; }
@@ -117,6 +114,9 @@ namespace MaterialControlCenter.Models
         public decimal system_qty { get; set; }
         public decimal variance_qty { get; set; }
         public decimal total_value { get; set; }
+        public int? pia_code_id { get; set; }
+        public string wc { get; set; }
+        public string remarks { get; set; }
         public string status { get; set; }
         public DateTime? keyin_at { get; set; }
         // LeaderKPK coming from client detail row (used as fallback for created-by)

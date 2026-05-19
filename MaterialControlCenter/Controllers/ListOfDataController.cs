@@ -611,10 +611,10 @@ namespace MaterialControlCenter.Controllers
                             InitiatorKpk = pia.CreatedByKpk.ToString(),
                             InitiatorName = employeeDict.TryGetValue(pia.CreatedByKpk.ToString(), out var pName)
                                             ? pName : "Unknown",
-                            Code = pia.PiaCode.ToString(),
+                            Code = "N/A",  // PiaCode moved to detail level
                             CreatedDate = piaCreatedDate,
                             CurrentStatus = pia.Status,
-                            pia.WC,
+                            WC = "N/A",    // WC moved to detail level
                             TcCompanion = pia.TcCompanion,
                             DeletedAt = pia.DeletedAt,
 
@@ -1858,9 +1858,9 @@ namespace MaterialControlCenter.Controllers
                     {
                         Facility = piaHeader.Facility,
                         TC = piaHeader.TC,
-                        PiaCode = piaHeader.PiaCode,
+                        PiaCode = "N/A",  // Now per-detail level
                         Type = piaHeader.Type,
-                        WC = piaHeader.WC,
+                        WC = "N/A",       // Now per-detail level
                         Status = piaHeader.Status,
                         TcCompanion = piaHeader.TcCompanion,
                         CreatedByName = piaHeader.CreatedByName,
