@@ -54,7 +54,7 @@
                     <label class="md:col-span-1 text-sm font-bold text-black dark:text-white/80">TC Companion</label>
                     <div id="previewTcCompanionDropdownWrapper" class="md:col-span-4">
                         <select id="previewTcCompanionDropdown" class="form-input w-full" disabled>
-                            <option value="">Not Required</option>
+                            <option value="0">Not Required</option>
                             <option value="62">TCC - 62</option>
                             <option value="70">TCC - 70</option>
                             <option value="71">TCC - 71</option>
@@ -423,6 +423,12 @@
         const piaCodesWithNotes = ["MHK", "MII", "MOQ", "MQC"];
         const piaCodesWithTCCompanion = ["MHK", "MII", "MOQ", "MQC", "MAL", "DDS", "DDT", "ENC", "ENM", "ENP", "MH", "OMF", "QHE", "QPX", "QRS"];
 
+        // P2 Special Remarks scheme
+        let isP2Facility = false;
+        let p2SpecialRemarkSelected = null;
+        let p2SpecialRemarkOptions = [];
+        let p2RemarksMode = null;
+
         $(document).ready(function () {
             localStorage.removeItem("specialCodeRemarks");
             localStorage.removeItem("CompanionTc");
@@ -485,6 +491,7 @@
 
             normalizeTcCompanionSelect(document.getElementById("previewTcCompanionDropdown"));
             normalizeTcCompanionSelect(document.getElementById("tcCompanionDropdown"));
+            syncTcCompanionValue(localStorage.getItem("CompanionTc"));
 
             const $legacyContainer = $("#legacyPiaContainer");
             const $detailForm = $("#formContainerDetailsPartNumber");
@@ -654,6 +661,16 @@
                 const selectedFacility = $(this).val();
                 facilityInput.value = selectedFacility;
                 selectedFacilityInDropdown = selectedFacility;
+
+                // Detect P2 facility for special remarks scheme
+                isP2Facility = (selectedFacility === "P2");
+
+                // Hide P2 section until reason code is selected
+                hideP2SpecialRemarksSection();
+                if (!isP2Facility) {
+                    resetP2RemarksToInputs();
+                }
+
                 populateTcOptions($("#typeOfPiaDropdown").val(), selectedFacility);
             });
 
@@ -701,7 +718,6 @@
 
             showPreviewFieldLoading(previewTypeWrapper, "Loading Type...");
             showPreviewFieldLoading(previewFacilityWrapper, "Loading Facility...");
-            showPreviewFieldLoading(previewTcCompanionWrapper, "Loading TC Companion...");
 
             const typeOptions = [];
             const seenTypes = new Set();
@@ -993,7 +1009,11 @@
 
                 input.value = fac;
                 selectedFacilityInDropdown = fac;
-                console.log("Facility selected:", fac, "selectedFacilityInDropdown set to:", selectedFacilityInDropdown);
+
+                // Detect P2 facility for special remarks scheme
+                isP2Facility = (fac === "P2");
+
+                console.log("Facility selected:", fac, "selectedFacilityInDropdown set to:", selectedFacilityInDropdown, "isP2Facility:", isP2Facility);
 
                 const url = tcUrl + "?facility=" + encodeURIComponent(fac);
                 console.log("Loading TC with URL:", url);
@@ -1003,6 +1023,10 @@
                 $('#piaCodeWCResultCard').addClass('hidden');
                 $('#piaCodeResultCard').addClass('hidden');
                 $('#piaCodeRemarksResultCard').addClass('hidden');
+                hideP2SpecialRemarksSection();  // Hide until reason code is selected
+                if (!isP2Facility) {
+                    resetP2RemarksToInputs();
+                }
             };
         }
 
@@ -1180,13 +1204,21 @@
                             handleTCCompanion(selectedPiaCodeString);
 
                             if (selectedPiaCode) {
-                                $('#piaCodeRemarksResultCard').removeClass('hidden');
-                                loadRemarksDropdown(selectedPiaCode);
+                                // For P2 facility, try to load P2 special remarks
+                                if (isP2Facility && selectedPiaCodeString === "7") {
+                                    loadP2SpecialRemarks(selectedPiaCode, selectedPiaCodeString);
+                                } else {
+                                    resetP2RemarksToInputs();
+                                    $('#piaCodeRemarksResultCard').removeClass('hidden');
+                                    loadRemarksDropdown(selectedPiaCode);
+                                }
                             }
                             else {
                                 $('#piaCodeRemarksResultCard').addClass('hidden');
                                 $('#remarksDropdown').empty()
                                     .append('<option value="">-- Select Remarks --</option>');
+                                hideP2SpecialRemarksSection();
+                                resetP2RemarksToInputs();
                             }
                         });
 
@@ -1230,6 +1262,472 @@
             });
         }
 
+        /**
+         * Load P2 Special Remarks - shared across all rows in single document
+         * Only for Facility P2 with special reason code
+         */
+        function loadP2SpecialRemarks(piaCodeId, reasonCodeString) {
+            console.log("[P2] loadP2SpecialRemarks called:", { isP2Facility, piaCodeId, reasonCodeString });
+
+            if (!isP2Facility) {
+                console.log("[P2] Not P2 facility, skipping P2 logic");
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("GetP2SpecialRemarks", "DataForms")',
+                type: 'GET',
+                dataType: 'json',
+                data: { piaCodeId: piaCodeId, facility: 'P2' },
+                success: function(response) {
+                    console.log("[P2] GetP2SpecialRemarks response:", response);
+
+                    if (response.success && response.data && response.data.length > 0) {
+                        p2SpecialRemarkOptions = response.data;
+                        console.log("[P2] Found " + response.data.length + " special remarks");
+
+                        // Ensure RTM/Non-RTM mode control is available on row 1
+                        const firstRow = document.querySelector("#listOfPartnumber tr");
+                        ensureP2RemarksModeControl(firstRow);
+                        applyP2RemarksDropdownToTable();
+                    } else {
+                        console.log("[P2] No special remarks found or API error, hiding P2 section");
+                        // No special remarks for this code, use normal flow
+                        hideP2SpecialRemarksSection();
+                        $('#piaCodeRemarksResultCard').removeClass('hidden');
+                        loadRemarksDropdown(piaCodeId);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("[P2] AJAX error:", status, error, xhr);
+                    hideP2SpecialRemarksSection();
+                    $('#piaCodeRemarksResultCard').removeClass('hidden');
+                    loadRemarksDropdown(piaCodeId);
+                }
+            });
+        }
+
+        /**
+         * Show P2 special remarks section (shared dropdown for all rows)
+         */
+        function showP2SpecialRemarksSection(reasonCodeString, piaCodeId) {
+            // Create or show P2 special remarks shared dropdown
+            let p2RemarksSection = document.getElementById("p2SpecialRemarksSection");
+
+            if (!p2RemarksSection) {
+                // Create section if not exist
+                const container = document.getElementById("piaCodeRemarksResultCard");
+                if (container) {
+                    const sectionHtml = `
+                        <div id="p2SpecialRemarksSection" class="card flex-1 basis-1/3 min-w-[300px]">
+                            <h2 class="mb-4 text-base font-semibold text-black capitalize dark:text-white/80">
+                                RTM (P2 Special Remarks)
+                            </h2>
+                            <div class="space-y-4">
+                                <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-3">
+                                    <p class="text-xs text-blue-700">
+                                        <strong>Note:</strong> This document uses a single shared remarks for all parts.
+                                    </p>
+                                </div>
+                                <select id="p2SpecialRemarksDropdown" class="form-input" required>
+                                    <option value="">-- Select RTM --</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('afterend', sectionHtml);
+                    p2RemarksSection = document.getElementById("p2SpecialRemarksSection");
+                }
+            }
+
+            if (p2RemarksSection) {
+                p2RemarksSection.classList.remove('hidden');
+                p2RemarksSection.style.display = '';
+
+                // Populate dropdown
+                const dropdown = document.getElementById("p2SpecialRemarksDropdown");
+                if (dropdown) {
+                    dropdown.innerHTML = '<option value="">-- Select RTM --</option>';
+                    p2SpecialRemarkOptions.forEach(item => {
+                        dropdown.appendChild(new Option(item.RemarksText, item.Id));
+                    });
+
+                    // Restore previously selected value if any
+                    if (p2SpecialRemarkSelected) {
+                        dropdown.value = p2SpecialRemarkSelected;
+                    }
+
+                    // Add event listener
+                    dropdown.removeEventListener('change', handleP2SpecialRemarksChange);
+                    dropdown.addEventListener('change', handleP2SpecialRemarksChange);
+                }
+            }
+
+            applyP2RemarksDropdownToTable();
+        }
+
+        function ensureP2RemarksModeControl(row) {
+            if (!row) return;
+
+            const cell = row.querySelector('input[id^="remarks-"], select[id^="remarks-"]')?.closest("td");
+            if (!cell) return;
+
+            const currentField = cell.querySelector('input[id^="remarks-"]') || cell.querySelector('select[id^="remarks-"]');
+            if (!currentField) return;
+
+            cell.dataset.p2RemarksFieldId = currentField.id;
+
+            let modeSelect = cell.querySelector("#p2RemarksModeSelect");
+            if (!modeSelect) {
+                modeSelect = document.createElement("select");
+                modeSelect.id = "p2RemarksModeSelect";
+                modeSelect.className = "form-input w-full";
+                modeSelect.innerHTML = `
+                    <option value="">-- Select Remarks --</option>
+                    <option value="RTM">RTM</option>
+                    <option value="NON_RTM">Non-RTM</option>
+                `;
+                cell.innerHTML = "";
+                cell.appendChild(modeSelect);
+            }
+
+            if (p2RemarksMode) {
+                modeSelect.value = p2RemarksMode;
+            }
+
+            modeSelect.removeEventListener("change", handleP2RemarksModeChange);
+            modeSelect.addEventListener("change", handleP2RemarksModeChange);
+        }
+
+        function handleP2RemarksModeChange(event) {
+            const mode = event?.target?.value || "";
+            p2RemarksMode = mode;
+
+            if (mode === "RTM") {
+                if (!p2SpecialRemarkOptions.length) {
+                    const row1ReasonSelect = document.getElementById("reasonCode-1");
+                    const row1Option = row1ReasonSelect?.options[row1ReasonSelect.selectedIndex];
+                    const row1Reason = row1Option?.value || "7";
+                    const row1ReasonId = row1Option?.getAttribute("data-id") || selectedPiaCode;
+                    loadP2SpecialRemarks(row1ReasonId, row1Reason);
+                }
+                renderP2RemarksField(document.querySelector("#listOfPartnumber tr"), "RTM");
+                lockP2ExtraRowFields("");
+                return;
+            }
+
+            if (mode === "NON_RTM") {
+                p2SpecialRemarkSelected = null;
+                p2SpecialRemarkOptions = [];
+                applyP2NonRtmMode();
+            } else {
+                p2SpecialRemarkSelected = null;
+                unlockP2ExtraRowFields();
+            }
+        }
+
+        function applyP2NonRtmMode() {
+            renderP2RemarksField(document.querySelector("#listOfPartnumber tr"), "NON_RTM");
+            hideP2SpecialRemarksSection();
+            unlockP2ExtraRowFields();
+        }
+
+        function lockP2ExtraRowFields(selectedRemarkText) {
+            const rows = document.querySelectorAll("#listOfPartnumber tr");
+            rows.forEach((row, index) => {
+                if (index === 0) return;
+
+                const reasonSelect = row.querySelector('select[id^="reasonCode-"]');
+                if (reasonSelect) {
+                    reasonSelect.value = "7";
+                    reasonSelect.disabled = true;
+                    reasonSelect.style.backgroundColor = "#f0f0f0";
+                    reasonSelect.style.cursor = "not-allowed";
+                    reasonSelect.dataset.p2Locked = "true";
+                }
+
+                const remarksInput = row.querySelector('input[id^="remarks-"]');
+                const remarksSelect = row.querySelector('select[id^="remarks-"]');
+
+                if (remarksSelect) {
+                    remarksSelect.value = p2SpecialRemarkSelected || remarksSelect.value;
+                    remarksSelect.disabled = true;
+                    remarksSelect.style.backgroundColor = "#f0f0f0";
+                    remarksSelect.style.cursor = "not-allowed";
+                }
+
+                if (remarksInput) {
+                    remarksInput.value = selectedRemarkText || remarksInput.value || "";
+                    remarksInput.readOnly = true;
+                    remarksInput.style.backgroundColor = "#f0f0f0";
+                    remarksInput.style.cursor = "not-allowed";
+                }
+            });
+        }
+
+        function unlockP2ExtraRowFields() {
+            const rows = document.querySelectorAll("#listOfPartnumber tr");
+            rows.forEach((row, index) => {
+                if (index === 0) return;
+
+                const reasonSelect = row.querySelector('select[id^="reasonCode-"]');
+                if (reasonSelect) {
+                    reasonSelect.disabled = false;
+                    reasonSelect.style.backgroundColor = "";
+                    reasonSelect.style.cursor = "";
+                }
+
+                const remarksInput = row.querySelector('input[id^="remarks-"]');
+                const remarksSelect = row.querySelector('select[id^="remarks-"]');
+
+                if (remarksSelect) {
+                    remarksSelect.disabled = false;
+                    remarksSelect.style.backgroundColor = "";
+                    remarksSelect.style.cursor = "";
+                }
+
+                if (remarksInput) {
+                    remarksInput.readOnly = false;
+                    remarksInput.style.backgroundColor = "";
+                    remarksInput.style.cursor = "";
+                }
+            });
+        }
+
+        /**
+         * Hide P2 special remarks section
+         */
+        function hideP2SpecialRemarksSection() {
+            const section = document.getElementById("p2SpecialRemarksSection");
+            if (section) {
+                section.classList.add('hidden');
+                section.style.display = 'none';
+            }
+        }
+
+        /**
+         * Handle P2 special remarks selection (shared across all rows)
+         */
+        function handleP2SpecialRemarksChange(event) {
+            const dropdown = event?.target || document.getElementById("p2SpecialRemarksDropdown");
+            if (!dropdown) return;
+
+            p2SpecialRemarkSelected = dropdown.value;
+            if (p2SpecialRemarkSelected) {
+                p2RemarksMode = "RTM";
+            }
+
+            // Sync to all row remarks fields
+            applyP2SpecialRemarksToAllRows();
+        }
+
+        /**
+         * Apply P2 special remarks to all rows
+         */
+        function applyP2SpecialRemarksToAllRows() {
+            if (!isP2Facility || !p2RemarksMode) return;
+
+            const rows = document.querySelectorAll("#listOfPartnumber tr");
+            const rowDropdown = rows[0]?.querySelector('select[id^="remarks-"]');
+            const selectedRemarkText = rowDropdown?.options[rowDropdown.selectedIndex]?.textContent
+                || document.querySelector("#p2SpecialRemarksDropdown option:checked")?.textContent
+                || "";
+
+            rows.forEach((row, index) => {
+                const remarksInput = row.querySelector('input[id^="remarks-"]');
+                const remarksSelect = row.querySelector('select[id^="remarks-"]');
+
+                if (index === 0) {
+                    if (remarksSelect) {
+                        if (p2SpecialRemarkSelected) {
+                            remarksSelect.value = p2SpecialRemarkSelected;
+                        }
+                        remarksSelect.disabled = false;
+                        remarksSelect.style.backgroundColor = "";
+                        remarksSelect.style.cursor = "";
+                    } else if (remarksInput) {
+                        remarksInput.value = selectedRemarkText;
+                        remarksInput.readOnly = true;
+                        remarksInput.style.backgroundColor = "#f0f0f0";
+                        remarksInput.style.cursor = "not-allowed";
+                    }
+                    return;
+                }
+
+                const reasonSelect = row.querySelector('select[id^="reasonCode-"]');
+                if (reasonSelect) {
+                    reasonSelect.value = "7";
+                    reasonSelect.disabled = true;
+                    reasonSelect.style.backgroundColor = "#f0f0f0";
+                    reasonSelect.style.cursor = "not-allowed";
+                }
+
+                if (remarksSelect) {
+                    if (p2SpecialRemarkSelected) {
+                        remarksSelect.value = p2SpecialRemarkSelected;
+                    }
+                    remarksSelect.disabled = true;
+                    remarksSelect.style.backgroundColor = "#f0f0f0";
+                    remarksSelect.style.cursor = "not-allowed";
+                }
+
+                if (remarksInput) {
+                    remarksInput.value = selectedRemarkText;
+                    remarksInput.readOnly = true;
+                    remarksInput.style.backgroundColor = "#f0f0f0";
+                    remarksInput.style.cursor = "not-allowed";
+                }
+            });
+
+            lockP2ExtraRowFields(selectedRemarkText);
+        }
+
+        /**
+         * Lock remarks fields for rows > 1 when P2 special remarks is active
+         */
+        function lockP2ExtraRowRemarkFields() {
+            if (!isP2Facility) return;
+
+            const rows = document.querySelectorAll("#listOfPartnumber tr");
+            rows.forEach((row, index) => {
+                if (index > 0) {  // Lock from row 2 onwards
+                    const remarksInput = row.querySelector('input[id^="remarks-"]');
+                    const remarksSelect = row.querySelector('select[id^="remarks-"]');
+
+                    if (remarksSelect) {
+                        remarksSelect.disabled = true;
+                        remarksSelect.style.backgroundColor = "#f0f0f0";
+                        remarksSelect.style.cursor = "not-allowed";
+                    }
+
+                    if (remarksInput) {
+                        remarksInput.readOnly = true;
+                        remarksInput.style.backgroundColor = "#f0f0f0";
+                        remarksInput.style.cursor = "not-allowed";
+                    }
+                }
+            });
+        }
+
+        function applyP2RemarksDropdownToTable() {
+            const rows = document.querySelectorAll("#listOfPartnumber tr");
+            if (!rows.length) return;
+
+            const firstRow = rows[0];
+            if (p2RemarksMode === "RTM") {
+                renderP2RemarksField(firstRow, "RTM");
+            }
+            if (p2SpecialRemarkSelected) {
+                applyP2SpecialRemarksToAllRows();
+            }
+        }
+
+        function renderP2RemarksField(row, mode) {
+            if (!row) return;
+
+            const cell = row.querySelector('td:nth-child(13)') || row.querySelector('input[id^="remarks-"]')?.closest("td");
+            if (!cell) return;
+
+            const remarksId = cell.dataset.p2RemarksFieldId
+                || row.querySelector('input[id^="remarks-"]')?.id
+                || row.querySelector('select[id^="remarks-"]')?.id;
+            if (!remarksId) return;
+
+            if (mode === "RTM") {
+                const dropdown = document.createElement("select");
+                dropdown.id = remarksId;
+                dropdown.className = "form-input w-full";
+                dropdown.innerHTML = '<option value="">-- Select RTM --</option>';
+                p2SpecialRemarkOptions.forEach(item => {
+                    dropdown.appendChild(new Option(item.RemarksText, item.Id));
+                });
+                if (p2SpecialRemarkSelected) {
+                    dropdown.value = p2SpecialRemarkSelected;
+                }
+                dropdown.removeEventListener("change", handleP2SpecialRemarksChange);
+                dropdown.addEventListener("change", handleP2SpecialRemarksChange);
+                cell.innerHTML = "";
+                cell.appendChild(dropdown);
+                cell.dataset.p2RemarksFieldId = remarksId;
+                return;
+            }
+
+            if (mode === "NON_RTM") {
+                const input = document.createElement("input");
+                input.type = "text";
+                input.id = remarksId;
+                input.className = "form-input w-full";
+                input.placeholder = "Remarks";
+                cell.innerHTML = "";
+                cell.appendChild(input);
+                cell.dataset.p2RemarksFieldId = remarksId;
+                return;
+            }
+        }
+
+        function ensureP2RemarksDropdownForRow(row) {
+            if (!row) return;
+
+            const remarksInput = row.querySelector('input[id^="remarks-"]');
+            const remarksSelect = row.querySelector('select[id^="remarks-"]');
+            let dropdown = remarksSelect;
+
+            if (!dropdown && remarksInput) {
+                dropdown = document.createElement("select");
+                dropdown.id = remarksInput.id;
+                dropdown.className = "form-input w-full";
+                remarksInput.replaceWith(dropdown);
+            }
+
+            if (!dropdown) return;
+
+            dropdown.innerHTML = '<option value="">-- Select RTM --</option>';
+            p2SpecialRemarkOptions.forEach(item => {
+                dropdown.appendChild(new Option(item.RemarksText, item.Id));
+            });
+
+            if (p2SpecialRemarkSelected) {
+                dropdown.value = p2SpecialRemarkSelected;
+            }
+
+            dropdown.removeEventListener("change", handleP2SpecialRemarksChange);
+            dropdown.addEventListener("change", handleP2SpecialRemarksChange);
+        }
+
+        function resetP2RemarksToInputs(keepModeSelect = false) {
+            p2SpecialRemarkSelected = null;
+            p2SpecialRemarkOptions = [];
+            if (!keepModeSelect) {
+                p2RemarksMode = null;
+            }
+
+            const rows = document.querySelectorAll("#listOfPartnumber tr");
+            rows.forEach((row) => {
+                const remarksSelect = row.querySelector('select[id^="remarks-"]');
+                const remarksInput = row.querySelector('input[id^="remarks-"]');
+                const modeSelect = row.querySelector("#p2RemarksModeSelect");
+
+                if (remarksSelect) {
+                    const input = document.createElement("input");
+                    input.type = "text";
+                    input.id = remarksSelect.id;
+                    input.className = "form-input w-full";
+                    input.placeholder = "Remarks";
+                    remarksSelect.replaceWith(input);
+                }
+
+                if (modeSelect && !keepModeSelect) {
+                    modeSelect.remove();
+                }
+
+                if (remarksInput) {
+                    remarksInput.readOnly = false;
+                    remarksInput.style.backgroundColor = "";
+                    remarksInput.style.cursor = "";
+                }
+            });
+        }
+
         function populateDetailReasonCodeDropdown(rowIndex, facility, selectedTC) {
             const $dropdown = $(`#reasonCode-${rowIndex}`);
             if (!$dropdown.length) return;
@@ -1253,9 +1751,37 @@
                                 ? `${item.ShowScrapCode} - ${item.Name} (${item.Location || 'All'})`
                                 : `${piaCodeValue} - ${item.Name} (${item.Location || 'All'})`;
 
-                            $dropdown.append(`<option value="${piaCodeValue}">${displayText}</option>`);
+                            $dropdown.append(`<option value="${piaCodeValue}" data-id="${item.Id}">${displayText}</option>`);
                         });
                         $dropdown.prop('disabled', false);
+                        $dropdown.off("change.p2").on("change.p2", function () {
+                            handleDetailReasonCodeChange(rowIndex);
+                        });
+
+                        if (isP2Facility && p2RemarksMode === "RTM" && rowIndex > 1) {
+                            $dropdown.val("7");
+                            $dropdown.prop('disabled', true);
+                            $dropdown.css({ backgroundColor: "#f0f0f0", cursor: "not-allowed" });
+
+                            const row = document.getElementById(`row-${rowIndex}`);
+                            const remarksInput = row?.querySelector('input[id^="remarks-"]');
+                            const remarksSelect = row?.querySelector('select[id^="remarks-"]');
+
+                            if (remarksSelect) {
+                                if (p2SpecialRemarkSelected) {
+                                    remarksSelect.value = p2SpecialRemarkSelected;
+                                }
+                                remarksSelect.disabled = true;
+                                remarksSelect.style.backgroundColor = "#f0f0f0";
+                                remarksSelect.style.cursor = "not-allowed";
+                            }
+
+                            if (remarksInput) {
+                                remarksInput.readOnly = true;
+                                remarksInput.style.backgroundColor = "#f0f0f0";
+                                remarksInput.style.cursor = "not-allowed";
+                            }
+                        }
                     } else {
                         $dropdown.append('<option value="">-- No Reason Code Available --</option>');
                         $dropdown.prop('disabled', true);
@@ -1309,6 +1835,36 @@
                 localStorage.removeItem("specialCodeRemarks");
             }
             toggleHidden("#openModalsForAnalyzedCaseMaterial", hasNotes);
+        }
+
+        function handleDetailReasonCodeChange(rowIndex) {
+            const reasonCodeSelect = document.getElementById(`reasonCode-${rowIndex}`);
+            if (!reasonCodeSelect) return;
+
+            const selectedOption = reasonCodeSelect.options[reasonCodeSelect.selectedIndex];
+            const piaCodeValue = selectedOption?.value || "";
+            const piaCodeId = selectedOption?.getAttribute("data-id") || selectedPiaCode || null;
+
+            if (isP2Facility && piaCodeValue === "7" && rowIndex === 1) {
+                loadP2SpecialRemarks(piaCodeId, piaCodeValue);
+                ensureP2RemarksModeControl(document.querySelector("#listOfPartnumber tr"));
+                return;
+            }
+
+            if (isP2Facility && p2RemarksMode === "NON_RTM" && rowIndex > 1) {
+                filterRemarksByPiaCode(rowIndex, piaCodeValue);
+                return;
+            }
+
+            if (rowIndex === 1) {
+                p2RemarksMode = null;
+                p2SpecialRemarkSelected = null;
+            }
+
+            resetP2RemarksToInputs();
+            hideP2SpecialRemarksSection();
+            unlockP2ExtraRowFields();
+            filterRemarksByPiaCode(rowIndex, piaCodeValue);
         }
         function handleTCCompanion(piaCode) {
             const hasTCCompanion = piaCodesWithTCCompanion.includes(piaCode);
@@ -1367,7 +1923,7 @@
                 return;
             }
             const displayValue = `${tc} - ${name}`;
-            localStorage.setItem("CompanionTc", tc);
+            syncTcCompanionValue(tc);
             localStorage.setItem("CompanionTcValue", displayValue);
             refreshRNColumn();
             toggleHidden("#modalTCCompanion", false);
@@ -1440,6 +1996,10 @@
             const $hidden = document.getElementById(`remarksId-${partCounter}`);
             // Remarks per-row tidak ada di HTML PIA — skip jika element tidak ditemukan
             if (!$dropdown) return;
+
+            if ($dropdown.tagName !== "SELECT") {
+                return;
+            }
             $dropdown.innerHTML = "";
             const defaultOption = document.createElement("option");
             defaultOption.value = "";
@@ -1746,6 +2306,22 @@
                     }
                 });
             }
+
+            // P2 Special Remarks Handling: Apply shared remarks to new row and lock if needed
+            if (isP2Facility && p2SpecialRemarkOptions.length > 0) {
+                if (partCounter === 1) {
+                    ensureP2RemarksModeControl(newRow);
+                }
+
+                if (p2RemarksMode === "RTM") {
+                    lockP2ExtraRowFields(p2SpecialRemarkSelected ? (document.querySelector("#p2SpecialRemarksDropdown option:checked")?.textContent || "") : "");
+
+                    if (p2SpecialRemarkSelected) {
+                        applyP2SpecialRemarksToAllRows();
+                    }
+                }
+            }
+
             validatePartCard(partCounter, showSpecialFields);
 
         }
@@ -2383,11 +2959,50 @@
             return "";
         }
 
+        function getFirstNonEmptyKeepingZero(values) {
+            for (const value of values) {
+                if (value === 0) {
+                    return "0";
+                }
+
+                if (value === null || value === undefined) {
+                    continue;
+                }
+
+                const text = value.toString().trim();
+                if (text !== "") {
+                    return text;
+                }
+            }
+
+            return "";
+        }
+
+        function normalizeImportedTypeValue(value) {
+            const normalized = (value === null || value === undefined ? "" : value.toString()).trim();
+            if (!normalized) return "";
+
+            if (normalized === "1") return "WIP";
+            if (normalized === "2") return "Subcont";
+
+            return normalized;
+        }
+
+        function normalizeImportedTcCompanionValue(value) {
+            const normalized = normalizeTcCompanionValue(value);
+            if (!normalized) return "Not Required";
+            return normalized;
+        }
+
         function normalizeTcCompanionValue(value) {
             const normalized = (value === null || value === undefined ? "" : value.toString()).trim();
             if (!normalized) return "";
             if (normalized === "0") return "";
             if (normalized.toLowerCase() === "not required") return "";
+            const displayMatch = normalized.match(/^([^\-]+)\s-\s.+$/);
+            if (displayMatch && displayMatch[1]) {
+                return displayMatch[1].trim();
+            }
             return normalized;
         }
 
@@ -2401,6 +3016,56 @@
             });
 
             selectElement.value = normalizeTcCompanionValue(selectElement.value);
+        }
+
+        function syncTcCompanionValue(tcValue) {
+            const normalizedValue = normalizeTcCompanionValue(tcValue);
+            const legacyDropdown = document.getElementById("tcCompanionDropdown");
+            const previewDropdown = document.getElementById("previewTcCompanionDropdown");
+
+            if (legacyDropdown) {
+                setSelectValue(legacyDropdown, normalizedValue);
+            }
+
+            if (previewDropdown) {
+                setSelectValue(previewDropdown, normalizedValue);
+            }
+
+            if (normalizedValue) {
+                localStorage.setItem("CompanionTc", normalizedValue);
+                localStorage.setItem("CompanionTcValue", normalizedValue);
+            } else {
+                localStorage.removeItem("CompanionTc");
+                localStorage.removeItem("CompanionTcValue");
+            }
+
+            return normalizedValue;
+        }
+
+        function lockImportedHeaderFields() {
+            const elements = [
+                document.getElementById("previewTypeOfPiaDropdown"),
+                document.getElementById("previewFacilityDropdown"),
+                document.getElementById("previewSupervisorInitiatorName"),
+                document.getElementById("previewTcCompanionDropdown"),
+                document.getElementById("typeOfPiaDropdown"),
+                document.getElementById("facilityDropdown"),
+                document.getElementById("supervisorInitiatorName"),
+                document.getElementById("tcCompanionDropdown")
+            ];
+
+            elements.forEach(function (el) {
+                if (!el) return;
+
+                if (el.tagName === "SELECT") {
+                    el.disabled = true;
+                } else {
+                    el.readOnly = true;
+                }
+
+                el.style.backgroundColor = "#f0f0f0";
+                el.style.cursor = "not-allowed";
+            });
         }
 
         function updateImportProgress(message) {
@@ -2485,11 +3150,11 @@
                     existingPreviewManagerName,
                     existingPreviewManagerKpk
                 ]);
-                const previewTccValue = normalizeTcCompanionValue(getFirstNonEmpty([
+                const previewTccValue = normalizeImportedTcCompanionValue(getFirstNonEmptyKeepingZero([
                     getExcelCellValue(firstDataRow, columnMap.tcc),
-                    getExcelCellValue(dataRows[0], columnMap.tcc),
                     existingPreviewTcc
                 ]));
+                const mappedPreviewTypeValue = normalizeImportedTypeValue(previewTypeValue);
 
                 if (!previewTypeValue && !existingPreviewType) {
                     throw new Error("Type is required in the Excel file or must already be selected on the page.");
@@ -2501,7 +3166,7 @@
 
                 clearImportedDetailRows();
 
-                setSelectValue(previewTypeDropdown, previewTypeValue);
+                setSelectValue(previewTypeDropdown, mappedPreviewTypeValue);
                 if (previewTypeDropdown) {
                     $(previewTypeDropdown).trigger("change");
                 }
@@ -2523,8 +3188,10 @@
 
                 normalizeTcCompanionSelect(previewTccDropdown);
                 setSelectValue(previewTccDropdown, previewTccValue);
+                syncTcCompanionValue(previewTccValue);
 
                 evaluateAutoShowDetailFormFromPreview();
+                lockImportedHeaderFields();
 
                 const importedType = (previewTypeDropdown?.value || previewTypeValue || existingPreviewType).trim();
                 const selectedTcFromPage = (document.getElementById("tcDropdown")?.value || "").trim();
@@ -2622,12 +3289,6 @@
                     const reasonCode = getExcelCellValue(row, columnMap.reasonCode) || headerReasonCode || (document.getElementById("piaCodeDropdown")?.value || "");
                     const wcValue = getExcelCellValue(row, columnMap.wc) || headerWc || (document.getElementById("wcDropdown")?.value || "");
                     const remarksValue = getExcelCellValue(row, columnMap.remarks);
-                    const rowManagerValue = getFirstNonEmpty([
-                        getExcelCellValue(row, columnMap.manager),
-                        getExcelCellValue(row, columnMap.kpk),
-                        previewManagerValue
-                    ]);
-
                     const partInput = document.getElementById(`partNumber-${targetRow}`);
                     const physicalQtyInput = document.getElementById(`physicalQuantity-${targetRow}`);
                     const systemQtyInput = document.getElementById(`systemQuantity-${targetRow}`);
@@ -2646,15 +3307,16 @@
                     const reasonCodeSelect = document.getElementById(`reasonCode-${targetRow}`);
                     const wcSelect = document.getElementById(`wc-${targetRow}`);
                     const remarksInput = document.getElementById(`remarks-${targetRow}`);
+                    const loginLeaderKpk = (typeof kpk !== "undefined" ? kpk : "") || "";
+                    const loginLeaderName = (typeof userName !== "undefined" ? userName : "") || "";
 
                     if (partInput) partInput.value = partNumber;
                     if (physicalQtyInput) physicalQtyInput.value = physicalQty;
                     if (systemQtyInput) systemQtyInput.value = systemQty;
                     if (varianceQtyInput) varianceQtyInput.value = (parseFloat(physicalQty) || 0) - (parseFloat(systemQty) || 0);
 
-                    const resolvedRowManager = rowManagerValue ? await getEmployeeByKeyword(rowManagerValue) : null;
-                    if (leaderInput) leaderInput.value = (resolvedRowManager?.name || managerForRows.name || rowManagerValue || previewManagerValue);
-                    if (leaderKpkInput) leaderKpkInput.value = (resolvedRowManager?.kpk || managerForRows.kpk || rowManagerValue || previewManagerValue);
+                    if (leaderInput) leaderInput.value = loginLeaderName || leaderInput.value || "";
+                    if (leaderKpkInput) leaderKpkInput.value = loginLeaderKpk || leaderKpkInput.value || "";
 
                     // Populate reason code dropdown (AJAX) dan tunggu sampai nilai ter-set
                     const importFacility = previewFacilityValue || existingPreviewFacility;
@@ -2670,6 +3332,10 @@
                         }
                     } else if (reasonCodeSelect) {
                         setSelectValue(reasonCodeSelect, reasonCode);
+                    }
+
+                    if (reasonCodeSelect) {
+                        $(reasonCodeSelect).trigger("change");
                     }
 
                     // Populate WC dropdown (AJAX) dan tunggu sampai nilai ter-set
@@ -3119,7 +3785,12 @@
                 TypeLabel   : typeLabel,
                 Facility    : document.getElementById("facilityInitiator")?.value || null,
                 TC          : document.getElementById("tcDropdown")?.value || null,
-                TcCompanion : document.getElementById("tcCompanionDropdown")?.value || null,
+                TcCompanion : normalizeTcCompanionValue(
+                    document.getElementById("tcCompanionDropdown")?.value ||
+                    document.getElementById("previewTcCompanionDropdown")?.value ||
+                    localStorage.getItem("CompanionTc") ||
+                    localStorage.getItem("CompanionTcValue")
+                ) || null,
                 CreatedByKpk  : createdByKpkValue,
                 CreatedByName : createdByNameValue || null
             };
@@ -3160,7 +3831,7 @@
                     total_value      : rawTotal,
                     pia_code_id      : piaCodeId,        // Changed from pia_code (string) to pia_code_id (int)
                     wc               : row.querySelector('select[id^="wc-"]')?.value || null,
-                    remarks          : row.querySelector('input[id^="remarks-"]')?.value?.trim() || null,
+                    remarks          : row.querySelector('input[id^="remarks-"], select[id^="remarks-"]')?.value?.trim() || null,
                     LeaderKPK        : row.querySelector('input[id^="leaderKpk-"]')?.value || null,
                     status           : "active"
                 });

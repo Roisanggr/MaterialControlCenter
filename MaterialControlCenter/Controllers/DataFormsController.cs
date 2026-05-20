@@ -1223,6 +1223,47 @@ namespace MaterialControlCenter.Controllers
             }
         }
 
+        /// <summary>
+        /// Get P2 Special Remarks - Used for Facility P2 with special reason code scheme.
+        /// Returns remarks from pia_code_remarks table for selected PIA Code.
+        /// Only one remarks can be selected per document (shared across all rows).
+        /// </summary>
+        [HttpGet]
+        public JsonResult GetP2SpecialRemarks(int piaCodeId, string facility = "P2")
+        {
+            try
+            {
+                // Only allow for P2 facility
+                if (string.IsNullOrEmpty(facility) || !facility.Equals("P2", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Json(new { success = false, message = "This endpoint is only for P2 facility." }, JsonRequestBehavior.AllowGet);
+                }
+
+                if (piaCodeId <= 0)
+                    return Json(new { success = false, message = "PIA Code is required." }, JsonRequestBehavior.AllowGet);
+
+                var allRemarks = dbScrap.GetPiaCodeRemarksByPiaCodeId(piaCodeId);
+
+                var filtered = allRemarks
+                    .OrderBy(r => r.Remarks)
+                    .Select(r => new
+                    {
+                        Id = r.IdRemarks,
+                        RemarksText = r.Remarks
+                    })
+                    .ToList();
+
+                if (!filtered.Any())
+                    return Json(new { success = false, message = "No special remarks found for this PIA Code." }, JsonRequestBehavior.AllowGet);
+
+                return Json(new { success = true, data = filtered, isP2Special = true }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         [HttpGet]
         public JsonResult GetPiaCodeByLocation(string location, int? TC = null)
         {
